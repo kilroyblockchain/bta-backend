@@ -74,3 +74,11 @@ Thumbs.db
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# dotenv environment variables file
+.env
+.env.test
+
+package-lock.json
+uploads/*
+!uploads/*.md
