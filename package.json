@@ -40,6 +40,9 @@
     "rxjs": "^7.2.0",
     "swagger-ui-express": "^4.3.0"
   },
+  "pre-commit": [
+    "lint"
+  ],
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",
     "@nestjs/schematics": "^8.0.0",
