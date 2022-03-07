@@ -1,7 +1,7 @@
-import { ICaseyFeature } from 'migrations/feature-migrate/interfaces/casey-feature.interface';
+import { IFeature } from 'migrations/feature-migrate/interfaces/feature.interface';
 import * as mongoose from 'mongoose';
 
-const CaseyFeatureSchema = new mongoose.Schema(
+const FeatureSchema = new mongoose.Schema(
   {
     _id: {
       type: mongoose.Types.ObjectId,
@@ -31,7 +31,4 @@ const CaseyFeatureSchema = new mongoose.Schema(
   { _id: false },
 );
 
-export default mongoose.model<ICaseyFeature>(
-  'caseyFeature',
-  CaseyFeatureSchema,
-);
+export default mongoose.model<IFeature>('feature', FeatureSchema);

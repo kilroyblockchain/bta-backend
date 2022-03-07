@@ -1,6 +1,6 @@
 import { Document, Types } from 'mongoose';
 
-export interface ICaseyFeature extends Document {
+export interface IFeature extends Document {
   _id: Types.ObjectId;
   subscriptionId: Array<Types.ObjectId>;
   featureIdentifier: string;

@@ -1,6 +1,6 @@
 import { generalFeatures, superAdminFeatures, scscoopFeatures } from '.';
 
-export const caseyFeatureProduction = [
+export const featureProduction = [
   ...superAdminFeatures,
   ...generalFeatures,
   ...scscoopFeatures,
