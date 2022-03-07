@@ -5,8 +5,10 @@ import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { FLOUserModule } from './components/flo-user/flo-user.module';
 import { UtilsModule } from './components/utils/utils.module';
+import { SuperAdminModule } from './components/super-admin/super-admin.module';
 import { ReportIssueModule } from './components/flo-user/report-issue/report-issue.module';
 import { CompanyTransferModule } from './components/flo-user/company-transfer/company-transfer.module';
+import { BlockchainModule } from './components/blockchain/blockchain.module';
 
 @Module({
     imports: [
@@ -22,8 +24,10 @@ import { CompanyTransferModule } from './components/flo-user/company-transfer/co
         ScheduleModule.forRoot(),
         FLOUserModule,
         UtilsModule,
+        SuperAdminModule,
         ReportIssueModule,
-        CompanyTransferModule
+        CompanyTransferModule,
+        BlockchainModule
         // SharedModule
     ]
 })
