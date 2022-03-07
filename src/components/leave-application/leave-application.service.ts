@@ -7,8 +7,8 @@ import { PaginateModel, PaginateResult } from 'mongoose';
 import { ILeaveApplication, ILeaveApplicationResponse, ILeaveResponse } from './interfaces/leave-application.interface';
 import { Request } from 'express';
 import { LEAVE_APPLICATION_CONSTANT } from 'src/@core/constants/api-error-constants';
-import { LEAVE_STATUS } from 'src/@core/constants/leave-status.enum';
 import { getKeyByValue } from 'src/@core/utils/common.utils';
+import { LEAVE_STATUS } from 'src/@core/constants';
 
 @Injectable()
 export class LeaveApplicationService {

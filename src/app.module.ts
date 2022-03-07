@@ -1,4 +1,4 @@
-import { LeaveApplicationModule } from './leave-application/leave-application.module';
+import { LeaveApplicationModule } from './components/leave-application/leave-application.module';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express';
@@ -12,6 +12,7 @@ import { CompanyTransferModule } from './components/flo-user/company-transfer/co
 import { BlockchainModule } from './components/blockchain/blockchain.module';
 import { SharedModule } from './components/shared/shared.module';
 import { CompanyBranchModule } from './components/shared/company-branch/company-branch.module';
+import { TravelPermitModule } from './components/travel-permit/travel-permit.module';
 
 @Module({
     imports: [
@@ -33,7 +34,8 @@ import { CompanyBranchModule } from './components/shared/company-branch/company-
         BlockchainModule,
         SharedModule,
         CompanyBranchModule,
-        LeaveApplicationModule
+        LeaveApplicationModule,
+        TravelPermitModule
     ]
 })
 export class AppModule {}

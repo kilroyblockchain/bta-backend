@@ -1,3 +1,4 @@
+import { TRAVEL_PERMIT_CONSTANT } from './travel-permit.constant';
 import { LEAVE_APPLICATION_CONSTANT } from './leave-application.constant';
 import { COMPANY_BRANCH_CONSTANT } from './company-branch.constant';
 import { FEATURES_CONSTANT } from './features.constant';
@@ -34,5 +35,6 @@ export {
     COUNTRY_CONSTANT,
     FEATURES_CONSTANT,
     COMPANY_BRANCH_CONSTANT,
-    LEAVE_APPLICATION_CONSTANT
+    LEAVE_APPLICATION_CONSTANT,
+    TRAVEL_PERMIT_CONSTANT
 };

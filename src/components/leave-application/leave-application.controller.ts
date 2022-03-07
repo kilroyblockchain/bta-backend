@@ -15,7 +15,7 @@ import { Request } from 'express';
 import { Response as FLOResponse } from 'src/@core/response';
 import { LEAVE_APPLICATION_CONSTANT } from 'src/@core/constants/api-error-constants';
 
-@ApiTags('leave Application')
+@ApiTags('Leave Application')
 @Controller('leave-application')
 export class LeaveApplicationController {
     constructor(private readonly leaveApplicationService: LeaveApplicationService) {}
