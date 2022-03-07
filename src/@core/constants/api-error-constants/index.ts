@@ -1,3 +1,4 @@
+import { COMPANY_BRANCH_CONSTANT } from './company-branch.constant';
 import { FEATURES_CONSTANT } from './features.constant';
 import { COUNTRY_CONSTANT } from './country.constant';
 import { ORGANIZATION_CONSTANT } from './organization.constant';
@@ -30,5 +31,6 @@ export {
     REPORT_ISSUE_CONSTANT,
     ORGANIZATION_CONSTANT,
     COUNTRY_CONSTANT,
-    FEATURES_CONSTANT
+    FEATURES_CONSTANT,
+    COMPANY_BRANCH_CONSTANT
 };

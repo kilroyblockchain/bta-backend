@@ -24,6 +24,7 @@ import * as cookieParser from 'cookie-parser';
 import { UserModule } from './components/flo-user/user/user.module';
 import { OrganizationModule } from './components/flo-user/organization/organization.module';
 import { SuperAdminModule } from './components/super-admin/super-admin.module';
+import { CompanyBranchModule } from './components/shared/company-branch/company-branch.module';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -83,7 +84,8 @@ async function bootstrap() {
             SkillModule,
             LanguageModule,
             ChannelDetailModule,
-            UserRejectInfoModule
+            UserRejectInfoModule,
+            CompanyBranchModule
         ]
     });
     SwaggerModule.setup('api', app, document);

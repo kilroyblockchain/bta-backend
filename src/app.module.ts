@@ -9,6 +9,8 @@ import { SuperAdminModule } from './components/super-admin/super-admin.module';
 import { ReportIssueModule } from './components/flo-user/report-issue/report-issue.module';
 import { CompanyTransferModule } from './components/flo-user/company-transfer/company-transfer.module';
 import { BlockchainModule } from './components/blockchain/blockchain.module';
+import { SharedModule } from './components/shared/shared.module';
+import { CompanyBranchModule } from './components/shared/company-branch/company-branch.module';
 
 @Module({
     imports: [
@@ -27,8 +29,9 @@ import { BlockchainModule } from './components/blockchain/blockchain.module';
         SuperAdminModule,
         ReportIssueModule,
         CompanyTransferModule,
-        BlockchainModule
-        // SharedModule
+        BlockchainModule,
+        SharedModule,
+        CompanyBranchModule
     ]
 })
 export class AppModule {}
