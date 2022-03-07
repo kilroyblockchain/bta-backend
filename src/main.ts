@@ -25,6 +25,7 @@ import { UserModule } from './components/flo-user/user/user.module';
 import { OrganizationModule } from './components/flo-user/organization/organization.module';
 import { SuperAdminModule } from './components/super-admin/super-admin.module';
 import { CompanyBranchModule } from './components/shared/company-branch/company-branch.module';
+import { LeaveApplicationModule } from './leave-application/leave-application.module';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -85,7 +86,8 @@ async function bootstrap() {
             LanguageModule,
             ChannelDetailModule,
             UserRejectInfoModule,
-            CompanyBranchModule
+            CompanyBranchModule,
+            LeaveApplicationModule
         ]
     });
     SwaggerModule.setup('api', app, document);

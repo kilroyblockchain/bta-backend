@@ -1,3 +1,4 @@
+import { LeaveApplicationModule } from './leave-application/leave-application.module';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express';
@@ -31,7 +32,8 @@ import { CompanyBranchModule } from './components/shared/company-branch/company-
         CompanyTransferModule,
         BlockchainModule,
         SharedModule,
-        CompanyBranchModule
+        CompanyBranchModule,
+        LeaveApplicationModule
     ]
 })
 export class AppModule {}
