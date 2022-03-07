@@ -3,7 +3,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { FLOUserModule } from './components/flo-user/flo-user.module';
 import { UtilsModule } from './components/utils/utils.module';
+import { ReportIssueModule } from './components/flo-user/report-issue/report-issue.module';
+import { CompanyTransferModule } from './components/flo-user/company-transfer/company-transfer.module';
 
 @Module({
     imports: [
@@ -17,7 +20,11 @@ import { UtilsModule } from './components/utils/utils.module';
             dest: './uploads'
         }),
         ScheduleModule.forRoot(),
-        UtilsModule
+        FLOUserModule,
+        UtilsModule,
+        ReportIssueModule,
+        CompanyTransferModule
+        // SharedModule
     ]
 })
 export class AppModule {}
