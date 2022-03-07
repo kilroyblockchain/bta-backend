@@ -1,0 +1,10 @@
+<div class="content">
+    <div class="welcome">
+        <h3>Hello ,</h3>
+        {{#if error}}
+        <p>{{status}} occured while {{action}} data from {{from}}.</p>
+        {{else}}
+        <p>Triand data {{action}} has been {{status}}.</p>
+        {{/if}}
+    </div>
+</div>
