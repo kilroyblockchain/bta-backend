@@ -4,9 +4,6 @@ import { Organization } from 'src/components/flo-user/organization/interfaces/or
 import { OrganizationSchema } from 'src/components/flo-user/organization/schemas/organization.schema';
 import { IUser } from 'src/components/flo-user/user/interfaces/user.interface';
 import { UserSchema } from 'src/components/flo-user/user/schemas/user.schema';
-import { Blog } from 'src/components/super-admin/blog/interfaces/blog.interfaces';
-import { BlogSchema } from 'src/components/super-admin/blog/schemas/blog.schema';
-import { Blogs } from 'super-admin-migrations/data/blogs';
 import { admin, adminCompany } from 'super-admin-migrations/data/defaultUser';
 
 /**
@@ -41,20 +38,6 @@ async function createAdminUser() {
     } catch (err) {
         consoleLogWrapper(err);
         throw new Error('Failed to create an admin user, quitting...');
-    }
-}
-
-async function createBlogs() {
-    try {
-        const BlogModel = mongoose.model<Blog>('Blog', BlogSchema);
-        consoleLogWrapper('Creating a blogs');
-        for (const blog of Blogs) {
-            const newBlog = new BlogModel(blog);
-            await newBlog.save();
-        }
-        consoleLogWrapper('Successfully created a blogs');
-    } catch (err) {
-        throw new Error('Failed to create a blogs, quitting...');
     }
 }
 
