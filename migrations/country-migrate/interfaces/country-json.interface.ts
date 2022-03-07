@@ -1,7 +1,7 @@
 export interface ICountryJSON {
-  id: number;
-  oid: string;
-  sortname: string;
-  name: string;
-  phoneCode: number;
+    id: number;
+    oid: string;
+    sortname: string;
+    name: string;
+    phoneCode: number;
 }

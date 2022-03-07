@@ -2,14 +2,13 @@ import * as migrateMongoose from 'migrate-mongoose';
 import * as mongoose from 'mongoose';
 import 'dotenv/config';
 import { join } from 'path';
-import { buildMongoURI, consoleLogWrapper } from './helper-func';
+import { buildMongoURI, consoleLogWrapper } from 'migrations/helper-func';
 
 const mongoURI = buildMongoURI(process.env.MONGO_URI, process.env.DATABASE_NAME, process.env.MONGO_HOST, process.env.MONGO_USERNAME, process.env.MONGO_PASSWORD);
-
 mongoose.connect(mongoURI);
-const migrationsDir = join(__dirname, 'flo-migrations'),
+const migrationsDir = join(__dirname, 'migrations'),
     dbUrl = mongoURI,
-    collectionName = 'migrations',
+    collectionName = 'super-admin-migrations',
     autosync = true;
 
 const migrator = new migrateMongoose({

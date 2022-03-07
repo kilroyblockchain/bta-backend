@@ -10,51 +10,49 @@ const { countries } = countryJSON;
 const { states } = statesJSON;
 
 async function up() {
-  try {
-    if (!(await Country.find().exec()).length) {
-      for (const country of countries) {
-        let countryState: IStateJSON[] = [];
-        const countryModel = new Country({
-          _id: country.oid,
-          idNumber: country.id,
-          countryCode: country.sortname,
-          name: country.name,
-          phoneCode: country.phoneCode,
-          states: [],
-        });
-        const countryData: ICountry = await countryModel.save();
-        countryState = states.filter(
-          (state) => state.countryObjectId == country.oid,
-        );
+    try {
+        if (!(await Country.find().exec()).length) {
+            for (const country of countries) {
+                let countryState: IStateJSON[] = [];
+                const countryModel = new Country({
+                    _id: country.oid,
+                    idNumber: country.id,
+                    countryCode: country.sortname,
+                    name: country.name,
+                    phoneCode: country.phoneCode,
+                    states: []
+                });
+                const countryData: ICountry = await countryModel.save();
+                countryState = states.filter((state) => state.countryObjectId == country.oid);
 
-        for (const state of countryState) {
-          const stateModel = new State({
-            _id: state.oid,
-            idNumber: state.id,
-            name: state.name,
-            abbreviation: state.abbreviation,
-            countryId: state.country_id,
-            countryObjectId: state.countryObjectId,
-          });
-          const stateData: IState = await stateModel.save();
-          countryData.states.push(stateData.id);
-          await countryData.save();
+                for (const state of countryState) {
+                    const stateModel = new State({
+                        _id: state.oid,
+                        idNumber: state.id,
+                        name: state.name,
+                        abbreviation: state.abbreviation,
+                        countryId: state.country_id,
+                        countryObjectId: state.countryObjectId
+                    });
+                    const stateData: IState = await stateModel.save();
+                    countryData.states.push(stateData.id);
+                    await countryData.save();
+                }
+            }
+            consoleLogWrapper('Successfully migrated Country and state data.');
+        } else {
+            consoleLogWrapper('Already migrated Country and state data.');
         }
-      }
-      consoleLogWrapper('Successfully migrated Country and state data.');
-    } else {
-      consoleLogWrapper('Already migrated Country and state data.');
+    } catch (err) {
+        console.error(err.message);
     }
-  } catch (err) {
-    console.error(err.message);
-  }
 }
 
 /**
  * Make any changes that UNDO the up function side effects here (if possible)
  */
 async function down() {
-  // Write migration here
+    // Write migration here
 }
 
 module.exports = { up, down };

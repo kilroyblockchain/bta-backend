@@ -8,26 +8,16 @@
  * @param {string} authSource - Authsource to which authentication is done. Ex: 'admin'
  * @returns
  */
-export const buildMongoURI = (
-  hostURI: string,
-  dbName: string,
-  host: string,
-  userName: string,
-  password: string,
-  authSource = 'admin',
-): string => {
-  if (userName) {
-    return (
-      hostURI.replace(host, `${userName}:${password}@${host}`) +
-      `/${dbName}?authSource=${authSource}`
-    );
-  } else {
-    return `${hostURI}/${dbName}`;
-  }
+export const buildMongoURI = (hostURI: string, dbName: string, host: string, userName: string, password: string, authSource = 'admin'): string => {
+    if (userName) {
+        return hostURI.replace(host, `${userName}:${password}@${host}`) + `/${dbName}?authSource=${authSource}`;
+    } else {
+        return `${hostURI}/${dbName}`;
+    }
 };
 
 export const consoleLogWrapper = (message: string): void => {
-  console.log('**************************************************');
-  console.log(message);
-  console.log('**************************************************');
+    console.log('**************************************************');
+    console.log(message);
+    console.log('**************************************************');
 };

@@ -4,30 +4,27 @@ import SubscriptionModel from 'migrations/subscription-type-migrate/schemas/subs
 import { consoleLogWrapper } from 'migrations/helper-func';
 
 async function up() {
-  const subscriptionTypes =
-    process.env.ENVIRONMENT === 'prod'
-      ? subscriptionTypesProd
-      : localSubscriptionTypes;
-  try {
-    if (!(await SubscriptionModel.find()).length) {
-      for (const subsType of subscriptionTypes) {
-        const newSubType = new SubscriptionModel(subsType);
-        await newSubType.save();
-      }
-      consoleLogWrapper('Successfully Migrated subscription types.');
-    } else {
-      consoleLogWrapper('Already migrated subscription types.');
+    const subscriptionTypes = process.env.ENVIRONMENT === 'prod' ? subscriptionTypesProd : localSubscriptionTypes;
+    try {
+        if (!(await SubscriptionModel.find()).length) {
+            for (const subsType of subscriptionTypes) {
+                const newSubType = new SubscriptionModel(subsType);
+                await newSubType.save();
+            }
+            consoleLogWrapper('Successfully Migrated subscription types.');
+        } else {
+            consoleLogWrapper('Already migrated subscription types.');
+        }
+    } catch (err) {
+        console.error(err.message);
     }
-  } catch (err) {
-    console.error(err.message);
-  }
 }
 
 /**
  * Make any changes that UNDO the up function side effects here (if possible)
  */
 async function down() {
-  // Write migration here
+    // Write migration here
 }
 
 module.exports = { up, down };
