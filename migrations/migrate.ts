@@ -13,7 +13,7 @@ const mongoURI = buildMongoURI(
 );
 
 mongoose.connect(mongoURI);
-const migrationsDir = join(__dirname, 'migrations'),
+const migrationsDir = join(__dirname, 'flo-migrations'),
   dbUrl = mongoURI,
   collectionName = 'migrations',
   autosync = true;
