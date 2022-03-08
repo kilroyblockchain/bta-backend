@@ -8,6 +8,9 @@ interface IGetUserAuthInfo extends Express.Request {
 export const GetUser = createParamDecorator((data: string | undefined, ctx: ExecutionContext) => {
     const request: IGetUserAuthInfo = ctx.switchToHttp().getRequest();
     if (data) {
+        if (data === 'default-company') {
+            return request.user.company.find((defaultCompany) => defaultCompany.default);
+        }
         return request.user[data];
     }
     return request.user;
