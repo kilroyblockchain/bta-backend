@@ -6,7 +6,7 @@ import { Response } from 'src/@core/response';
 import { FEATURE_IDENTIFIER } from 'src/@core/constants';
 import { LANGUAGE_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { BC_SUCCESS_RESPONSE } from 'src/@core/constants/bc-constants/bc-success-response.constants';
-import { Feature } from 'src/components/auth/decorators/feature.decorator';
+import { Feature } from 'src/components/auth/decorators';
 import { BlockchainStatusGuard } from 'src/components/auth/guards/blockhainStatus.guard';
 import { LanguageDto } from './dto/language.dto';
 import { LanguageService } from './language.service';

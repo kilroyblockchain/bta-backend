@@ -1,6 +1,6 @@
 import { Body, Controller, ForbiddenException, Get, HttpCode, HttpStatus, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Permission } from 'src/components/auth/decorators/permission.decorator';
+import { Permission } from 'src/components/auth/decorators';
 import { Response } from 'src/@core/response';
 import { ACCESS_TYPE } from 'src/@core/constants';
 import { ChannelMappingService } from './channel-mapping.service';

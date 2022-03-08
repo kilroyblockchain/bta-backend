@@ -5,7 +5,7 @@ import { Request } from 'express';
 import { Response } from 'src/@core/response';
 import { ROLE } from 'src/@core/constants';
 import { FEATURES_CONSTANT } from 'src/@core/constants/api-error-constants';
-import { Roles } from 'src/components/auth/decorators/roles.decorator';
+import { Roles } from 'src/components/auth/decorators';
 import { RolesGuard } from 'src/components/auth/guards/roles.guard';
 import { FeatureService } from './features.service';
 

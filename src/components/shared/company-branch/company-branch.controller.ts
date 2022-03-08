@@ -6,10 +6,8 @@ import { CompanyBranchDto } from 'src/components/shared/company-branch/dto/compa
 import { CompanyBranchService } from 'src/components/shared/company-branch/company-branch.service';
 import { PermissionGuard } from 'src/components/auth/guards/permission.guard';
 import { SubscriptionGuard } from 'src/components/auth/guards/subscription.guard';
-import { Roles } from 'src/components/auth/decorators/roles.decorator';
+import { Roles, Feature, Permission } from 'src/components/auth/decorators';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
-import { Feature } from 'src/components/auth/decorators/feature.decorator';
-import { Permission } from 'src/components/auth/decorators/permission.decorator';
 import { Response as FLOResponse } from 'src/@core/response';
 import { BC_SUCCESS_RESPONSE } from 'src/@core/constants/bc-constants/bc-success-response.constants';
 import { COMPANY_BRANCH_CONSTANT } from 'src/@core/constants/api-error-constants';

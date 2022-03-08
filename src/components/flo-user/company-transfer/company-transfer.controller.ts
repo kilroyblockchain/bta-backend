@@ -5,7 +5,7 @@ import { Request } from 'express';
 import { Response } from 'src/@core/response';
 import { ROLE, STATUS } from 'src/@core/constants';
 import { COMPANY_TRANSFER_CONSTANT } from 'src/@core/constants/api-error-constants/company-transfer.constant';
-import { Roles } from 'src/components/auth/decorators/roles.decorator';
+import { Roles } from 'src/components/auth/decorators';
 import { RolesGuard } from 'src/components/auth/guards/roles.guard';
 import { CompanyTransferService } from './company-transfer.service';
 
