@@ -21,7 +21,6 @@ export class RolesGuard extends AuthGuard('jwt') {
             hasRole = roles.includes(verifiedCompany.subscriptionType);
             return verifiedCompany.verified && !verifiedCompany.isDeleted && hasRole;
         });
-        console.log({ isVerified, hasRole });
         if (!isVerified) {
             throw new ForbiddenException();
         }
