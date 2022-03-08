@@ -11,16 +11,17 @@ export class RolesGuard extends AuthGuard('jwt') {
     handleRequest(err, user, info: Error, context: ExecutionContext) {
         const roles = this.reflector.get<string[]>('roles', context.getHandler());
         let hasRole: boolean;
-        if (!roles) {
-            return true;
-        }
         if (!user) {
             throw new UnauthorizedException();
+        }
+        if (!roles) {
+            return user;
         }
         const isVerified = user.company.some((verifiedCompany) => {
             hasRole = roles.includes(verifiedCompany.subscriptionType);
             return verifiedCompany.verified && !verifiedCompany.isDeleted && hasRole;
         });
+        console.log({ isVerified, hasRole });
         if (!isVerified) {
             throw new ForbiddenException();
         }
