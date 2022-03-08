@@ -5,12 +5,10 @@ import { OrganizationStaffingService } from './organization-staffing.service';
 import { ApiBearerAuth, ApiTags, ApiHeader, ApiOperation, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { Controller, UseGuards, Post, HttpCode, HttpStatus, Body, Get, Param, Put, Delete, Req, BadRequestException, NotFoundException } from '@nestjs/common';
 import { RolesGuard } from 'src/components/auth/guards/roles.guard';
-import { Roles } from 'src/components/auth/decorators/roles.decorator';
+import { Roles, Permission, Feature } from 'src/components/auth/decorators';
 import { Response } from 'src/@core/response';
 import { PermissionGuard } from 'src/components/auth/guards/permission.guard';
-import { Permission } from 'src/components/auth/decorators/permission.decorator';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
-import { Feature } from 'src/components/auth/decorators/feature.decorator';
 import { SubscriptionGuard } from 'src/components/auth/guards/subscription.guard';
 import { ORGANIZATION_STAFFING_CONSTANT } from 'src/@core/constants/api-error-constants';
 

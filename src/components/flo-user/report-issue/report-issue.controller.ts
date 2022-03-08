@@ -9,7 +9,7 @@ import { Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/components/auth/guards/roles.guard';
 import { ApiBearerAuth, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Roles } from 'src/components/auth/decorators/roles.decorator';
+import { Roles } from 'src/components/auth/decorators';
 import { ReportIssueService } from './report-issue.service';
 import { ROLE, STATUS } from 'src/@core/constants';
 

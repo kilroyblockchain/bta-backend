@@ -1,10 +1,8 @@
 import { editFileName, getLeaveSignatureDestination, imageFileFilter } from 'src/@core/utils/file-upload.utils';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Roles } from 'src/components/auth/decorators/roles.decorator';
-import { Feature } from 'src/components/auth/decorators/feature.decorator';
+import { Roles, Feature, Permission } from 'src/components/auth/decorators';
 import { ACCESS_TYPE } from 'src/@core/constants/accessType.enum';
-import { Permission } from 'src/components/auth/decorators/permission.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { Controller, Post, UseGuards, HttpCode, HttpStatus, Body, Req, Get, Param, Put, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';

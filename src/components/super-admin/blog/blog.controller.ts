@@ -4,13 +4,11 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, 
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RolesGuard } from 'src/components/auth/guards/roles.guard';
 import { AuthGuard } from '@nestjs/passport';
-import { Roles } from 'src/components/auth/decorators/roles.decorator';
+import { Roles, Feature, Permission } from 'src/components/auth/decorators';
 import { Request } from 'express';
 import { ResponseDto } from './dto/response';
 import { PermissionGuard } from 'src/components/auth/guards/permission.guard';
-import { Permission } from 'src/components/auth/decorators/permission.decorator';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
-import { Feature } from 'src/components/auth/decorators/feature.decorator';
 import { BLOG_CONSTANT } from 'src/@core/constants/api-error-constants';
 
 @ApiTags('New Blog')
