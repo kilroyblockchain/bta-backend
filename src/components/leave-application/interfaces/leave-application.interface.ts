@@ -19,6 +19,7 @@ export interface ILeaveApplication extends Document {
     numberOfHours: number;
     leaveType: string;
     response?: Array<ILeaveResponse>;
+    createdAt: Date;
 }
 
 export interface ILeaveApplicationResponse {
@@ -28,6 +29,7 @@ export interface ILeaveApplicationResponse {
     leave_From: Date;
     leave_To: Date;
     number_Of_Hours: number;
+    applied_Date: Date;
     response: Array<{
         leave_status: string;
         date: Date;

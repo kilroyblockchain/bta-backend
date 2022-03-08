@@ -59,7 +59,7 @@ export class LeaveApplicationService {
             };
 
             const options = {
-                select: 'addedBy company status isDeleted leaveFrom leaveTo numberOfHours acceptedDate response acceptedBy createdAt',
+                select: 'addedBy company status leaveType isDeleted leaveFrom leaveTo numberOfHours acceptedDate response acceptedBy createdAt',
                 sort: { updatedAt: -1 },
                 lean: true,
                 limit: Number(limit),
@@ -175,7 +175,8 @@ export class LeaveApplicationService {
             leave_To: leaveData.leaveTo,
             number_Of_Hours: leaveData.numberOfHours,
             response: leaveData.response && leaveData.response.length ? leaveData.response.map((leave) => this.buildLeaveResult(leave)) : null,
-            leave_Type: leaveData.leaveType
+            leave_Type: leaveData.leaveType || null,
+            applied_Date: leaveData.createdAt
         };
     }
 

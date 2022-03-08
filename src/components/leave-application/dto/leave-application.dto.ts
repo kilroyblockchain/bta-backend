@@ -1,6 +1,6 @@
 import { LEAVE_STATUS } from 'src/@core/constants/leave-status.enum';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsNotEmpty, IsString, IsNumber, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
 
 export class LeaveApplicationDto {
     addedBy: string;
@@ -11,7 +11,6 @@ export class LeaveApplicationDto {
         example: new Date()
     })
     @IsNotEmpty()
-    @IsDateString()
     leaveFrom: Date;
 
     @ApiProperty({
@@ -19,7 +18,6 @@ export class LeaveApplicationDto {
         example: new Date()
     })
     @IsNotEmpty()
-    @IsDateString()
     leaveTo: Date;
 
     @ApiProperty({
@@ -27,7 +25,6 @@ export class LeaveApplicationDto {
         example: 10
     })
     @IsNotEmpty()
-    @IsNumber()
     numberOfHours: number;
 
     @ApiProperty({
