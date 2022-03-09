@@ -53,7 +53,6 @@ export class OrganizationService {
                 city: updateOrganizationDto.city || null,
                 address: updateOrganizationDto.address || '',
                 zipCode: updateOrganizationDto.zipCode || '',
-                aboutOrganization: updateOrganizationDto.aboutOrganization || '',
                 companyLogo: logoName ? logoName : currentOrganization.companyLogo
             });
         } catch (err) {
@@ -85,9 +84,6 @@ export class OrganizationService {
             city: registerData.companyCity || '',
             address: registerData.companyAddress || '',
             zipCode: registerData.companyZipCode || '',
-            aboutOrganization: registerData.aboutOrganization || '',
-            contributionForApp: registerData.contributionForApp || '',
-            helpNeededFromApp: registerData.helpNeededFromApp || '',
             companyLogo: registerData.companyLogo || '',
             image: registerData.image || null,
             subscription: [{ type: registerData.subscriptionType, status: false }]
@@ -261,9 +257,6 @@ export class OrganizationService {
             city: org.city,
             address: org.address,
             zipCode: org.zipCode,
-            aboutOrganization: org.aboutOrganization,
-            contributionForApp: org.contributionForApp,
-            helpNeededFromApp: org.helpNeededFromApp,
             companyLogo: org.companyLogo,
             subscription: org.subscription
         };

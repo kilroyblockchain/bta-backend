@@ -63,14 +63,6 @@ export class CreateOrganizationDto {
     readonly zipCode: string;
 
     @ApiProperty({
-        example: 'Long text',
-        description: 'Describe what your business does',
-        format: 'string'
-    })
-    @IsString()
-    readonly aboutOrganization: string;
-
-    @ApiProperty({
         example: [{ type: ROLE.STAFF, status: false }],
         description: 'Subscription types assigned to organization',
         format: 'array'

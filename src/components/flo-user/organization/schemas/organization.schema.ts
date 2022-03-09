@@ -35,10 +35,6 @@ export const OrganizationSchema = new Schema(
             type: String,
             required: false
         },
-        aboutOrganization: {
-            type: String,
-            required: false
-        },
         isDeleted: {
             type: Boolean,
             required: false,

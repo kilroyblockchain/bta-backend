@@ -14,7 +14,6 @@ export interface Organization extends Document {
     city?: string;
     address?: string;
     zipCode?: string;
-    aboutOrganization?: string;
     email?: string;
     reCaptchaToken?: string;
     isDeleted: boolean;
