@@ -487,14 +487,13 @@ export class UserController {
     @Roles(ROLE.OTHER, ROLE.SUPER_ADMIN, ROLE.STAFF)
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Deleted training user by admin of organization' })
+    @ApiOperation({ summary: 'Deleted staffing user by admin of organization' })
     @ApiHeader({
         name: 'Bearer',
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
     async deleteTrainingUserByAdmin(@Param('userId') userId: string, @Param('staffingId') staffingId: string, @Req() req: Request) {
-        this.authService.additionalTrainingGuardForCommonApi(req, staffingId, ACCESS_TYPE.DELETE);
         return await this.userService.deleteUserByOrganizationAdmin(userId, req, staffingId);
     }
 

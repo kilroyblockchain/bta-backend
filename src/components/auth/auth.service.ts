@@ -1,6 +1,6 @@
 import { IBasicUserInfo, ICompany } from '../flo-user/user/interfaces/user.interface';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
-import { Injectable, UnauthorizedException, BadRequestException, HttpService, ForbiddenException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, HttpService } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -219,32 +219,6 @@ export class AuthService {
             .split(/\s/)
             .reduce((response, word) => (response += word.slice(0, 1)), '')
             .toUpperCase();
-    }
-
-    checkAccessForManageTraining(staffingId: string, featureIdentifier: string): boolean {
-        let featureName: string;
-        switch (staffingId) {
-            default:
-                featureName = featureIdentifier === 'organization-user' ? 'organization-user' : null;
-                break;
-        }
-        return featureName === featureIdentifier;
-    }
-
-    additionalTrainingGuardForCommonApi(req: Request, staffingId: string, accessType: string): void {
-        const defaultCompany = this.getDefaultCompany(req);
-        if (!defaultCompany.isAdmin) {
-            const validApiHit = defaultCompany.staffingId.some((staff: any) => {
-                return staff.featureAndAccess.some((feature) => {
-                    if (feature.accessType.includes(accessType) && feature.featureId?.accessType?.includes(accessType)) {
-                        return this.checkAccessForManageTraining(staffingId, feature.featureId.featureIdentifier);
-                    }
-                });
-            });
-            if (!validApiHit) {
-                throw new ForbiddenException('Forbidden');
-            }
-        }
     }
 
     decryptText(encryptedString: string): string {
