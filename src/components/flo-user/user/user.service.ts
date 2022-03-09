@@ -707,18 +707,11 @@ export class UserService {
                 }
             }
             if (subscriptionType && subscriptionType !== 'all') {
-                if (subscriptionType === 'allSupervisors') {
-                    query = {
-                        ...query,
-                        subscriptionType: 'supervisor'
-                    };
-                } else {
-                    query = {
-                        ...query,
-                        isAdmin: companyUsers === 'true' ? false : true,
-                        subscriptionType: subscriptionType
-                    };
-                }
+                query = {
+                    ...query,
+                    isAdmin: companyUsers === 'true' ? false : true,
+                    subscriptionType: subscriptionType
+                };
             } else {
                 query = {
                     ...query,

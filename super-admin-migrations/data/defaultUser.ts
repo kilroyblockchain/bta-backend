@@ -42,8 +42,5 @@ export const adminCompany = {
     state: null,
     address: '',
     zipCode: '',
-    aboutOrganization: '',
-    contributionForApp: '',
-    helpNeededFromApp: '',
-    vaccines: []
+    aboutOrganization: ''
 };

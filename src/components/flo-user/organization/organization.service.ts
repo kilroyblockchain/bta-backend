@@ -54,8 +54,6 @@ export class OrganizationService {
                 address: updateOrganizationDto.address || '',
                 zipCode: updateOrganizationDto.zipCode || '',
                 aboutOrganization: updateOrganizationDto.aboutOrganization || '',
-                contributionForApp: updateOrganizationDto.contributionForApp || '',
-                helpNeededFromApp: updateOrganizationDto.helpNeededFromApp || '',
                 companyLogo: logoName ? logoName : currentOrganization.companyLogo
             });
         } catch (err) {
