@@ -646,7 +646,7 @@ export class UserService {
         let newStaffing = [];
         newStaffing = defaultCompany.staffingId;
         user.company.filter((company) => {
-            if (company.verified && company.userAccept && !company.isDeleted && company.isAdmin && (<Organization>company.companyId)._id === organizationData._id) {
+            if (company.verified && company.userAccept && ((!company.isDeleted && company.isAdmin) || (!company.isAdmin && company.staffingId.length)) && (<Organization>company.companyId)._id === organizationData._id) {
                 roles.push(company.subscriptionType);
                 newStaffing = [...newStaffing, ...company.staffingId];
             }
