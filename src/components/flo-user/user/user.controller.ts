@@ -411,7 +411,7 @@ export class UserController {
     @Get('organization-user/all')
     @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
     @Permission(ACCESS_TYPE.READ)
-    @Feature(FEATURE_IDENTIFIER.ORGANIZATION_USER, FEATURE_IDENTIFIER.EMAIL_RECIPIENT)
+    @Feature(FEATURE_IDENTIFIER.ORGANIZATION_USER)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get users of organization' })

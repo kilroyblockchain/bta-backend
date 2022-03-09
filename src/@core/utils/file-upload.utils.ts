@@ -1,7 +1,6 @@
 import { basename, extname } from 'path';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import * as fs from 'fs';
-import * as csv from 'csvtojson';
 import { getCurrentTimeStampString } from './common.utils';
 
 export const imageFileFilter = (req, file, callback) => {
@@ -11,40 +10,11 @@ export const imageFileFilter = (req, file, callback) => {
     callback(null, true);
 };
 
-export const zipFileFilter = (req, file, callback) => {
-    if (!file.originalname.match(/\.(zip|rar)$/)) {
-        return callback(new HttpException('Only zip files are allowed!', HttpStatus.BAD_REQUEST), false);
-    }
-    callback(null, true);
-};
-export const csvFileFilter = (req, file, callback) => {
-    if (!file.originalname.match(/\.(csv)$/)) {
-        return callback(new HttpException('Only csv files are allowed!', HttpStatus.BAD_REQUEST), false);
-    }
-    callback(null, true);
-};
-
 export const documentFileFilter = (req, file, callback) => {
     if (!file.originalname.match(/\.(jpg|jpeg|png|gif|pdf|doc|docx|xls|xlsx|csv)$/)) {
         return callback(new HttpException('Unsupported document type!', HttpStatus.BAD_REQUEST), false);
     }
     callback(null, true);
-};
-
-export const getIssueAttachmentDestination = (req, file, callback) => {
-    const path = process.cwd() + `/uploads/issue-attachments/`;
-    if (!fs.existsSync(path)) {
-        fs.mkdirSync(path);
-    }
-    callback(null, `./uploads/issue-attachments`);
-};
-
-export const getVaccineCardDestination = (req, file, callback) => {
-    const path = process.cwd() + `/uploads/vaccine-card/`;
-    if (!fs.existsSync(path)) {
-        fs.mkdirSync(path);
-    }
-    callback(null, `./uploads/vaccine-card`);
 };
 
 export const getAssessmentUploadsDestination = (req, file, callback) => {
@@ -93,11 +63,6 @@ export const editOriginalFileName = (req, file, callback) => {
 export const editFileNameForCsvImport = (req, file, callback) => {
     const fileExtName = extname(file.originalname);
     callback(null, `import-${getCurrentTimeStampString()}${fileExtName}`);
-};
-
-export const getDataFromFile = async (path: string, fileName: string) => {
-    const data = await csv().fromFile(`${path}/${fileName}`);
-    return data;
 };
 
 export const getProjectZipFileDestination = (req, file, callback) => {

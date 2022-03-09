@@ -1,3 +1,3 @@
-import { generalFeatures, superAdminFeatures, scscoopFeatures } from '.';
+import { generalFeatures, superAdminFeatures } from '.';
 
-export const featureProduction = [...superAdminFeatures, ...generalFeatures, ...scscoopFeatures];
+export const featureProduction = [...superAdminFeatures, ...generalFeatures];

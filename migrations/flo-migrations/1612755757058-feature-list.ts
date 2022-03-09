@@ -1,11 +1,11 @@
 import FeatureModel from 'migrations/feature-migrate/schemas/feature.schema';
-import { generalFeatures, scscoopFeatures, superAdminFeatures } from 'migrations/feature-migrate/data';
+import { generalFeatures, superAdminFeatures } from 'migrations/feature-migrate/data';
 import { featureProduction } from 'migrations/feature-migrate/data/index.prod';
 import { consoleLogWrapper } from 'migrations/helper-func';
 
 async function up() {
     try {
-        const featuresLocal = [...superAdminFeatures, ...generalFeatures, scscoopFeatures];
+        const featuresLocal = [...superAdminFeatures, ...generalFeatures];
         const features = process.env.ENVIRONMENT === 'prod' ? featureProduction : featuresLocal;
         if (!(await FeatureModel.find()).length) {
             for (const feature of features) {
