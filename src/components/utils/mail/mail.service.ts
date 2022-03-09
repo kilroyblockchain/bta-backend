@@ -20,7 +20,7 @@ export class MailService {
                 to: to,
                 from: process.env.EMAIL,
                 subject: subject,
-                template: './rootmail',
+                template: __dirname + './rootmail',
                 headers: { 'Content-Type': 'text/html; charset="UTF-8"' },
                 context: {
                     // Data to be sent to template engine
