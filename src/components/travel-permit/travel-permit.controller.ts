@@ -1,8 +1,6 @@
 import { TRAVEL_PERMIT_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { TravelPermitDto } from './dto/travel-permit.dto';
-import { Roles } from 'src/components/auth/decorators/roles.decorator';
-import { Feature } from 'src/components/auth/decorators/feature.decorator';
-import { Permission } from 'src/components/auth/decorators/permission.decorator';
+import { Roles, Feature, Permission } from 'src/components/auth/decorators';
 import { ACCESS_TYPE } from 'src/@core/constants/accessType.enum';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';

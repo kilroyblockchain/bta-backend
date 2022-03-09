@@ -5,7 +5,7 @@ import { Request } from 'express';
 import { Response } from 'src/@core/response';
 import { ROLE } from 'src/@core/constants';
 import { USER_CONSTANT } from 'src/@core/constants/api-error-constants';
-import { Roles } from 'src/components/auth/decorators/roles.decorator';
+import { Roles } from 'src/components/auth/decorators';
 import { UpdateUserRejectInformationDto } from './dto/update-user-reject-information.dto';
 import { UserRejectInformationResponseDto } from './dto/user-reject-info.dto';
 import { UserRejectInfoService } from './user-reject-info.service';

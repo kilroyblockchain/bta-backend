@@ -5,7 +5,7 @@ import { ApiBearerAuth, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '
 import { diskStorage } from 'multer';
 import { ROLE } from 'src/@core/constants';
 import { documentFileFilter, editFileName, getAssessmentUploadsDestination, getTraineeAssessmentUploadsDestination, imageFileFilter } from 'src/@core/utils/file-upload.utils';
-import { Roles } from 'src/components/auth/decorators/roles.decorator';
+import { Roles } from 'src/components/auth/decorators';
 import { RolesGuard } from 'src/components/auth/guards/roles.guard';
 
 @Controller('files')

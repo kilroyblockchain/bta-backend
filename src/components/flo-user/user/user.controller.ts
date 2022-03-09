@@ -3,12 +3,11 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RegisterUserDto } from './dto/register-user.dto';
-import { Roles } from 'src/components/auth/decorators/roles.decorator';
+import { Roles, Permission, Feature } from 'src/components/auth/decorators';
 import { Request, Response as ExpressResponse } from 'express';
 import { LoginUserDto } from './dto/login-user.dto';
 import { Controller, Get, Post, Body, UseGuards, Req, HttpCode, HttpStatus, Put, Delete, UploadedFile, UseInterceptors, Param, BadRequestException, Res } from '@nestjs/common';
 import { UserService } from './user.service';
-import { AuthGuard } from '@nestjs/passport';
 import { RefreshAccessTokenDto } from './dto/refresh-access-token.dto';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags, ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RolesGuard } from 'src/components/auth/guards/roles.guard';
@@ -23,9 +22,7 @@ import { CaseyResponse } from './interfaces/response.interface';
 import { editFileName, imageFileFilter } from 'src/@core/utils/file-upload.utils';
 import { NewUserDto } from './dto/new-user.dto';
 import { PermissionGuard } from 'src/components/auth/guards/permission.guard';
-import { Permission } from 'src/components/auth/decorators/permission.decorator';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
-import { Feature } from 'src/components/auth/decorators/feature.decorator';
 import { Response } from 'src/@core/response';
 import { USER_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { AddSkillDto } from './dto/add-skill.dto';
@@ -41,7 +38,6 @@ import { RejectUserDto } from './dto/reject-user.dto';
 
 @ApiTags('User')
 @Controller('user')
-@UseGuards(RolesGuard)
 export class UserController {
     constructor(private readonly userService: UserService, private readonly userBcService: UserBcService, private authService: AuthService) {}
 
@@ -64,7 +60,7 @@ export class UserController {
     }
 
     @Put('update')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.PERSONAL_DETAIL)
     @Roles(ROLE.SUPER_ADMIN, ROLE.OTHER, ROLE.STAFF)
@@ -82,7 +78,7 @@ export class UserController {
     }
 
     @Put('add-extra-details')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, SubscriptionGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.PERSONAL_DETAIL)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -100,7 +96,7 @@ export class UserController {
     }
 
     @Put('extend-role')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, SubscriptionGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard)
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Add new role to extending user' })
     @ApiOkResponse({})
@@ -137,7 +133,7 @@ export class UserController {
     }
 
     @Get('data')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, BlockchainStatusGuard)
     @Permission(ACCESS_TYPE.READ)
     @Feature(FEATURE_IDENTIFIER.PERSONAL_DETAIL)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -154,7 +150,7 @@ export class UserController {
     }
 
     @Get('user-activity')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, BlockchainStatusGuard)
     @Permission(ACCESS_TYPE.READ)
     @Feature(FEATURE_IDENTIFIER.USER_ACTIVITY)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -171,7 +167,7 @@ export class UserController {
     }
 
     @Get('user-count')
-    @UseGuards(AuthGuard('jwt'), BlockchainStatusGuard)
+    @UseGuards(RolesGuard, BlockchainStatusGuard)
     @Roles(ROLE.SUPER_ADMIN)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'A private route for geting user detail' })
@@ -187,7 +183,7 @@ export class UserController {
     }
 
     @Get('data/:id')
-    @UseGuards(AuthGuard('jwt'), BlockchainStatusGuard)
+    @UseGuards(RolesGuard, BlockchainStatusGuard)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'A private route for geting user detail' })
@@ -202,7 +198,7 @@ export class UserController {
     }
 
     @Post('reject')
-    @UseGuards(AuthGuard('jwt'))
+    @UseGuards(RolesGuard)
     @Roles(ROLE.SUPER_ADMIN)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Reject User by super-admin' })
@@ -217,7 +213,7 @@ export class UserController {
     }
 
     @Put('data')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard)
+    @UseGuards(RolesGuard, PermissionGuard)
     @Permission(ACCESS_TYPE.DELETE)
     @Feature(FEATURE_IDENTIFIER.MANAGE_ALL_USER)
     @Roles(ROLE.SUPER_ADMIN)
@@ -234,7 +230,7 @@ export class UserController {
     }
 
     @Get('all')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, SubscriptionGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard)
     @Permission(ACCESS_TYPE.READ)
     @Feature(FEATURE_IDENTIFIER.MANAGE_ALL_USER)
     @Roles(ROLE.SUPER_ADMIN)
@@ -288,7 +284,7 @@ export class UserController {
     }
 
     @Put('change-password')
-    @UseGuards(AuthGuard('jwt'), BlockchainStatusGuard)
+    @UseGuards(RolesGuard, BlockchainStatusGuard)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
@@ -320,7 +316,7 @@ export class UserController {
     }
 
     @Put('verify')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, BlockchainStatusGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.MANAGE_ALL_USER)
     @Roles(ROLE.SUPER_ADMIN)
@@ -346,7 +342,7 @@ export class UserController {
     }
 
     @Put('add-subscription')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, BlockchainStatusGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.MANAGE_ALL_USER)
     @Roles(ROLE.SUPER_ADMIN)
@@ -363,7 +359,7 @@ export class UserController {
     }
 
     @Put('add-company')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.ORGANIZATION_USER)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF)
@@ -394,7 +390,7 @@ export class UserController {
     }
 
     @Get('subscriptionType')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard)
+    @UseGuards(RolesGuard, PermissionGuard)
     @Permission(ACCESS_TYPE.READ)
     @Roles(ROLE.SUPER_ADMIN)
     @ApiBearerAuth()
@@ -417,7 +413,7 @@ export class UserController {
     }
 
     @Post('create/:subscription')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
     @Permission(ACCESS_TYPE.WRITE)
     @Feature(FEATURE_IDENTIFIER.ORGANIZATION_USER)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -434,7 +430,7 @@ export class UserController {
     }
 
     @Get('organization-user/all')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
     @Permission(ACCESS_TYPE.READ)
     @Feature(FEATURE_IDENTIFIER.ORGANIZATION_USER, FEATURE_IDENTIFIER.EMAIL_RECIPIENT)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -451,7 +447,7 @@ export class UserController {
     }
 
     @Put('organization-user/verify')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.ORGANIZATION_USER)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -468,7 +464,7 @@ export class UserController {
     }
 
     @Put('organization-user/enable')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, SubscriptionGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.ORGANIZATION_USER)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -489,7 +485,7 @@ export class UserController {
     }
 
     @Delete('organization-user/:userId')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, SubscriptionGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard)
     @Permission(ACCESS_TYPE.DELETE)
     @Feature(FEATURE_IDENTIFIER.ORGANIZATION_USER)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -506,7 +502,7 @@ export class UserController {
     }
 
     @Delete('organization-user/:staffingId/:userId')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard)
+    @UseGuards(RolesGuard, PermissionGuard)
     @Permission(ACCESS_TYPE.DELETE)
     @Feature(FEATURE_IDENTIFIER.ORGANIZATION_USER)
     @Roles(ROLE.OTHER, ROLE.SUPER_ADMIN, ROLE.STAFF)
@@ -524,7 +520,7 @@ export class UserController {
     }
 
     @Put('organization-user/:userId')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.ORGANIZATION_USER)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -541,7 +537,7 @@ export class UserController {
     }
 
     @Put('organization-user')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.ORGANIZATION_USER)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF)
@@ -560,7 +556,7 @@ export class UserController {
     }
 
     @Get('email')
-    @UseGuards(AuthGuard('jwt'))
+    @UseGuards(RolesGuard)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
@@ -587,7 +583,7 @@ export class UserController {
     }
 
     @Put('change-default')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard)
+    @UseGuards(RolesGuard, PermissionGuard)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF)
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
@@ -602,7 +598,7 @@ export class UserController {
     }
 
     @Put('add-skill')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, BlockchainStatusGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.PERSONAL_DETAIL)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -620,7 +616,7 @@ export class UserController {
     }
 
     @Put('add-language')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, BlockchainStatusGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.PERSONAL_DETAIL)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -638,7 +634,7 @@ export class UserController {
     }
 
     @Post('registerBcIdentity')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, BlockchainStatusGuard)
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Register user to blockchain' })
     @ApiCreatedResponse({})
@@ -660,7 +656,7 @@ export class UserController {
     }
 
     @Put('unblock-user/:id')
-    @UseGuards(AuthGuard('jwt'), BlockchainStatusGuard)
+    @UseGuards(RolesGuard, BlockchainStatusGuard)
     @Roles(ROLE.SUPER_ADMIN)
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)

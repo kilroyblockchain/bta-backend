@@ -1,8 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CHANNEL_DETAIL } from 'src/@core/constants/bc-constants/channel-detail.constant';
-import { Permission } from 'src/components/auth/decorators/permission.decorator';
-import { Roles } from 'src/components/auth/decorators/roles.decorator';
+import { Permission, Roles } from 'src/components/auth/decorators';
 import { ChannelDetailDto } from './dto/channel-detail.dto';
 import { Response } from 'src/@core/response';
 import { ChannelDetailService } from './channel-detail.service';

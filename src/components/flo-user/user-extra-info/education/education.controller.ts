@@ -7,10 +7,9 @@ import { EducationService } from './education.service';
 import { Response } from 'src/@core/response';
 import { EDUCATION_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER } from 'src/@core/constants';
-import { Feature } from 'src/components/auth/decorators/feature.decorator';
+import { Feature, Permission } from 'src/components/auth/decorators';
 import { BlockchainStatusGuard } from 'src/components/auth/guards/blockhainStatus.guard';
 import { PermissionGuard } from 'src/components/auth/guards/permission.guard';
-import { Permission } from 'src/components/auth/decorators/permission.decorator';
 import { BC_SUCCESS_RESPONSE } from 'src/@core/constants/bc-constants/bc-success-response.constants';
 
 @ApiTags('Education')
