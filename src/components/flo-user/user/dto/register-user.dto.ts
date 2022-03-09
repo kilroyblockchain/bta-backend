@@ -108,14 +108,6 @@ export class RegisterUserDto {
     readonly zipCode: string;
 
     @ApiProperty({
-        example: 'Developer',
-        description: 'The job title of the User',
-        format: 'string'
-    })
-    @IsString()
-    readonly jobTitle: string;
-
-    @ApiProperty({
         example: 'P@ssw0rd',
         description: 'The password of the User',
         format: 'string'

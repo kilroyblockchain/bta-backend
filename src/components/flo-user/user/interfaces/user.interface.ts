@@ -23,13 +23,6 @@ export interface IUser extends Document {
     resetLink?: string;
     autoPassword?: boolean;
     reCaptchaToken?: string;
-    userId?: string;
-    birthDate?: Date;
-    skill?: Array<string>;
-    language?: Array<string>;
-    education?: Array<string>;
-    experience?: Array<string>;
-    sponsorOrganizationName?: string;
 }
 
 export interface ICompany {

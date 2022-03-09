@@ -16,7 +16,6 @@ import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { AddCompanyDto } from './dto/add-company.dto';
-import { AddBirthDateDto } from './dto/add-birthdate.dto';
 import { SetDefaultCompanyDto } from './dto/set-default-company.dto';
 import { CaseyResponse } from './interfaces/response.interface';
 import { editFileName, imageFileFilter } from 'src/@core/utils/file-upload.utils';
@@ -25,8 +24,6 @@ import { PermissionGuard } from 'src/components/auth/guards/permission.guard';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
 import { Response } from 'src/@core/response';
 import { USER_CONSTANT } from 'src/@core/constants/api-error-constants';
-import { AddSkillDto } from './dto/add-skill.dto';
-import { AddLanguageDto } from './dto/add-language.dto';
 import { UserBcService } from './user-bc.service';
 import { BC_SUCCESS_RESPONSE } from 'src/@core/constants/bc-constants/bc-success-response.constants';
 import { AuthService } from 'src/components/auth/auth.service';
@@ -75,24 +72,6 @@ export class UserController {
     @ApiCreatedResponse({})
     async updatePersonalDetails(@Req() req: Request, @Body() updateUserDto: UpdateUserDto) {
         return await this.userService.updatePersonalDetails(updateUserDto, req);
-    }
-
-    @Put('add-extra-details')
-    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard)
-    @Permission(ACCESS_TYPE.UPDATE)
-    @Feature(FEATURE_IDENTIFIER.PERSONAL_DETAIL)
-    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Add Birthdate' })
-    @ApiHeader({
-        name: 'Bearer',
-        description: 'the token we need for auth.'
-    })
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Add BirthDate' })
-    @ApiCreatedResponse({})
-    async addBirthDate(@Body() birthDateDto: AddBirthDateDto) {
-        return await this.userService.addBirthDate(birthDateDto);
     }
 
     @Put('extend-role')
@@ -575,13 +554,6 @@ export class UserController {
         return false;
     }
 
-    @Get('verify-tracer/:userId')
-    @ApiOperation({ summary: 'Get User Detail from sequenceId' })
-    @HttpCode(HttpStatus.OK)
-    async getAdminDetails(@Param('userId') userId: string) {
-        return new Response(true, [USER_CONSTANT.USER_DETAIL_FOUND]).setSuccessData(await this.userService.getUserBySequence(userId)).setStatus(HttpStatus.OK);
-    }
-
     @Put('change-default')
     @UseGuards(RolesGuard, PermissionGuard)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF)
@@ -595,42 +567,6 @@ export class UserController {
     @ApiOkResponse({})
     async changeDefaultCompany(@Body() updateUserDto: SetDefaultCompanyDto, @Req() req: Request, @Res({ passthrough: true }) res: ExpressResponse) {
         return new Response(true, [USER_CONSTANT.USER_DETAIL_FOUND]).setSuccessData(await this.userService.setDefaultCompany(updateUserDto, req, res)).setStatus(HttpStatus.OK);
-    }
-
-    @Put('add-skill')
-    @UseGuards(RolesGuard, PermissionGuard, BlockchainStatusGuard)
-    @Permission(ACCESS_TYPE.UPDATE)
-    @Feature(FEATURE_IDENTIFIER.PERSONAL_DETAIL)
-    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Add Skill' })
-    @ApiHeader({
-        name: 'Bearer',
-        description: 'the token we need for auth.'
-    })
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Add Skill' })
-    @ApiCreatedResponse({})
-    async addSkill(@Body() skillDto: AddSkillDto, @Req() req: Request) {
-        return await this.userService.addSkill(skillDto, req);
-    }
-
-    @Put('add-language')
-    @UseGuards(RolesGuard, PermissionGuard, BlockchainStatusGuard)
-    @Permission(ACCESS_TYPE.UPDATE)
-    @Feature(FEATURE_IDENTIFIER.PERSONAL_DETAIL)
-    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Add Language' })
-    @ApiHeader({
-        name: 'Bearer',
-        description: 'the token we need for auth.'
-    })
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Add Language' })
-    @ApiCreatedResponse({})
-    async addLanguage(@Body() languageDto: AddLanguageDto, @Req() req: Request) {
-        return await this.userService.addLanguage(languageDto, req);
     }
 
     @Post('registerBcIdentity')

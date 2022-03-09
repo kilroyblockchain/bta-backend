@@ -46,9 +46,6 @@ export const UserSchema = new mongoose.Schema(
         zipCode: {
             type: String
         },
-        userId: {
-            type: String
-        },
         birthDate: {
             type: Date,
             required: false
@@ -137,34 +134,6 @@ export const UserSchema = new mongoose.Schema(
         autoPassword: {
             type: Boolean,
             default: true
-        },
-        skill: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'skill'
-            }
-        ],
-        language: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'language'
-            }
-        ],
-        education: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'education'
-            }
-        ],
-        experience: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'experience'
-            }
-        ],
-        sponsorOrganizationName: {
-            type: String,
-            required: false
         }
     },
     {

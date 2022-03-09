@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException, ConflictException, Inject, forwardRef, ForbiddenException, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ConflictException, ForbiddenException, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PaginateModel, PaginateResult } from 'mongoose';
 import { Request, Response } from 'express';
@@ -18,39 +18,25 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { NewUserDto } from './dto/new-user.dto';
-import { CreateUserByTransferDto } from './dto/create-user-transferid.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
-import { CreateUserSequenceDto } from './dto/new-user-sequence.dto';
 import { AddCompanyDto } from './dto/add-company.dto';
-import { AddBirthDateDto } from './dto/add-birthdate.dto';
 import { SetDefaultCompanyDto } from './dto/set-default-company.dto';
-import { AddSkillDto } from './dto/add-skill.dto';
-import { AddLanguageDto } from './dto/add-language.dto';
 import { OrganizationService } from '../organization/organization.service';
 import { AuthService } from 'src/components/auth/auth.service';
 import { MailService } from 'src/components/utils/mail/mail.service';
-import { CompanyTransferService } from '../company-transfer/company-transfer.service';
 import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 import { VerificationService } from '../verification/verification.service';
 import { OrganizationStaffingService } from '../user-roles/organization-staffing/organization-staffing.service';
 import { ICompany, IUser, ILoginCount } from './interfaces/user.interface';
 import { Err } from 'src/@core/interfaces/error.interface';
 import { IUserData } from './interfaces/response.interface';
-import { IReportIssue } from '../report-issue/interfaces/report-issue.interface';
 import { Organization } from '../organization/interfaces/organization.interface';
-import { IUserSequence } from './interfaces/user-sequence.interface';
 import * as util from 'util';
 import { UserBcService } from './user-bc.service';
-import { AddEducationDto } from './dto/add-education.dto';
-import { AddExperienceDto } from './dto/add-experience.dto';
-import { RemoveExperienceDto } from './dto/remove-experience.dto';
-import { RemoveEducationDto } from './dto/remove-education.dto';
 import { BC_STATUS } from 'src/@core/constants/bc-status.enum';
 import { getArraysComplement, getClientTimezoneId, getHourMinuteDiff } from 'src/@core/utils/common.utils';
 import { BC_PAYLOAD } from 'src/@core/constants/bc-constants/bc-payload.constant';
 import { fullSubscriptionType } from '../subscription-type/subscription-type.constant';
-import { ExperienceBcService } from '../user-extra-info/experience/experience-bc.service';
-import { EducationBcService } from '../user-extra-info/education/education-bc.service';
 import { getSearchFilterWithRegexAll } from 'src/@core/utils/query-filter.utils';
 import { getFinalPaginationResult, populateField } from 'src/@core/utils/aggregate-paginate.utils';
 import { BcUserDto } from 'src/@core/common/bc-user.dto';
@@ -73,10 +59,6 @@ export class UserService {
     constructor(
         @InjectModel('User') private readonly uModel: PaginateModel<IUser>,
         @InjectModel('User') private readonly UserModel: Model<IUser>,
-        @InjectModel('userSequence')
-        private readonly UserSequenceModel: Model<IUserSequence>,
-        @Inject(forwardRef(() => CompanyTransferService))
-        private readonly companyTransferService: CompanyTransferService,
         @InjectModel('RefreshToken')
         private readonly RefreshTokenModel: PaginateModel<RefreshToken>,
         private readonly organizationService: OrganizationService,
@@ -86,8 +68,6 @@ export class UserService {
         private readonly userBcService: UserBcService,
         private readonly verificationService: VerificationService,
         private readonly staffingService: OrganizationStaffingService,
-        private readonly experienceBcService: ExperienceBcService,
-        private readonly educationBcService: EducationBcService,
         private readonly caService: CaService,
         private readonly userRejectInfoService: UserRejectInfoService
     ) {
@@ -104,36 +84,16 @@ export class UserService {
         const isOrganizationNameUnique = await this.organizationService.isOrganizationNameUnique(registerUserDto.companyName);
         let organizationData;
         const randomPassword = Math.random().toString(36).slice(-8);
-        if (registerUserDto.subscriptionType === 'vaccination-appointment' && !isOrganizationNameUnique) {
-            organizationData = await this.organizationService.getOrganizationByName(registerUserDto.companyName);
-        } else {
-            if (!isOrganizationNameUnique) throw new BadRequestException([COMMON_ERROR.COMPANYNAME_HAS_ALREADY_BEEN_REGISTERED, registerUserDto.companyName]);
-            const orgData = await this.organizationService.buildEmptyOrganizaton(registerUserDto);
-            const organization = await this.organizationService.createOrganization(req, logoName, orgData);
-            organizationData = await organization.save();
-            // if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-            //     const orgAdmin = process.env.CA_ADMIN_ID;
-            //     await this.organizationBcService.storeOrganizationBC(organizationData, orgAdmin, BC_PAYLOAD.CREATE_ORGANIZATION);
-            // }
-        }
+        organizationData = await this.organizationService.getOrganizationByName(registerUserDto.companyName);
+        if (!isOrganizationNameUnique) throw new BadRequestException([COMMON_ERROR.COMPANYNAME_HAS_ALREADY_BEEN_REGISTERED, registerUserDto.companyName]);
+        const orgData = await this.organizationService.buildEmptyOrganizaton(registerUserDto);
+        const organization = await this.organizationService.createOrganization(req, logoName, orgData);
+        organizationData = await organization.save();
 
         this.setRegistrationInfo(user);
         user.company = [this.initUserCompany(organizationData, registerUserDto, true, false, true)];
         user.password = randomPassword;
-        const seqDetail = await this.getNextSequence(organizationData._id);
-        user.userId = `${seqDetail.organizationCode}A${seqDetail.currentSeq}`;
         await user.save();
-        await this.updateSequence(seqDetail);
-        if (registerUserDto.subscriptionType === 'vaccination-appointment') {
-            const subcriptionTypeFull = await this.subsTypeService.getFullSubscription(registerUserDto.subscriptionType);
-            await this.mailService.sendMail(user.email, EMAIL_CONSTANTS.FLO, EMAIL_CONSTANTS.TITLE_WELCOME, config.MAIL_TYPES.SUBSCRIBER_EMAIL, {
-                user: user,
-                subscriptionType: subcriptionTypeFull,
-                email: user.email,
-                password: randomPassword,
-                clientAppURL: process.env.CLIENT_APP_URL
-            });
-        }
         return this.buildRegistrationInfo(user);
     }
 
@@ -171,10 +131,7 @@ export class UserService {
         const isEmailUnique = await this.isEmailUnique(newUser.email);
         if (!isEmailUnique) throw new BadRequestException([USER_CONSTANT.USER_EMAIL_HAS_ALREADY_BEEN_REGISTERED, newUser.email]);
         newUser.company = [this.initUserCompany(organizationData, userDto, false, true)];
-        const seqDetail = await this.getNextSequence(organizationData._id);
-        newUser.userId = `${seqDetail.organizationCode}U${seqDetail.currentSeq}`;
         const user = await newUser.save();
-        await this.updateSequence(seqDetail);
         const userDetail: any = await this.uModel
             .findById(user._id)
             .populate({
@@ -237,15 +194,6 @@ export class UserService {
         throw new NotFoundException(USER_CONSTANT.USER_NOT_FOUND);
     }
 
-    async addBirthDate(birthDateDto: AddBirthDateDto): Promise<IUser> {
-        const user = await this.findVerifiedUserByEmail(birthDateDto.email);
-        if (user) {
-            user.birthDate = new Date(birthDateDto.birthDate);
-            return await user.save();
-        }
-        throw new NotFoundException(USER_CONSTANT.USER_NOT_FOUND);
-    }
-
     async addNewRole(req: Request): Promise<IUser> {
         const { newRole } = req.query;
         const defaultCompany: ICompany = req['user'].company.find((defaultComp) => defaultComp.default);
@@ -281,9 +229,6 @@ export class UserService {
                 updatingUser.city = updateUserDto.city;
                 updatingUser.address = updateUserDto.address;
                 updatingUser.zipCode = updateUserDto.zipCode;
-                if (updateUserDto.sponsorOrganizationName) {
-                    updatingUser.sponsorOrganizationName = updateUserDto.sponsorOrganizationName;
-                }
                 await updatingUser.save();
                 if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
                     const updatedUser = await this.uModel.findOne({ _id: userId });
@@ -631,11 +576,7 @@ export class UserService {
                 companyName: organizationData.companyName,
                 companyId: organizationData._id,
                 staffingId: defaultCompany.staffingId,
-                company: user.company,
-                skill: user.skill,
-                language: user.language,
-                education: user.education,
-                experience: user.experience
+                company: user.company
             };
             return userData;
         }
@@ -652,7 +593,6 @@ export class UserService {
         await this.checkPassword(loginUserDto.password, user);
         await this.passwordsAreMatch(user);
 
-        // await user.populate([{ path: 'company.companyId ' }, { path: 'company.staffingId', populate: { path: 'featureAndAccess.featureId', strictPopulate: false } }]);
         await user.populate({
             path: 'company.staffingId',
             populate: { path: 'featureAndAccess.featureId', justOne: false }
@@ -730,10 +670,6 @@ export class UserService {
             companyId: organizationData._id,
             staffingId: newStaffing,
             company: updatedUser.company,
-            skill: user.skill,
-            language: user.language,
-            education: user.education,
-            experience: user.experience,
             accessToken: await this.authService.createAccessToken(user._id)
         };
         return userData;
@@ -1232,10 +1168,6 @@ export class UserService {
                         const bcUserDto = new BcUserDto();
                         bcUserDto.loggedInUserId = req['user']._id;
                         bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                        const data = await Promise.all([this.experienceBcService.getBlockchainVerifiedList(user.experience, bcUserDto), this.educationBcService.getBlockchainVerifiedList(user.education, bcUserDto)]);
-                        const experience = data[0];
-                        const education = data[1];
-                        user = { ...user, experience, education };
                         bcVerified = await this.userBcService.getBlockchainVerifiedUser(user, bcUserDto);
                     }
                 }
@@ -1528,52 +1460,6 @@ export class UserService {
         return await this.UserModel.updateMany({ companyID: companyID }, { verified: false, isAdmin: false });
     }
 
-    async createUserByTransferToken(req: Request, createUserByTransferDto: CreateUserByTransferDto) {
-        const captchaValidation: any = await this.validateUserRecaptcha(req, createUserByTransferDto.reCaptchaToken);
-        if (!captchaValidation) throw new BadRequestException(USER_CONSTANT.PLEASE_VERIFY_THAT_YOU_ARE_A_HUMAN);
-        const transferData = await this.validateTransferToken(createUserByTransferDto.transferToken);
-        const { email, subscriptionType } = <IReportIssue>transferData.issue;
-        const { _id: companyID } = <Organization>transferData.company;
-        const user = {
-            email,
-            ...createUserByTransferDto,
-            company: [
-                {
-                    companyId: companyID,
-                    subscriptionType,
-                    verified: false,
-                    default: true,
-                    isAdmin: subscriptionType === 'vaccination-appointment' ? false : true
-                }
-            ]
-        };
-        const newUser = new this.UserModel(user);
-        const isEmailUnique = await this.isEmailUnique(user.email);
-        if (!isEmailUnique) throw new BadRequestException([USER_CONSTANT.USER_EMAIL_HAS_ALREADY_BEEN_REGISTERED, user.email]);
-
-        this.setRegistrationInfo(newUser);
-        const savedUser = await newUser.save();
-        if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-            const bcUserDto = new BcUserDto();
-            bcUserDto.loggedInUserId = req['user']._id;
-            bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-            bcUserDto.enrollmentId = savedUser._id;
-            bcUserDto.enrollmentSecret = newUser.password;
-            await this.caService.userRegistration(bcUserDto, null);
-        }
-        await this.companyTransferService.useTransferToken(transferData._id);
-        return this.buildRegistrationInfo(newUser);
-    }
-
-    async validateTransferToken(transferToken: string) {
-        const transferData = await this.companyTransferService.getTransferDataByToken(transferToken);
-        if (transferData) {
-            return transferData;
-        } else {
-            throw new NotFoundException(USER_CONSTANT.TRANSFER_TOKEN_EXIPRED_OR_INVALID);
-        }
-    }
-
     async addSubscriptionType(subscriptionTypeDto: SubscriptionTypeDto, req: Request) {
         let newSubscription = [];
         let removedSubscription = [];
@@ -1644,7 +1530,6 @@ export class UserService {
     async addCompanyToUser(addCompanyDto: AddCompanyDto, req: Request) {
         const loginUserDefaultCompany = this.authService.getDefaultCompany(req);
         const user = await this.UserModel.findById(addCompanyDto.userId);
-        user.sponsorOrganizationName = addCompanyDto.sponsorOrganizationName;
         const companyName = (await this.organizationService.findOrganizationById(<string>loginUserDefaultCompany.companyId)).companyName;
         const userHasCompany = user.company.find((userCompany) => userCompany.companyId.toString() === loginUserDefaultCompany.companyId.toString() && userCompany.subscriptionType === (addCompanyDto.subscription ? addCompanyDto.subscription : loginUserDefaultCompany.subscriptionType));
         const staffingData = await this.staffingService.findNameFromArray(addCompanyDto.staffingId);
@@ -1828,46 +1713,6 @@ export class UserService {
         };
     }
 
-    async createUserSequence(createSequenceDto: CreateUserSequenceDto): Promise<IUserSequence> {
-        const newSequence = new this.UserSequenceModel(createSequenceDto);
-        return await newSequence.save();
-    }
-
-    async getNextSequence(id: string): Promise<IUserSequence> {
-        let seqDetail: IUserSequence;
-        seqDetail = await this.UserSequenceModel.findOne({ organizationId: id });
-        if (!seqDetail) {
-            const organization = await this.organizationService.findOrganizationById(id);
-            const acronym = this.authService.getCompanyAcronym(organization.companyName);
-            const orgCode = `${acronym}-${this.getRandomNumber()}`;
-            seqDetail = await this.createUserSequence({
-                organizationId: id,
-                organizationCode: orgCode,
-                currentSeq: 1,
-                incrementBy: 1
-            });
-        }
-        return seqDetail;
-    }
-
-    getRandomNumber(): number {
-        return Math.floor(Math.random() * 99);
-    }
-
-    async updateSequence(seqObj: IUserSequence): Promise<IUserSequence> {
-        const { _id, currentSeq, incrementBy } = seqObj;
-        await this.UserSequenceModel.updateOne({ _id }, { currentSeq: currentSeq + incrementBy }, { new: true }).exec();
-        return await this.UserSequenceModel.findById(_id);
-    }
-
-    async getUserBySequence(sequenceId: string): Promise<IUser> {
-        const userDetail = await this.uModel.findOne({ userId: sequenceId }).select('firstName lastName country jobTitle userId ').populate({ path: 'company.companyId', select: 'companyName' });
-        if (!userDetail) {
-            throw new NotFoundException(USER_CONSTANT.USER_NOT_FOUND);
-        }
-        return userDetail;
-    }
-
     getStaffingNameFromUserCompany(company: Array<ICompany>, loginUserCompanyId: string, verified: boolean) {
         const requiredCompany = company.find((com) => (<Organization>com.companyId)._id.toString() === loginUserCompanyId.toString());
         if (verified) {
@@ -1880,102 +1725,6 @@ export class UserService {
             .filter((trainingStaffing) => [].includes(trainingStaffing['_id'].toString()))
             .map((staff: any) => staff.staffingName)
             .join(', ');
-    }
-
-    async addSkill(skillDto: AddSkillDto, req: Request): Promise<any> {
-        const user = await this.findVerifiedUserByEmail(skillDto.email);
-        user.skill = skillDto.skill;
-        const savedUser = await user.save();
-        if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-            const bcUserDto = new BcUserDto();
-            bcUserDto.loggedInUserId = req['user']._id;
-            bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-            await this.userBcService.storeUserBc(savedUser, bcUserDto, BC_PAYLOAD.ADD_SKILL);
-        }
-        if (!savedUser) throw new BadRequestException(USER_CONSTANT.FAILED_TO_ADD_SKILLS);
-        return {
-            message: USER_CONSTANT.SUCCESSFULLY_ADDED_SKILLS,
-            data: await this.findUserWithPopulatedFields(savedUser._id, 'skill')
-        };
-    }
-
-    async addLanguage(languageDto: AddLanguageDto, req: Request): Promise<any> {
-        const user = await this.findVerifiedUserByEmail(languageDto.email);
-        user.language = languageDto.language;
-        const savedUser = await user.save();
-        if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-            const bcUserDto = new BcUserDto();
-            bcUserDto.loggedInUserId = req['user']._id;
-            bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-            await this.userBcService.storeUserBc(savedUser, bcUserDto, BC_PAYLOAD.ADD_LANGUAGE);
-        }
-        if (!savedUser) throw new BadRequestException(USER_CONSTANT.FAILED_TO_ADD_LANGUAGES);
-        return {
-            message: USER_CONSTANT.SUCCESSFULLY_ADDED_LANGUAGES,
-            data: await this.findUserWithPopulatedFields(savedUser._id, 'language')
-        };
-    }
-
-    async addEducation(educationDto: AddEducationDto, req: Request): Promise<any> {
-        const user = await this.findVerifiedUserByEmail(educationDto.email);
-        user.education = educationDto.education;
-        const savedUser = await user.save();
-        if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-            const bcUserDto = new BcUserDto();
-            bcUserDto.loggedInUserId = req['user']._id;
-            bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-            await this.userBcService.storeUserBc(savedUser, bcUserDto, BC_PAYLOAD.ADD_EDUCATION);
-        }
-        if (!savedUser) throw new BadRequestException(USER_CONSTANT.FAILED_TO_ADD_EDUCATION);
-        return await this.findUserWithPopulatedFields(savedUser._id, 'education');
-    }
-
-    async addExperience(experienceDto: AddExperienceDto, req: Request): Promise<any> {
-        const user = await this.findVerifiedUserByEmail(experienceDto.email);
-        user.experience = experienceDto.experience;
-        const savedUser = await user.save();
-        if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-            const bcUserDto = new BcUserDto();
-            bcUserDto.loggedInUserId = req['user']._id;
-            bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-            await this.userBcService.storeUserBc(savedUser, bcUserDto, BC_PAYLOAD.ADD_EXPERIENCE);
-        }
-        if (!savedUser) throw new BadRequestException(USER_CONSTANT.FAILED_TO_ADD_EXPERIENCE);
-        return await this.findUserWithPopulatedFields(savedUser._id, 'experience');
-    }
-
-    async removeEducation(educationDto: RemoveEducationDto, req: Request): Promise<any> {
-        const user = await this.findVerifiedUserByEmail(educationDto.email);
-        const userEducation = user.education;
-        const index = userEducation.indexOf(educationDto.educationId);
-        if (index > -1) userEducation.splice(index, 1);
-        user.education = userEducation;
-        const savedUser = await user.save();
-        if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-            const bcUserDto = new BcUserDto();
-            bcUserDto.loggedInUserId = req['user']._id;
-            bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-            await this.userBcService.storeUserBc(savedUser, bcUserDto, BC_PAYLOAD.REMOVE_EDUCATION);
-        }
-        if (!savedUser) throw new BadRequestException(USER_CONSTANT.FAILED_TO_REMOVE_EDUCATION);
-        return await this.findUserWithPopulatedFields(savedUser._id, 'education');
-    }
-
-    async removeExperience(experienceDto: RemoveExperienceDto, req: Request): Promise<any> {
-        const user = await this.findVerifiedUserByEmail(experienceDto.email);
-        const userExperience = user.experience;
-        const index = userExperience.indexOf(experienceDto.experienceId);
-        if (index > -1) userExperience.splice(index, 1);
-        user.experience = userExperience;
-        const savedUser = await user.save();
-        if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-            const bcUserDto = new BcUserDto();
-            bcUserDto.loggedInUserId = req['user']._id;
-            bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-            await this.userBcService.storeUserBc(savedUser, bcUserDto, BC_PAYLOAD.REMOVE_EXPERIENCE);
-        }
-        if (!savedUser) throw new BadRequestException(USER_CONSTANT.FAILED_TO_REMOVE_EXPERIENCE);
-        return await this.findUserWithPopulatedFields(savedUser._id, 'experience');
     }
 
     async findUserWithPopulatedFields(_id: string, populateField: string): Promise<IUser> {

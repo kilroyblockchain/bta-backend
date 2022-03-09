@@ -1,12 +1,6 @@
 import { UserRejectInfoModule } from './components/flo-user/user-reject-info/user-reject-info.module';
 import { ChannelDetailModule } from 'src/components/blockchain/channel-detail/channel-detail.module';
-import { LanguageModule } from './components/flo-user/user-extra-info/language/language.module';
-import { SkillModule } from './components/flo-user/user-extra-info/skill/skill.module';
-import { ExperienceModule } from './components/flo-user/user-extra-info/experience/experience.module';
-import { EducationModule } from './components/flo-user/user-extra-info/education/education.module';
 import { FilesModule } from './components/utils/files/files.module';
-import { CompanyTransferModule } from './components/flo-user/company-transfer/company-transfer.module';
-import { ReportIssueModule } from './components/flo-user/report-issue/report-issue.module';
 import { OrganizationStaffingModule } from './components/flo-user/user-roles/organization-staffing/organization-staffing.module';
 import { OrganizationUnitModule } from './components/flo-user/user-roles/organization-unit/organization-unit.module';
 import { FeatureModule } from './components/flo-user/features/features.module';
@@ -23,10 +17,6 @@ import rateLimit from 'express-rate-limit';
 import * as cookieParser from 'cookie-parser';
 import { UserModule } from './components/flo-user/user/user.module';
 import { OrganizationModule } from './components/flo-user/organization/organization.module';
-import { SuperAdminModule } from './components/super-admin/super-admin.module';
-import { CompanyBranchModule } from './components/shared/company-branch/company-branch.module';
-import { LeaveApplicationModule } from './components/leave-application/leave-application.module';
-import { TravelPermitModule } from './components/travel-permit/travel-permit.module';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -69,28 +59,7 @@ async function bootstrap() {
 
     const options = new DocumentBuilder().setTitle('FLO API').setDescription('API description').setVersion('1.0').build();
     const document = SwaggerModule.createDocument(app, options, {
-        include: [
-            UserModule,
-            OrganizationModule,
-            SuperAdminModule,
-            CountryModule,
-            SubscriptionTypeModule,
-            FeatureModule,
-            OrganizationUnitModule,
-            OrganizationStaffingModule,
-            ReportIssueModule,
-            CompanyTransferModule,
-            FilesModule,
-            EducationModule,
-            ExperienceModule,
-            SkillModule,
-            LanguageModule,
-            ChannelDetailModule,
-            UserRejectInfoModule,
-            CompanyBranchModule,
-            LeaveApplicationModule,
-            TravelPermitModule
-        ]
+        include: [UserModule, OrganizationModule, CountryModule, SubscriptionTypeModule, FeatureModule, OrganizationUnitModule, OrganizationStaffingModule, FilesModule, ChannelDetailModule, UserRejectInfoModule]
     });
     SwaggerModule.setup('api', app, document);
 

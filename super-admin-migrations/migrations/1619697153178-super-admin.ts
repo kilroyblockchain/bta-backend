@@ -11,13 +11,7 @@ import { admin, adminCompany } from 'super-admin-migrations/data/defaultUser';
  */
 async function up() {
     try {
-        // Create an admin User
         await createAdminUser();
-        // After creating user, create a disease
-        // Create a Blog
-        // await createBlogs();
-        // Create a Workflow Resources
-        // Create a Workflows
     } catch (err) {
         console.error(err.message);
     }

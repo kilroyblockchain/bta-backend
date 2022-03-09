@@ -3,12 +3,6 @@ import { IsEmail, IsNotEmpty, IsString, IsArray, IsOptional } from 'class-valida
 
 export class NewUserDto {
     @ApiProperty({
-        example: 'ABC Charity Organization'
-    })
-    @IsOptional()
-    readonly sponsorOrganizationName: string;
-
-    @ApiProperty({
         example: 'Bhagat',
         description: 'First Name'
     })
