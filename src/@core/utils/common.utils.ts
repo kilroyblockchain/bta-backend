@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { Request } from 'express';
 import * as CryptoJS from 'crypto-js';
 
-const ENCRYPT_SECRET_KEY = process.env.TRIAND_SECRET_KEY;
+const ENCRYPT_SECRET_KEY = process.env.ENCRYPT_SECRET_KEY;
 
 export const getHourMinuteDiff = (futureDate: Date, earlyDate = new Date()) => {
     const date = new Date(futureDate);
