@@ -1,18 +1,5 @@
 import { Schema } from 'mongoose';
 
-const OrganizationVaccineSchema = new Schema({
-    disease: {
-        type: Schema.Types.ObjectId,
-        ref: 'Disease'
-    },
-    availableVaccines: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: 'vaccination'
-        }
-    ]
-});
-
 export const OrganizationSchema = new Schema(
     {
         companyName: {
@@ -52,14 +39,6 @@ export const OrganizationSchema = new Schema(
             type: String,
             required: false
         },
-        contributionForApp: {
-            type: String,
-            required: false
-        },
-        helpNeededFromApp: {
-            type: String,
-            required: false
-        },
         isDeleted: {
             type: Boolean,
             required: false,
@@ -81,10 +60,7 @@ export const OrganizationSchema = new Schema(
                     required: true
                 }
             }
-        ],
-        vaccines: {
-            type: [OrganizationVaccineSchema]
-        }
+        ]
     },
     {
         versionKey: false,

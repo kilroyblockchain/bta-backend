@@ -67,20 +67,4 @@ export class UpdateOrganizationDto {
     })
     @IsString()
     readonly aboutOrganization: string;
-
-    @ApiProperty({
-        example: 'Long text',
-        description: 'Describe what your organization is looking to contribute at app network',
-        format: 'string'
-    })
-    @IsString()
-    readonly contributionForApp: string;
-
-    @ApiProperty({
-        example: 'Long text',
-        description: 'Describe what help you would like from the app network',
-        format: 'string'
-    })
-    @IsString()
-    readonly helpNeededFromApp: string;
 }

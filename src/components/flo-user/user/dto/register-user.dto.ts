@@ -189,22 +189,6 @@ export class RegisterUserDto {
     readonly aboutOrganization: string;
 
     @ApiProperty({
-        example: 'Long text',
-        description: 'Describe what your organization is looking to contribute at FLO network',
-        format: 'string'
-    })
-    @IsOptional()
-    readonly contributionForApp: string;
-
-    @ApiProperty({
-        example: 'Long text',
-        description: 'Describe what help you would like from the FLO network',
-        format: 'string'
-    })
-    @IsOptional()
-    readonly helpNeededFromApp: string;
-
-    @ApiProperty({
         example: 'reCaptcha token',
         description: 'Google reCaptcha verification code',
         format: 'string'
