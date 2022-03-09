@@ -595,7 +595,7 @@ export class UserService {
 
         await user.populate({
             path: 'company.staffingId',
-            populate: { path: 'featureAndAccess.featureId', justOne: false }
+            populate: { path: 'featureAndAccess.featureId', model: 'feature' }
         });
         let defaultCompany: ICompany = user.company.find((company) => company.default && company.verified && !company.isDeleted);
         await this.UserModel.updateMany({ _id: user._id, 'company.default': true }, { 'company.$[].default': false });
@@ -636,7 +636,7 @@ export class UserService {
                 }
             ).populate({
                 path: 'company.companyId company.staffingId',
-                populate: { path: 'featureAndAccess.featureId', justOne: false }
+                populate: { path: 'featureAndAccess.featureId', model: 'feature' }
             });
         }
         const organizationData: Organization = <Organization>defaultCompany.companyId;
