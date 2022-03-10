@@ -620,7 +620,7 @@ export class UserService {
                 }
             ).populate({
                 path: 'company.companyId company.staffingId',
-                populate: { path: 'featureAndAccess.featureId', justOne: false }
+                populate: { path: 'featureAndAccess.featureId', model: 'feature' }
             });
         } else {
             updatedUser = await this.UserModel.findOneAndUpdate(
