@@ -123,7 +123,7 @@ export class AuthService {
             })
             .populate({
                 path: 'company.staffingId',
-                populate: { path: 'featureAndAccess.featureId', strictPopulate: false }
+                populate: { path: 'featureAndAccess.featureId', model: 'feature' }
             });
         if (!user) {
             throw new UnauthorizedException('User not found.');
