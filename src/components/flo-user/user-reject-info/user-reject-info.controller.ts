@@ -2,13 +2,13 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Param, Put, Req, UseGuards
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiHeader, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
-import { Response } from 'src/@core/response';
 import { ROLE } from 'src/@core/constants';
 import { USER_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { Roles } from 'src/components/auth/decorators';
 import { UpdateUserRejectInformationDto } from './dto/update-user-reject-information.dto';
 import { UserRejectInformationResponseDto } from './dto/user-reject-info.dto';
 import { UserRejectInfoService } from './user-reject-info.service';
+import { Response as FLOResponse } from 'src/@core/response';
 
 @Controller('rejected-informations')
 @ApiTags('Api for Rejection Information')
@@ -24,14 +24,15 @@ export class UserRejectInfoController {
         description: 'the token we need for auth.'
     })
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get User rejected Informations' })
+    @ApiOperation({ summary: 'Get User rejected Information' })
     @ApiOkResponse({ type: UserRejectInformationResponseDto })
     @ApiResponse({
         status: HttpStatus.UNAUTHORIZED,
         description: 'Unauthorized.'
     })
-    async getRejectInformationsOfUser(@Req() req: Request, @Param('userId') rejectedUserId: string) {
-        return new Response(true, [USER_CONSTANT.SUCCESSFULLY_FETCHED_REJECTION_INFORMATION_OF_USER]).setSuccessData(await this.userRejectInfoService.getUserRejectionDetail(rejectedUserId, req)).setStatus(HttpStatus.OK);
+    async getRejectInformationOfUser(@Req() req: Request, @Param('userId') rejectedUserId: string): Promise<FLOResponse> {
+        const rejectionDetail = await this.userRejectInfoService.getUserRejectionDetail(rejectedUserId, req);
+        return new FLOResponse(true, [USER_CONSTANT.SUCCESSFULLY_FETCHED_REJECTION_INFORMATION_OF_USER]).setSuccessData(rejectionDetail).setStatus(HttpStatus.OK);
     }
 
     @Put(':rejectInfoId')
@@ -43,13 +44,14 @@ export class UserRejectInfoController {
         description: 'the token we need for auth.'
     })
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Update User rejected Informations' })
+    @ApiOperation({ summary: 'Update User rejected Information' })
     @ApiOkResponse({ type: UserRejectInformationResponseDto })
     @ApiResponse({
         status: HttpStatus.UNAUTHORIZED,
         description: 'Unauthorized.'
     })
-    async updateRejectInformationsOfUser(@Param('rejectInfoId') rejectedInfoId: string, @Body() updateRejectUserInformationDto: UpdateUserRejectInformationDto) {
-        return new Response(true, [USER_CONSTANT.SUCCESSFULLY_UPDATED_REJECTION_INFORMATION_OF_USER]).setSuccessData(await this.userRejectInfoService.updateUserRejectInformation(rejectedInfoId, updateRejectUserInformationDto)).setStatus(HttpStatus.OK);
+    async updateRejectInformationOfUser(@Param('rejectInfoId') rejectedInfoId: string, @Body() updateRejectUserInformationDto: UpdateUserRejectInformationDto): Promise<FLOResponse> {
+        const updatedRejection = await this.userRejectInfoService.updateUserRejectInformation(rejectedInfoId, updateRejectUserInformationDto);
+        return new FLOResponse(true, [USER_CONSTANT.SUCCESSFULLY_UPDATED_REJECTION_INFORMATION_OF_USER]).setSuccessData(updatedRejection).setStatus(HttpStatus.OK);
     }
 }

@@ -2,7 +2,7 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { HttpException, Injectable, HttpStatus, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Organization } from './interfaces/organization.interface';
+import { IOrganizationResponse, IOrganization, ICompanyDto, IOrganizationInit, ISubscription } from './interfaces/organization.interface';
 import { Request } from 'express';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { CountryService } from '../country/country.service';
@@ -17,12 +17,12 @@ import { ORGANIZATION_CONSTANT, USER_CONSTANT } from 'src/@core/constants/api-er
 export class OrganizationService {
     constructor(
         @InjectModel('Organization')
-        private readonly organizationModel: Model<Organization>,
+        private readonly organizationModel: Model<IOrganization>,
         private readonly countryService: CountryService,
         private readonly organizationBcService: OrganizationBcService
     ) {}
 
-    async create(req: Request, logoName: string, createOrganizationDto: CreateOrganizationDto): Promise<Organization | any> {
+    async create(req: Request, logoName: string, createOrganizationDto: CreateOrganizationDto): Promise<IOrganizationResponse> {
         const organization = new this.organizationModel(createOrganizationDto);
         try {
             organization.companyLogo = logoName;
@@ -43,7 +43,7 @@ export class OrganizationService {
         }
     }
 
-    async update(organizationId: string, logoName: string, updateOrganizationDto: UpdateOrganizationDto, req: Request) {
+    async update(organizationId: string, logoName: string, updateOrganizationDto: UpdateOrganizationDto, req: Request): Promise<IOrganization> {
         try {
             const currentOrganization = await this.organizationModel.findById(organizationId).exec();
             await currentOrganization.updateOne({
@@ -76,7 +76,7 @@ export class OrganizationService {
         return updatedOrg;
     }
 
-    async buildEmptyOrganizaton(registerData: any) {
+    buildEmptyOrganization(registerData: ICompanyDto): IOrganizationInit {
         return {
             companyName: registerData.companyName,
             country: registerData.companyCountry || null,
@@ -90,31 +90,31 @@ export class OrganizationService {
         };
     }
 
-    async createOrganization(req: Request, logoName: string, createOrganizationDto: CreateOrganizationDto): Promise<Organization | any> {
+    async createOrganization(req: Request, logoName: string, createOrganizationDto: CreateOrganizationDto): Promise<IOrganization> {
         const organization = new this.organizationModel(createOrganizationDto);
         organization.companyLogo = logoName;
         return organization;
     }
 
-    // Funtion that is used for all internal calls (No Blockchain Verified Needed)
-    async findOrganizationById(id: string) {
+    // Function that is used for all internal calls (No Blockchain Verified Needed)
+    async findOrganizationById(id: string): Promise<IOrganization> {
         return await this.organizationModel.findById(id).exec();
     }
 
-    // Funtion Created For Controller to show Blockchain Verified
-    async findOrganizationByIdBcVerified(id: string, req: Request) {
-        const orgDetail: any = await this.organizationModel.findById(id).exec();
+    // Function Created For Controller to show Blockchain Verified
+    async findOrganizationByIdBcVerified(id: string, req: Request): Promise<IOrganization> {
+        const orgDetail = await this.organizationModel.findById(id).exec();
         if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
             const bcUserDto = new BcUserDto();
             bcUserDto.loggedInUserId = req['user']._id;
             bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
             const blockchainVerified = await this.organizationBcService.getBlockchainVerified(orgDetail, bcUserDto);
-            return { ...orgDetail._doc, blockchainVerified };
+            return { ...orgDetail['_doc'], blockchainVerified };
         }
         return orgDetail;
     }
 
-    async isOrganizationNameUnique(name: string) {
+    async isOrganizationNameUnique(name: string): Promise<boolean> {
         const user = await this.organizationModel.findOne({ companyName: name });
         if (user) {
             return false;
@@ -122,18 +122,18 @@ export class OrganizationService {
         return true;
     }
 
-    async getOrganizationByName(name: string) {
+    async getOrganizationByName(name: string): Promise<IOrganization> {
         return await this.organizationModel.findOne({ companyName: name });
     }
 
-    async findAllOrganization(req: Request): Promise<any> {
-        const { ownOrganiationId } = req.query;
+    async findAllOrganization(req: Request): Promise<Array<IOrganization>> {
+        const { ownOrganizationId } = req.query;
         return await this.organizationModel.find({
-            _id: { $ne: ownOrganiationId }
+            _id: { $ne: ownOrganizationId }
         });
     }
 
-    async findAllOrganizationName(): Promise<any> {
+    async findAllOrganizationName(): Promise<Array<string>> {
         const orgNames = await this.organizationModel.find().select('companyName');
         const companyNames = [];
         orgNames.forEach((element) => {
@@ -142,7 +142,7 @@ export class OrganizationService {
         return companyNames;
     }
 
-    async updateOrganizationStatus(companyId: string, subscriptionType: string, status: boolean) {
+    async updateOrganizationStatus(companyId: string, subscriptionType: string, status: boolean): Promise<void> {
         await this.organizationModel.updateOne(
             { _id: companyId, 'subscription.type': subscriptionType },
             {
@@ -154,7 +154,7 @@ export class OrganizationService {
         );
     }
 
-    async addNonexistingSubscription(companyId: string, subscriptionType: string) {
+    async addNonexistingSubscription(companyId: string, subscriptionType: string): Promise<void> {
         const key = Object.keys(ROLE).find((key) => ROLE[key] === subscriptionType);
         const company = await this.organizationModel.findById(companyId);
         if (company) {
@@ -177,7 +177,7 @@ export class OrganizationService {
         }
     }
 
-    async addSubscription(companyId: string, subscriptionType: Array<string>) {
+    async addSubscription(companyId: string, subscriptionType: Array<string>): Promise<void> {
         let newSubscription = [];
         let removedSubscription = [];
         const company = await this.organizationModel.findById(companyId);
@@ -207,7 +207,7 @@ export class OrganizationService {
                                 status: true,
                                 type: subscriptionType
                             };
-                        }) as any
+                        }) as Array<ISubscription>
                     }
                 },
                 {
@@ -218,7 +218,7 @@ export class OrganizationService {
         }
     }
 
-    async rejectOrganization(organizationId: string) {
+    async rejectOrganization(organizationId: string): Promise<IOrganization> {
         try {
             const rejectedOrganization = await this.organizationModel.findByIdAndUpdate(
                 organizationId,
@@ -233,7 +233,7 @@ export class OrganizationService {
         }
     }
 
-    async allowOrganization(organizationId: string) {
+    async allowOrganization(organizationId: string): Promise<IOrganization> {
         try {
             const allowedOrganization = await this.organizationModel.findByIdAndUpdate(
                 organizationId,
@@ -248,7 +248,7 @@ export class OrganizationService {
         }
     }
 
-    private buildOrganizationInfo(org): any {
+    private buildOrganizationInfo(org): IOrganizationResponse {
         return {
             id: org._id,
             companyName: org.companyName,

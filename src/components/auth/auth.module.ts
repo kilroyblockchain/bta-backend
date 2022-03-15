@@ -1,4 +1,3 @@
-import { HttpModule, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
@@ -6,6 +5,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from 'src/components/flo-user/user/schemas/user.schema';
 import { RefreshTokenSchema } from './schemas/refresh-token.schema';
+import { HttpModule } from '@nestjs/axios';
+import { Module } from '@nestjs/common';
 
 @Module({
     imports: [

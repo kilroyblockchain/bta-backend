@@ -1,12 +1,11 @@
 import { IBasicUserInfo, ICompany } from '../flo-user/user/interfaces/user.interface';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
-import { Injectable, UnauthorizedException, BadRequestException, HttpService } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { sign, verify } from 'jsonwebtoken';
 import { IUser } from 'src/components/flo-user/user/interfaces/user.interface';
-import { RefreshToken } from './interfaces/refresh-token.interface';
+import { IRefreshToken } from './interfaces/refresh-token.interface';
 import { v4 } from 'uuid';
 import { Request, Response } from 'express';
 import { getClientIp } from 'request-ip';
@@ -14,39 +13,39 @@ import * as Cryptr from 'cryptr';
 import { imageHash } from 'image-hash';
 import { COOKIE_KEYS } from 'src/@core/constants/cookie-key.constant';
 import { USER_CONSTANT } from 'src/@core/constants/api-error-constants';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class AuthService {
     REFRESH_TOKEN_EXPIRATION_MS = parseInt(process.env.REFRESH_TOKEN_EXPIRATION_MIN) * 60 * 1000;
-    cryptr: any;
+    cryptr: Cryptr;
 
     constructor(
         @InjectModel('User') private readonly userModel: Model<IUser>,
         @InjectModel('RefreshToken')
-        private readonly refreshTokenModel: Model<RefreshToken>,
-        private readonly jwtService: JwtService,
+        private readonly refreshTokenModel: Model<IRefreshToken>,
         private httpService: HttpService
     ) {
         this.cryptr = new Cryptr(process.env.ENCRYPT_JWT_SECRET);
     }
 
-    async createAccessToken(userId: string) {
+    async createAccessToken(userId: string): Promise<string> {
         const accessToken = sign({ userId }, process.env.JWT_SECRET, {
             expiresIn: process.env.JWT_EXPIRATION
         });
         return this.encryptText(accessToken);
     }
 
-    async createResetToken(userId: string) {
+    async createResetToken(userId: string): Promise<string> {
         const resetToken = sign({ userId }, process.env.RESET_PASSWORD_SECRET, {
             expiresIn: '20m'
         });
         return resetToken;
     }
 
-    async verifyToken(token: string, secret: string) {
-        let decoded;
-        await verify(token, secret, function (err, decodedData) {
+    async verifyToken(token: string, secret: string): Promise<JwtPayload> {
+        let decoded: JwtPayload;
+        await verify(token, secret, function (err, decodedData: JwtPayload) {
             if (err) {
                 throw new BadRequestException('Invalid token or it is expired');
             }
@@ -55,7 +54,7 @@ export class AuthService {
         return decoded;
     }
 
-    async createRefreshToken(req: Request, userId: string, companyId?: string) {
+    async createRefreshToken(req: Request, userId: string, companyId?: string): Promise<string> {
         let query = {};
         if (companyId) {
             query = { company: companyId };
@@ -82,7 +81,7 @@ export class AuthService {
         }
     }
 
-    async updateRefreshToken(req: Request) {
+    async updateRefreshToken(req: Request): Promise<IRefreshToken> {
         const refreshToken = req.cookies[COOKIE_KEYS.REFRESH_TOKEN];
         if (refreshToken) {
             const refreshTokenData = await this.refreshTokenModel.findOne({
@@ -99,17 +98,17 @@ export class AuthService {
         }
     }
 
-    async findRefreshToken(token: string) {
+    async findRefreshToken(token: string): Promise<string> {
         const refreshToken = await this.refreshTokenModel.findOne({
             refreshToken: token
         });
         if (!refreshToken) {
             throw new UnauthorizedException('User has been logged out.');
         }
-        return refreshToken.userId;
+        return <string>refreshToken.userId;
     }
 
-    async validateUser(jwtPayload: JwtPayload): Promise<any> {
+    async validateUser(jwtPayload: JwtPayload): Promise<IUser> {
         const user = await this.userModel
             .findOne({
                 _id: jwtPayload.userId,
@@ -131,7 +130,7 @@ export class AuthService {
         return user;
     }
 
-    validateUserRecaptcha(req: Request, token) {
+    validateUserRecaptcha(req: Request, token): Promise<boolean> {
         return new Promise((resolve) => {
             const secretKey = process.env.RE_CAPTCHA_SECRET;
             const clientIp = this.getIp(req);
@@ -143,7 +142,7 @@ export class AuthService {
         });
     }
 
-    private jwtExtractor(request) {
+    private jwtExtractor(request): string {
         let token = null;
         if (request.header('x-token')) {
             token = request.get('x-token');
@@ -166,7 +165,7 @@ export class AuthService {
         return token;
     }
 
-    returnJwtExtractor() {
+    returnJwtExtractor(): (req: Request) => string {
         return this.jwtExtractor;
     }
 
@@ -206,7 +205,7 @@ export class AuthService {
         return null;
     }
 
-    getImageHash(location, cb) {
+    getImageHash(location, cb): void {
         imageHash('./././uploads/' + location, 16, true, (error, data) => {
             if (error) throw error;
             return cb(error, data);
@@ -231,7 +230,7 @@ export class AuthService {
         }
     }
 
-    setCookie(cookieName: string, token: string, res: Response) {
+    setCookie(cookieName: string, token: string, res: Response): void {
         const cookieOptions = {
             httpOnly: true,
             expires: new Date(Date.now() + this.REFRESH_TOKEN_EXPIRATION_MS),
@@ -240,20 +239,20 @@ export class AuthService {
         res.cookie(cookieName, this.encryptText(token), cookieOptions);
     }
 
-    destroyCookie(cookieName: string, res: Response) {
+    destroyCookie(cookieName: string, res: Response): void {
         res.cookie(cookieName, { expires: new Date() });
     }
 
-    verifyExpiredToken(encryptedToken: string, secret: string) {
+    verifyExpiredToken(encryptedToken: string, secret: string): boolean | string {
         if (encryptedToken) {
             const token = this.decryptText(encryptedToken);
-            return verify(token, secret, { ignoreExpiration: true });
+            return <string>verify(token, secret, { ignoreExpiration: true });
         } else {
             return false;
         }
     }
 
-    async revokeRefreshToken(req: Request) {
+    async revokeRefreshToken(req: Request): Promise<void> {
         const refreshToken = req.cookies[COOKIE_KEYS.REFRESH_TOKEN];
         if (refreshToken) {
             const refreshTokenData = await this.refreshTokenModel.findOne({

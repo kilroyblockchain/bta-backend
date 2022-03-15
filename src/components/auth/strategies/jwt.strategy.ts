@@ -3,6 +3,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
+import { IUser } from 'src/components/flo-user/user/interfaces/user.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -14,7 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         });
     }
 
-    async validate(jwtPayload: JwtPayload) {
+    async validate(jwtPayload: JwtPayload): Promise<IUser> {
         const user = await this.authService.validateUser(jwtPayload);
         if (!user) {
             throw new UnauthorizedException();

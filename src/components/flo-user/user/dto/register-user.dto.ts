@@ -9,7 +9,7 @@ export class RegisterUserDto {
     })
     @IsNotEmpty()
     @IsString()
-    readonly subscriptionType: string;
+    subscriptionType: string;
 
     @ApiProperty({
         example: 'Suyog',
@@ -22,7 +22,7 @@ export class RegisterUserDto {
     @IsString()
     @MinLength(2)
     @MaxLength(40)
-    readonly firstName: string;
+    firstName: string;
 
     @ApiProperty({
         example: 'Khanal',
@@ -130,7 +130,7 @@ export class RegisterUserDto {
         format: 'array'
     })
     @IsOptional()
-    readonly staffingId: [string];
+    staffingId: [string];
 
     @ApiProperty({
         example: '6b45f6a7b442c3afc5931091fbdb2510f1.jpg',

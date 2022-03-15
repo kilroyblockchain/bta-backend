@@ -20,6 +20,6 @@ export async function sha256Hash(args: string): Promise<string> {
  * @return {string} - Returns Unique 16 bytes string
  *
  */
-export const generateUniqueId = () => {
+export const generateUniqueId = (): string => {
     return crypto.randomBytes(16).toString('hex');
 };

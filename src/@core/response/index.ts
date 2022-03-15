@@ -3,7 +3,7 @@ import { FLOResponse } from '../interfaces/response.interface';
 export class Response implements FLOResponse {
     success: boolean;
     message: string[];
-    data: any;
+    data: unknown;
     error: Error;
     statusCode: number;
     constructor(success: boolean, message: Array<string>) {
@@ -11,17 +11,17 @@ export class Response implements FLOResponse {
         this.message = message;
     }
 
-    setSuccessData(data: any) {
+    setSuccessData(data): this {
         this.data = data;
         return this;
     }
 
-    setError(err: any) {
+    setError(err): this {
         this.error = err;
         return this;
     }
 
-    setStatus(status: number) {
+    setStatus(status: number): this {
         this.statusCode = status;
         return this;
     }

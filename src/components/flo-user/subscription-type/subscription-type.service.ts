@@ -2,7 +2,7 @@ import { CountryService } from 'src/components/flo-user/country/country.service'
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { ISubscription } from './interfaces/subscription.interface';
+import { ISubscription, ISubscriptionResponse } from './interfaces/subscription.interface';
 import { Request } from 'express';
 
 @Injectable()
@@ -13,7 +13,7 @@ export class SubscriptionTypeService {
         private readonly countryService: CountryService
     ) {}
 
-    async getAllSubscription(req: Request) {
+    async getAllSubscription(req: Request): Promise<ISubscriptionResponse | Array<ISubscription>> {
         const { fetchCountry } = req.query;
         const subscriptionList = await this.SubscriptionModel.find({
             position: { $ne: 0 }

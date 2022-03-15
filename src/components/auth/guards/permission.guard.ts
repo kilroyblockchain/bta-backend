@@ -9,7 +9,7 @@ import { IFeature } from 'src/components/flo-user/features/interfaces/features.i
 export class PermissionGuard implements CanActivate {
     constructor(private reflector: Reflector) {}
 
-    async canActivate(context: ExecutionContext) {
+    async canActivate(context: ExecutionContext): Promise<boolean> {
         const permission = this.reflector.get<string[]>('permission', context.getHandler());
         const feature = this.reflector.get<string[]>('feature', context.getHandler());
         const request = context.switchToHttp().getRequest();
@@ -34,7 +34,7 @@ export class PermissionGuard implements CanActivate {
         return companyArray.find((defCompany) => defCompany.default)?.companyId as string;
     }
 
-    getAssignedAcceptedAndVerifiedStaffings(user: IUser, defaultCompanyId: string) {
+    getAssignedAcceptedAndVerifiedStaffings(user: IUser, defaultCompanyId: string): Array<string | StaffingInterface> {
         return user.company
             .filter((company) => company.companyId.toString() === defaultCompanyId.toString() && company.userAccept && company.verified)
             .map((company) => company.staffingId)

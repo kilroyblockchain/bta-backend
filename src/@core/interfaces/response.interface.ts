@@ -1,6 +1,6 @@
 export interface FLOResponse {
     success: boolean;
-    data: any;
+    data: unknown;
     error: Error;
     message: string[];
     statusCode: number;

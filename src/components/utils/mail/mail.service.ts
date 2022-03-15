@@ -8,7 +8,7 @@ import { IPartialContext } from './interfaces/partial-context.interface';
 export class MailService {
     constructor(private readonly mailerService: MailerService) {}
 
-    async sendMail(to: string, subject: string, title: string, mailType: string, partialContext: IPartialContext<any>): Promise<MailResponse> {
+    async sendMail(to: string, subject: string, title: string, mailType: string, partialContext: IPartialContext<unknown>): Promise<MailResponse> {
         let result: MailResponse;
         // To get the partials: the main body of mail template
         handlebars.registerHelper('whichMail', function () {

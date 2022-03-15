@@ -6,7 +6,7 @@ export interface ISubscription {
     status: boolean;
 }
 
-export interface Organization extends Document {
+export interface IOrganization extends Document {
     companyName: string;
     companyLogo?: string;
     country?: string;
@@ -19,4 +19,35 @@ export interface Organization extends Document {
     isDeleted: boolean;
     isRejected?: boolean;
     subscription: Array<ISubscription>;
+    blockchainVerified?: boolean;
+}
+
+export interface IBaseOrganization {
+    companyName: string;
+    country: string;
+    state: string;
+    city: string;
+    address: string;
+    zipCode: string;
+    companyLogo: string;
+    subscription: Array<ISubscription>;
+}
+export interface IOrganizationResponse extends IBaseOrganization {
+    id: string;
+}
+
+export interface IOrganizationInit extends IBaseOrganization {
+    image: string;
+}
+
+export interface ICompanyDto {
+    companyName: string;
+    companyCountry: string;
+    companyState: string;
+    companyCity: string;
+    companyAddress: string;
+    companyZipCode: string;
+    companyLogo: string;
+    image: string;
+    subscriptionType: ROLE;
 }

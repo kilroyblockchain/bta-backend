@@ -1,6 +1,6 @@
 import { Request } from 'express';
 
-export const getHourMinuteDiff = (futureDate: Date, earlyDate = new Date()) => {
+export const getHourMinuteDiff = (futureDate: Date, earlyDate = new Date()): string => {
     const date = new Date(futureDate);
     const diff = date.getTime() - earlyDate.getTime();
 

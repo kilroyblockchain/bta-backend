@@ -172,7 +172,7 @@ export class OrganizationStaffingController {
     @ApiOkResponse({
         description: 'Organization staffing Enabled'
     })
-    async enableOrganizationUnit(@Param('id') staffingId: string) {
+    async enableOrganizationUnit(@Param('id') staffingId: string): Promise<Response> {
         try {
             return new Response(true, [ORGANIZATION_STAFFING_CONSTANT.ORGANIZATION_STAFFING_ENABLED]).setSuccessData(await this.staffingService.enableOrganizationStaffing(staffingId)).setStatus(HttpStatus.OK);
         } catch (err) {

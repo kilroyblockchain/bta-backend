@@ -13,7 +13,7 @@ export class BlockchainStatusGuard extends AuthGuard('jwt') implements CanActiva
         super();
     }
 
-    async canActivate(context: ExecutionContext) {
+    async canActivate(context: ExecutionContext): Promise<boolean> {
         const logger = new Logger('BlockchainGuard');
         const request = context.switchToHttp().getRequest();
         if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {

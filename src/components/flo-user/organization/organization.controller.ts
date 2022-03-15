@@ -1,6 +1,6 @@
 import { OrganizationService } from './organization.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
-import { Body, Controller, Post, HttpCode, HttpStatus, UseInterceptors, UploadedFile, Req, Put, UseGuards, Param, Get, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Post, HttpCode, HttpStatus, UseInterceptors, UploadedFile, Req, Put, UseGuards, Param, Get } from '@nestjs/common';
 import { ApiOperation, ApiCreatedResponse, ApiTags, ApiHeader, ApiOkResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -15,8 +15,8 @@ import { PermissionGuard } from 'src/components/auth/guards/permission.guard';
 import { SubscriptionGuard } from 'src/components/auth/guards/subscription.guard';
 import { BlockchainStatusGuard } from 'src/components/auth/guards/blockhainStatus.guard';
 import { BC_SUCCESS_RESPONSE } from 'src/@core/constants/bc-constants/bc-success-response.constants';
-import { Response } from 'src/@core/response';
 import { ORGANIZATION_CONSTANT } from 'src/@core/constants/api-error-constants';
+import { Response as FLOResponse } from 'src/@core/response';
 
 @ApiTags('organization')
 @UseGuards(RolesGuard)
@@ -37,8 +37,9 @@ export class OrganizationController {
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Create Organization' })
     @ApiCreatedResponse({})
-    async createOrganization(@Req() req: Request, @UploadedFile() file, @Body() createOrganizationDto: CreateOrganizationDto) {
-        return await this.organizationService.create(req, file?.filename, createOrganizationDto);
+    async createOrganization(@Req() req: Request, @UploadedFile() file, @Body() createOrganizationDto: CreateOrganizationDto): Promise<FLOResponse> {
+        const organization = await this.organizationService.create(req, file?.filename, createOrganizationDto);
+        return new FLOResponse(true, [ORGANIZATION_CONSTANT.ORGANIZATION_CREATED]).setSuccessData(organization).setStatus(HttpStatus.CREATED);
     }
 
     @Put(':organizationId')
@@ -63,20 +64,18 @@ export class OrganizationController {
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Edit Organization' })
     @ApiOkResponse({})
-    async updateOrganization(@Param('organizationId') organizationId: string, @UploadedFile() file, @Body() updateOrganizationDto: UpdateOrganizationDto, @Req() req: Request) {
-        return await this.organizationService.update(organizationId, file?.filename, updateOrganizationDto, req);
+    async updateOrganization(@Param('organizationId') organizationId: string, @UploadedFile() file, @Body() updateOrganizationDto: UpdateOrganizationDto, @Req() req: Request): Promise<FLOResponse> {
+        const updatedOrganization = await this.organizationService.update(organizationId, file?.filename, updateOrganizationDto, req);
+        return new FLOResponse(true, [ORGANIZATION_CONSTANT.ORGANIZATION_UPDATED]).setSuccessData(updatedOrganization).setStatus(HttpStatus.OK);
     }
 
     @Get('all-company-names')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get All Organization Names' })
     @ApiOkResponse({})
-    async getAllOrganizationNames() {
-        try {
-            return await this.organizationService.findAllOrganizationName();
-        } catch (err) {
-            throw new NotFoundException(ORGANIZATION_CONSTANT.ORGANIZATIONS_NOT_FOUND, err);
-        }
+    async getAllOrganizationNames(): Promise<FLOResponse> {
+        const organizations = await this.organizationService.findAllOrganizationName();
+        return new FLOResponse(true, [ORGANIZATION_CONSTANT.ALL_ORGANIZATIONS_NAME_FETCHED]).setSuccessData(organizations).setStatus(HttpStatus.OK);
     }
 
     @Get(':organizationId')
@@ -92,8 +91,9 @@ export class OrganizationController {
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get Organization' })
     @ApiOkResponse({})
-    async getOrganizationById(@Param('organizationId') organizationId: string, @Req() req: Request) {
-        return await this.organizationService.findOrganizationByIdBcVerified(organizationId, req);
+    async getOrganizationById(@Param('organizationId') organizationId: string, @Req() req: Request): Promise<FLOResponse> {
+        const organization = await this.organizationService.findOrganizationByIdBcVerified(organizationId, req);
+        return new FLOResponse(true, [ORGANIZATION_CONSTANT.ORGANIZATION_FOUND]).setSuccessData(organization).setStatus(HttpStatus.OK);
     }
 
     @Get()
@@ -109,13 +109,9 @@ export class OrganizationController {
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get All Organization' })
     @ApiOkResponse({})
-    async getAllOrganization(@Req() req: Request) {
-        try {
-            const data = await this.organizationService.findAllOrganization(req);
-            return { success: true, data };
-        } catch (err) {
-            throw new NotFoundException(ORGANIZATION_CONSTANT.ORGANIZATIONS_NOT_FOUND, err);
-        }
+    async getAllOrganization(@Req() req: Request): Promise<FLOResponse> {
+        const allOrganizations = await this.organizationService.findAllOrganization(req);
+        return new FLOResponse(true, [ORGANIZATION_CONSTANT.ORGANIZATION_FOUND]).setSuccessData(allOrganizations).setStatus(HttpStatus.OK);
     }
 
     @Get('blockchain-history/:organizationId')
@@ -129,12 +125,12 @@ export class OrganizationController {
         name: 'Bearer',
         description: 'The token we need for auth.'
     })
-    @ApiOperation({ summary: 'Get Blockchain History of given oraganization' })
+    @ApiOperation({ summary: 'Get Blockchain History of given organization' })
     @ApiOkResponse({
-        description: 'Organization Blockchain history retireved successfully.',
-        type: Response
+        description: 'Organization Blockchain history retrieved successfully.'
     })
-    async getBlockchainHistory(@Req() req: Request, @Param('organizationId') organizationId: string): Promise<Response> {
-        return new Response(true, [BC_SUCCESS_RESPONSE.BLOCKCHAIN_HISTORY_FOUND]).setSuccessData(await this.organizationService.findOrganizationBlockchainHistory(req, organizationId));
+    async getBlockchainHistory(@Req() req: Request, @Param('organizationId') organizationId: string): Promise<FLOResponse> {
+        const bcHistory = await this.organizationService.findOrganizationBlockchainHistory(req, organizationId);
+        return new FLOResponse(true, [BC_SUCCESS_RESPONSE.BLOCKCHAIN_HISTORY_FOUND]).setSuccessData(bcHistory).setStatus(HttpStatus.OK);
     }
 }

@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import { CreateStaffingDto } from './dto/createorganization-staffing.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { StaffingInterface } from './interfaces/organization-staffing.interface';
+import { IStaticUnitAndStaffing, StaffingInterface } from './interfaces/organization-staffing.interface';
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PaginateModel, PaginateResult } from 'mongoose';
 import { OrganizationUnitService } from '../organization-unit/organization-unit.service';
@@ -27,7 +27,7 @@ export class OrganizationStaffingService {
         });
     }
 
-    async getStaticStaffingOfTraining() {
+    async getStaticStaffingOfTraining(): Promise<IStaticUnitAndStaffing> {
         const trainingUnit = await this.unitService.getTrainingOrganizationUnits();
         const trainingStaffings = await this.StaffModel.find({
             organizationUnitId: trainingUnit._id,
@@ -86,8 +86,8 @@ export class OrganizationStaffingService {
         return await this.StaffModel.paginate(query, options);
     }
 
-    async disableAllStaffingByOrganizationUnit(organizationUnitId: string, featureListId: any): Promise<void> {
-        await this.StaffModel.update(
+    async disableAllStaffingByOrganizationUnit(organizationUnitId: string, featureListId: Array<string>): Promise<void> {
+        await this.StaffModel.updateOne(
             { organizationUnitId: organizationUnitId },
             {
                 $set: { 'featureAndAccess.$[accessType].accessType': [] }
@@ -103,7 +103,7 @@ export class OrganizationStaffingService {
         return await this.StaffModel.findByIdAndUpdate({ _id: staffingId }, { status: true });
     }
 
-    async findNameFromArray(data: any) {
+    async findNameFromArray(data: Array<string>): Promise<Array<StaffingInterface>> {
         return await this.StaffModel.find({
             _id: { $in: data }
         }).select('staffingName');

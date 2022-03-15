@@ -1,7 +1,7 @@
 import { IUser } from 'src/components/flo-user/user/interfaces/user.interface';
 import { Document } from 'mongoose';
 
-export interface RefreshToken extends Document {
+export interface IRefreshToken extends Document {
     userId: IUser | string;
     refreshToken: string;
     ip: string;

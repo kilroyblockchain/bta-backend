@@ -15,11 +15,11 @@ export class FeatureService {
         private readonly SubscriptionModel: Model<ISubscription>
     ) {}
 
-    async getAllFeatures() {
+    async getAllFeatures(): Promise<Array<IFeature>> {
         return await this.FeatureModel.find().populate('subscriptionId').exec();
     }
 
-    async getAllFeaturesOfSubscriptionType(req: Request, subscription: string) {
+    async getAllFeaturesOfSubscriptionType(req: Request, subscription: string): Promise<Array<IFeature>> {
         const user = req['user'];
         const subscriptionType = subscription ? subscription : user.company.find((defCompany) => defCompany.default).subscriptionType;
         if (!subscriptionType) {
