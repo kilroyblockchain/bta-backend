@@ -13,7 +13,14 @@ export interface IFinalResult {
     pages: number;
 }
 
-export const getFinalPaginationResult = (result: any, options: IOptions): IFinalResult => {
+interface IInputData {
+    result: Array<{
+        data: any;
+        metadata: any;
+    }>;
+}
+
+export const getFinalPaginationResult = (result: IInputData, options: IOptions): IFinalResult => {
     let finalResult: IFinalResult = {
         docs: [],
         limit: options.limit,
