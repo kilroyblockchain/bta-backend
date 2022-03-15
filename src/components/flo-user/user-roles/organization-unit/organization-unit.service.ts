@@ -1,9 +1,9 @@
 import { Request } from 'express';
 import { CreateOrganizationUnitDto } from './dto/createorganization-unit.dto';
-import { OrganizationUnitInterface } from './interfaces/organization-unit.interface';
+import { IOrganizationUnitInterface } from './interfaces/organization-unit.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { PaginateModel, Types } from 'mongoose';
+import { PaginateModel, PaginateResult, Types } from 'mongoose';
 import { OrganizationStaffingService } from '../organization-staffing/organization-staffing.service';
 import { STATIC_ORGANIZATION_ID } from 'src/@core/constants/objectId.constant';
 import { ORGANIZATION_UNIT_CONSTANT } from 'src/@core/constants/api-error-constants';
@@ -12,17 +12,17 @@ import { ORGANIZATION_UNIT_CONSTANT } from 'src/@core/constants/api-error-consta
 export class OrganizationUnitService {
     constructor(
         @InjectModel('OrganizationUnit')
-        private readonly UnitModel: PaginateModel<OrganizationUnitInterface>,
+        private readonly UnitModel: PaginateModel<IOrganizationUnitInterface>,
         @Inject(forwardRef(() => OrganizationStaffingService))
         private readonly staffingService: OrganizationStaffingService
     ) {}
 
-    async createNewOrganizationUnit(newUnit: CreateOrganizationUnitDto): Promise<OrganizationUnitInterface> {
+    async createNewOrganizationUnit(newUnit: CreateOrganizationUnitDto): Promise<IOrganizationUnitInterface> {
         const orgUnit = new this.UnitModel(newUnit);
         return await orgUnit.save();
     }
 
-    async getUnitsByCompanyId(companyId: string, options: Request): Promise<any> {
+    async getUnitsByCompanyId(companyId: string, options: Request): Promise<PaginateResult<IOrganizationUnitInterface>> {
         const page = options.query.page ? Number(options.query.page) : 1;
         const limit = options.query.limit ? Number(options.query.limit) : 10;
         const { subscriptionType } = options.query;
@@ -94,7 +94,7 @@ export class OrganizationUnitService {
         return data;
     }
 
-    async getUnitIdArrayByCompanyId(companyId: string): Promise<any> {
+    async getUnitIdArrayByCompanyId(companyId: string): Promise<Array<IOrganizationUnitInterface>> {
         const unitsIds = await this.UnitModel.find({
             companyID: companyId,
             status: true
@@ -102,7 +102,7 @@ export class OrganizationUnitService {
         return unitsIds.map((id) => id._id);
     }
 
-    async getOrganizationUnitById(id: string): Promise<OrganizationUnitInterface> {
+    async getOrganizationUnitById(id: string): Promise<IOrganizationUnitInterface> {
         const orgUnit = await this.UnitModel.findOne({ _id: id }).populate('featureListId').exec();
         if (orgUnit) {
             return orgUnit;
@@ -110,7 +110,7 @@ export class OrganizationUnitService {
         throw new NotFoundException(ORGANIZATION_UNIT_CONSTANT.ORGANIZATION_UNIT_NOT_FOUND);
     }
 
-    async updateOrganizationUnit(id: string, updateUnit: CreateOrganizationUnitDto): Promise<OrganizationUnitInterface> {
+    async updateOrganizationUnit(id: string, updateUnit: CreateOrganizationUnitDto): Promise<IOrganizationUnitInterface> {
         const orgUnit = await this.getOrganizationUnitById(id);
         if (orgUnit) {
             orgUnit.companyID = updateUnit.companyID;
@@ -123,15 +123,15 @@ export class OrganizationUnitService {
         throw new NotFoundException(ORGANIZATION_UNIT_CONSTANT.ORGANIZATION_UNIT_NOT_FOUND);
     }
 
-    async enableOrganizationUnit(unitId: string): Promise<OrganizationUnitInterface> {
+    async enableOrganizationUnit(unitId: string): Promise<IOrganizationUnitInterface> {
         return await this.UnitModel.findByIdAndUpdate({ _id: unitId }, { status: true });
     }
 
-    async deleteOrganizationUnit(id: string): Promise<OrganizationUnitInterface> {
+    async deleteOrganizationUnit(id: string): Promise<IOrganizationUnitInterface> {
         return await this.UnitModel.findByIdAndUpdate({ _id: id }, { status: false });
     }
 
-    async getAllOrganizationUnits(req: Request, defaultSubscriptionType: string): Promise<OrganizationUnitInterface[]> {
+    async getAllOrganizationUnits(req: Request, defaultSubscriptionType: string): Promise<IOrganizationUnitInterface[]> {
         const user = req['user'];
         return await this.UnitModel.find({
             companyID: user.company.find((defCompany) => defCompany.default).companyId,
@@ -140,7 +140,7 @@ export class OrganizationUnitService {
         });
     }
 
-    async getTrainingOrganizationUnits(): Promise<OrganizationUnitInterface> {
+    async getTrainingOrganizationUnits(): Promise<IOrganizationUnitInterface> {
         return await this.UnitModel.findOne({
             companyID: STATIC_ORGANIZATION_ID.toHexString()
         });

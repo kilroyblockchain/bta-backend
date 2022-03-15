@@ -1,5 +1,6 @@
 import { IFeature } from 'migrations/feature-migrate/interfaces/feature.interface';
 import { Document } from 'mongoose';
+import { IOrganizationUnitInterface } from 'src/components/flo-user/user-roles/organization-unit/interfaces/organization-unit.interface';
 export interface StaffingInterface extends Document {
     organizationUnitId: string;
     staffingName: string;
@@ -10,4 +11,9 @@ export interface StaffingInterface extends Document {
         }
     ];
     status?: boolean;
+}
+
+export interface IStaticUnitAndStaffing {
+    unit: IOrganizationUnitInterface;
+    staffs: Array<StaffingInterface>;
 }

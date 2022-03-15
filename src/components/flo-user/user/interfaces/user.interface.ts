@@ -1,6 +1,6 @@
 import { Document } from 'mongoose';
-import { Organization } from '../../organization/interfaces/organization.interface';
-import { StaffingInterface } from '../../user-roles/organization-staffing/interfaces/organization-staffing.interface';
+import { IOrganization } from 'src/components/flo-user/organization/interfaces/organization.interface';
+import { StaffingInterface } from 'src/components/flo-user/user-roles/organization-staffing/interfaces/organization-staffing.interface';
 
 export interface IUser extends Document {
     _id: string;
@@ -23,12 +23,13 @@ export interface IUser extends Document {
     resetLink?: string;
     autoPassword?: boolean;
     reCaptchaToken?: string;
+    blockchainVerified?: boolean;
 }
 
 export interface ICompany {
-    companyId: string | Organization;
+    companyId: string | IOrganization;
     staffingId: Array<string | StaffingInterface>;
-    deletedStaffingId?: Array<string>;
+    deletedStaffingId?: Array<string | StaffingInterface>;
     subscriptionType: string;
     userAccept: boolean;
     default: boolean;
@@ -57,4 +58,67 @@ export interface IBasicUserInfo {
     firstName: string;
     lastName: string;
     fullName: string;
+}
+
+export interface IReturnResponse {
+    success: boolean;
+    message: string;
+}
+
+export interface IUserCommonResponse {
+    id: string;
+    roles: Array<string>;
+    firstName: string;
+    lastName: string;
+    email: string;
+    companyId: string;
+}
+
+export interface IUserResponse extends IUserCommonResponse {
+    autoPassword: boolean;
+    companyName: string;
+    staffingId: Array<string | StaffingInterface>;
+    company: Array<ICompany>;
+    accessToken?: string;
+}
+
+export interface IUserWithBlockchain extends IUserCommonResponse {
+    _id?: string;
+    phone: string;
+    country: string;
+    state: string;
+    city: string;
+    address: string;
+    zipCode: string;
+    verified: boolean;
+    blockchainVerified: boolean;
+}
+
+export interface IJWTUserData {
+    company: {
+        staffingId: Array<string | StaffingInterface>;
+        deletedStaffingId?: Array<string>;
+        subscriptionType: string;
+        userAccept: boolean;
+        default: boolean;
+        verified: boolean;
+        isAdmin: boolean;
+        userAcceptToken?: string;
+        isDeleted: boolean;
+        isRejected?: boolean;
+        companyId: string;
+    };
+    blockchainVerified: boolean;
+}
+export interface ICompanyAdmin {
+    currentOwner: string;
+    company: string;
+}
+
+export interface IUserData {
+    firstName: string;
+    lastName: string;
+    email: string;
+    accessToken?: string;
+    refreshToken?: string;
 }

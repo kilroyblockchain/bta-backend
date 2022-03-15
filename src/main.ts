@@ -18,7 +18,7 @@ import * as cookieParser from 'cookie-parser';
 import { UserModule } from './components/flo-user/user/user.module';
 import { OrganizationModule } from './components/flo-user/organization/organization.module';
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule);
     app.enableCors({ origin: true, credentials: true });
     app.setGlobalPrefix('api/v1');

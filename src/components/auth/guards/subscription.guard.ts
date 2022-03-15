@@ -4,7 +4,7 @@ import { OrganizationService } from 'src/components/flo-user/organization/organi
 @Injectable()
 export class SubscriptionGuard implements CanActivate {
     constructor(private readonly organizationService: OrganizationService) {}
-    async canActivate(context: ExecutionContext) {
+    async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
         const user = request.user;
         const organization = await this.organizationService.findOrganizationById(user.company.find((defaultCompany) => defaultCompany.default && defaultCompany.verified && !defaultCompany.isDeleted).companyId);

@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Request } from 'express';
-import { PaginateModel } from 'mongoose';
+import { PaginateModel, PaginateResult } from 'mongoose';
 import { USER_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { IUser } from '../user/interfaces/user.interface';
 import { CreateUserRejectInformationDto } from './dto/create-user-reject-info.dto';
@@ -31,7 +31,7 @@ export class UserRejectInfoService {
         }
     }
 
-    async updateUserRejectInformation(rejectInfoId: string, updateUserRejectInfoDto: UpdateUserRejectInformationDto) {
+    async updateUserRejectInformation(rejectInfoId: string, updateUserRejectInfoDto: UpdateUserRejectInformationDto): Promise<UserRejectInformationResponseDto> {
         try {
             const updatedInformation = await this.UserRejectInfoModel.findByIdAndUpdate(
                 rejectInfoId,
@@ -46,7 +46,7 @@ export class UserRejectInfoService {
         }
     }
 
-    async getUserRejectionDetail(userId: string, req: Request) {
+    async getUserRejectionDetail(userId: string, req: Request): Promise<PaginateResult<UserRejectInformationResponseDto> | Array<UserRejectInformationResponseDto>> {
         const { page, limit } = req.query;
         const query = { rejectedUser: userId };
 

@@ -3,7 +3,7 @@ import * as fs from 'fs';
 
 @Injectable()
 export class FileService {
-    createJSONFile(jsonObject: any, fileName: string, filepath?: string): string {
+    createJSONFile(jsonObject: JSON, fileName: string, filepath?: string): string {
         fileName = fileName.trim().replace(' ', '_');
         fileName = fileName + Date.now();
         const savingPath = filepath ? `/uploads/${filepath}/` : '/uploads/json/';
@@ -20,7 +20,7 @@ export class FileService {
         return fullPath;
     }
 
-    cleanTempDir() {
+    cleanTempDir(): void {
         try {
             const files = fs.readdirSync(process.cwd() + '/uploads/temp/');
             files.forEach((file) => {

@@ -1,17 +1,26 @@
+import { PipelineStage } from 'mongoose';
+
 export interface IOptions {
     page: number;
     limit: number;
 }
 
 export interface IFinalResult {
-    docs: Array<any>;
+    docs;
     total: number;
     limit: number;
     page: number;
     pages: number;
 }
 
-export const getFinalPaginationResult = (result: Array<any>, options: IOptions): IFinalResult => {
+interface IInputData {
+    result: Array<{
+        data: any;
+        metadata: any;
+    }>;
+}
+
+export const getFinalPaginationResult = (result: IInputData, options: IOptions): IFinalResult => {
     let finalResult: IFinalResult = {
         docs: [],
         limit: options.limit,
@@ -19,8 +28,8 @@ export const getFinalPaginationResult = (result: Array<any>, options: IOptions):
         pages: 1,
         total: 0
     };
-    const data: Array<any> = result[0].data;
-    const paginationData: Array<any> = result[0].metadata;
+    const data = result[0].data;
+    const paginationData = result[0].metadata;
     if (data.length && paginationData.length)
         finalResult = {
             docs: data,
@@ -41,10 +50,10 @@ const getTotalPage = (total: number, limit: number): number => {
 /**
  * Return Stage to select only projected field from docs
  *
- * @param {string} select - Collection Field to be projected seperated by space
+ * @param {string} select - Collection Field to be projected separated by space
  * @returns {Array<any>}  Project stage of aggregation
  */
-export const getProjectStageFromSelect = (select: string): Array<any> => {
+export const getProjectStageFromSelect = (select: string): Array<PipelineStage> => {
     const project = {};
     select.split(' ').forEach((propName: string) => {
         if (propName.startsWith('-')) {
@@ -70,7 +79,7 @@ export const getProjectStageFromSelect = (select: string): Array<any> => {
  * @param {string} foreignField - Field from the documents of the collection to be joined
  * @returns {Array<any>}  Populate stage and select stage
  */
-export const populateField = (collectionName: string, localField: string, foreignField: string): Array<any> => [
+export const populateField = (collectionName: string, localField: string, foreignField: string): Array<PipelineStage> => [
     {
         $lookup: {
             from: collectionName,

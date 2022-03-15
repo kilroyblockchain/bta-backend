@@ -11,7 +11,7 @@ export class VerificationController {
     @Get(':token')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get the verification details from token' })
-    async getLHASetting(@Param('token') token: string) {
+    async getLHASetting(@Param('token') token: string): Promise<FLOResponse> {
         return new FLOResponse(true, [VERIFICATION_CONSTANT.VERIFICATION_DETAILS_FOUND]).setSuccessData(await this.verificationService.getDetailsByToken(token)).setStatus(HttpStatus.OK);
     }
 }

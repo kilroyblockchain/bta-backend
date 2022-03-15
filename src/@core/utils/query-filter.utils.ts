@@ -1,4 +1,5 @@
-export const getSearchFilterWithRegexAll = (searchValue: any, fields: Array<string>) => {
+// eslint-disable-next-line @typescript-eslint/ban-types
+export const getSearchFilterWithRegexAll = (searchValue: string, fields: Array<string>): Object => {
     if (searchValue) {
         const searchQueryArr = [];
         fields.forEach((field) => {

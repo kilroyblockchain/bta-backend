@@ -1,3 +1,4 @@
+import { IUser } from 'src/components/flo-user/user/interfaces/user.interface';
 import { v4 } from 'uuid';
 import { InjectModel } from '@nestjs/mongoose';
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
@@ -12,7 +13,7 @@ export class VerificationService {
         private readonly VerificationModel: Model<IVerification>
     ) {}
 
-    async createAcceptToken(user: any, companyName: string, subscriptionType: string, roles) {
+    async createAcceptToken(user: IUser, companyName: string, subscriptionType: string, roles): Promise<IVerification> {
         const token = v4();
         const verificationDto = {
             email: user.email,
@@ -40,7 +41,7 @@ export class VerificationService {
         }
     }
 
-    async setUserAccept(token: string) {
+    async setUserAccept(token: string): Promise<IVerification> {
         const userAcceptToken = await this.VerificationModel.findOne({
             userAcceptToken: token,
             userAccept: false

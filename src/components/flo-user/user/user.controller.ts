@@ -17,7 +17,6 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { AddCompanyDto } from './dto/add-company.dto';
 import { SetDefaultCompanyDto } from './dto/set-default-company.dto';
-import { CaseyResponse } from './interfaces/response.interface';
 import { editFileName, imageFileFilter } from 'src/@core/utils/file-upload.utils';
 import { NewUserDto } from './dto/new-user.dto';
 import { PermissionGuard } from 'src/components/auth/guards/permission.guard';
@@ -26,17 +25,17 @@ import { Response } from 'src/@core/response';
 import { USER_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { UserBcService } from './user-bc.service';
 import { BC_SUCCESS_RESPONSE } from 'src/@core/constants/bc-constants/bc-success-response.constants';
-import { AuthService } from 'src/components/auth/auth.service';
 import { ResetBlockUserDto } from './dto/reset-block-user.dto';
 import { BlockchainStatusGuard } from 'src/components/auth/guards/blockhainStatus.guard';
 import { SubscriptionGuard } from 'src/components/auth/guards/subscription.guard';
 import { BcUserDto } from 'src/@core/common/bc-user.dto';
 import { RejectUserDto } from './dto/reject-user.dto';
+import { Response as FLOResponse } from 'src/@core/response';
 
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-    constructor(private readonly userService: UserService, private readonly userBcService: UserBcService, private authService: AuthService) {}
+    constructor(private readonly userService: UserService, private readonly userBcService: UserBcService) {}
 
     // used for both organization and user
     @Post('register')
@@ -52,8 +51,9 @@ export class UserController {
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Register user' })
     @ApiCreatedResponse({})
-    async registerNew(@Req() req: Request, @UploadedFile() file, @Body() registerUserDTO: RegisterUserDto) {
-        return await this.userService.register(req, file?.filename, registerUserDTO);
+    async registerNew(@Req() req: Request, @UploadedFile() file, @Body() registerUserDTO: RegisterUserDto): Promise<FLOResponse> {
+        const registeredUser = await this.userService.register(req, file?.filename, registerUserDTO);
+        return new FLOResponse(true, [USER_CONSTANT.USER_REGISTERED_SUCCESSFULLY]).setSuccessData(registeredUser).setStatus(HttpStatus.CREATED);
     }
 
     @Put('update')
@@ -70,8 +70,9 @@ export class UserController {
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Update user personal details' })
     @ApiCreatedResponse({})
-    async updatePersonalDetails(@Req() req: Request, @Body() updateUserDto: UpdateUserDto) {
-        return await this.userService.updatePersonalDetails(updateUserDto, req);
+    async updatePersonalDetails(@Req() req: Request, @Body() updateUserDto: UpdateUserDto): Promise<FLOResponse> {
+        const updatedDetail = await this.userService.updatePersonalDetails(updateUserDto, req);
+        return new FLOResponse(true, [USER_CONSTANT.USER_UPDATED_SUCCESSFULLY]).setSuccessData(updatedDetail).setStatus(HttpStatus.OK);
     }
 
     @Put('extend-role')
@@ -79,16 +80,18 @@ export class UserController {
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Add new role to extending user' })
     @ApiOkResponse({})
-    async addNewRole(@Req() req: Request) {
-        return await this.userService.addNewRole(req);
+    async addNewRole(@Req() req: Request): Promise<FLOResponse> {
+        const newRole = await this.userService.addNewRole(req);
+        return new FLOResponse(true, [USER_CONSTANT.NEW_ROLE_ADDED]).setSuccessData(newRole).setStatus(HttpStatus.OK);
     }
 
     @Post('login')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Login User' })
     @ApiOkResponse({})
-    async login(@Req() req: Request, @Body() loginUserDto: LoginUserDto, @Res({ passthrough: true }) res: ExpressResponse) {
-        return await this.userService.login(req, loginUserDto, res);
+    async login(@Req() req: Request, @Body() loginUserDto: LoginUserDto, @Res({ passthrough: true }) res: ExpressResponse): Promise<FLOResponse> {
+        const userLogin = await this.userService.login(req, loginUserDto, res);
+        return new FLOResponse(true, [USER_CONSTANT.LOGIN_SUCCESS]).setSuccessData(userLogin).setStatus(HttpStatus.OK);
     }
 
     @Post('logout')
@@ -97,18 +100,18 @@ export class UserController {
     @ApiResponse({ description: 'Success!', status: HttpStatus.OK })
     @ApiResponse({ description: 'Bad request.', status: HttpStatus.BAD_REQUEST })
     @ApiOkResponse({})
-    async logout(@Req() req: Request, @Res({ passthrough: true }) res: ExpressResponse) {
-        return new Response(true, [USER_CONSTANT.LOGOUT_SUCCESS]).setStatus(HttpStatus.OK).setSuccessData({
-            username: await this.userService.logoutUser(req, res)
-        });
+    async logout(@Req() req: Request, @Res({ passthrough: true }) res: ExpressResponse): Promise<FLOResponse> {
+        const logoutUser = await this.userService.logoutUser(req, res);
+        return new FLOResponse(true, [USER_CONSTANT.LOGOUT_SUCCESS]).setSuccessData({ username: logoutUser }).setStatus(HttpStatus.OK);
     }
 
     @Post('refresh-access-token')
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Refresh Access Token with refresh token' })
     @ApiCreatedResponse({})
-    async refreshAccessToken(@Body() refreshAccessTokenDto: RefreshAccessTokenDto, @Req() req: Request, @Res({ passthrough: true }) res: ExpressResponse) {
-        return await this.userService.refreshAccessToken(refreshAccessTokenDto, req, res);
+    async refreshAccessToken(@Body() refreshAccessTokenDto: RefreshAccessTokenDto, @Req() req: Request, @Res({ passthrough: true }) res: ExpressResponse): Promise<FLOResponse> {
+        const refreshAccessToken = await this.userService.refreshAccessToken(refreshAccessTokenDto, req, res);
+        return new FLOResponse(true, [USER_CONSTANT.ACCESS_TOKEN_UPDATED]).setSuccessData(refreshAccessToken).setStatus(HttpStatus.OK);
     }
 
     @Get('data')
@@ -124,8 +127,9 @@ export class UserController {
     })
     @HttpCode(HttpStatus.OK)
     @ApiOkResponse({})
-    findUserProfile(@Req() req: Request) {
-        return this.userService.findUserProfile(req);
+    async findUserProfile(@Req() req: Request): Promise<FLOResponse> {
+        const userProfile = await this.userService.findUserProfile(req);
+        return new FLOResponse(true, [USER_CONSTANT.ACCESS_TOKEN_UPDATED]).setSuccessData(userProfile).setStatus(HttpStatus.OK);
     }
 
     @Get('user-activity')
@@ -141,8 +145,9 @@ export class UserController {
     })
     @HttpCode(HttpStatus.OK)
     @ApiOkResponse({})
-    findOrganizationUserActivity(@Req() req: Request) {
-        return this.userService.findOrganizationUserActivity(req);
+    async findOrganizationUserActivity(@Req() req: Request): Promise<FLOResponse> {
+        const userActivity = await this.userService.findOrganizationUserActivity(req);
+        return new FLOResponse(true, [USER_CONSTANT.USER_ACTIVITY_FETCHED]).setSuccessData(userActivity).setStatus(HttpStatus.OK);
     }
 
     @Get('user-count')
@@ -156,24 +161,25 @@ export class UserController {
     })
     @HttpCode(HttpStatus.OK)
     @ApiOkResponse({})
-    async findAllUserActivity() {
+    async findAllUserActivity(): Promise<FLOResponse> {
         const allCount = await this.userService.findAllUserCountData();
-        return new Response(true, [USER_CONSTANT.LOGGEDIN_USER_DATA_COUNT_FETCHED]).setStatus(HttpStatus.OK).setSuccessData(allCount);
+        return new FLOResponse(true, [USER_CONSTANT.LOGGEDIN_USER_DATA_COUNT_FETCHED]).setSuccessData(allCount).setStatus(HttpStatus.OK);
     }
 
     @Get('data/:id')
     @UseGuards(RolesGuard, BlockchainStatusGuard)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF)
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'A private route for geting user detail' })
+    @ApiOperation({ summary: 'A private route for getting user detail' })
     @ApiHeader({
         name: 'Bearer',
         description: 'the token we need for auth.'
     })
     @HttpCode(HttpStatus.OK)
     @ApiOkResponse({})
-    findUserData(@Param('id') userId: string, @Req() req: Request) {
-        return this.userService.findUserData(userId, req);
+    async findUserData(@Param('id') userId: string, @Req() req: Request): Promise<FLOResponse> {
+        const userData = await this.userService.findUserData(userId, req);
+        return new FLOResponse(true, [USER_CONSTANT.USER_DATA_FOUND]).setSuccessData(userData).setStatus(HttpStatus.OK);
     }
 
     @Post('reject')
@@ -187,8 +193,9 @@ export class UserController {
     })
     @HttpCode(HttpStatus.CREATED)
     @ApiCreatedResponse({})
-    async rejectUser(@Req() req: Request, @Body() rejectUserDto: RejectUserDto) {
-        return new Response(true, [USER_CONSTANT.REJECTED_USER]).setStatus(HttpStatus.CREATED).setSuccessData(await this.userService.rejectUser(rejectUserDto, req));
+    async rejectUser(@Req() req: Request, @Body() rejectUserDto: RejectUserDto): Promise<FLOResponse> {
+        const rejectedUser = await this.userService.rejectUser(rejectUserDto, req);
+        return new FLOResponse(true, [USER_CONSTANT.REJECTED_USER]).setSuccessData(rejectedUser).setStatus(HttpStatus.OK);
     }
 
     @Put('data')
@@ -204,8 +211,9 @@ export class UserController {
     })
     @HttpCode(HttpStatus.OK)
     @ApiOkResponse({})
-    disableUserCompany(@Body() verifyEmailDto: VerifyEmailDto) {
-        return this.userService.disableUserCompany(verifyEmailDto);
+    async disableUserCompany(@Body() verifyEmailDto: VerifyEmailDto): Promise<FLOResponse> {
+        const disabledUser = await this.userService.disableUserCompany(verifyEmailDto);
+        return new FLOResponse(true, [USER_CONSTANT.USER_DISABLED]).setSuccessData(disabledUser).setStatus(HttpStatus.OK);
     }
 
     @Get('all')
@@ -221,45 +229,27 @@ export class UserController {
     })
     @HttpCode(HttpStatus.OK)
     @ApiOkResponse({})
-    findAllUser(@Req() req: Request) {
-        return this.userService.findAllUser(req);
+    async findAllUser(@Req() req: Request): Promise<FLOResponse> {
+        const allUsers = await this.userService.findAllUser(req);
+        return new FLOResponse(true, [USER_CONSTANT.ALL_USERS_FOUND]).setSuccessData(allUsers).setStatus(HttpStatus.OK);
     }
 
     @Put('forget-password')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Forget Password' })
     @ApiOkResponse({})
-    async forgetPassword(@Body() forgetPasswordDto: ForgetPasswordDto, @Req() req: Request): Promise<CaseyResponse> {
+    async forgetPassword(@Body() forgetPasswordDto: ForgetPasswordDto, @Req() req: Request): Promise<FLOResponse> {
         const { success, message } = await this.userService.forgetPassword(req, forgetPasswordDto);
-        return {
-            success,
-            message
-        };
+        return new FLOResponse(true, [USER_CONSTANT.FORGET_PASSWORD_LINK_SENT]).setSuccessData({ success, message }).setStatus(HttpStatus.OK);
     }
 
     @Put('reset-password')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Reset Password when forget' })
     @ApiOkResponse({})
-    async resetPassword(@Req() req: Request, @Body() resetPasswordDto: ResetPasswordDto): Promise<CaseyResponse> {
-        try {
-            const data = await this.userService.resetPassword(req, resetPasswordDto);
-            return {
-                success: true,
-                message: 'Reset Password Successfull',
-                data: data,
-                error: null,
-                errorMessage: ''
-            };
-        } catch (err) {
-            return {
-                success: false,
-                message: err.message,
-                data: null,
-                error: err,
-                errorMessage: err.message
-            };
-        }
+    async resetPassword(@Req() req: Request, @Body() resetPasswordDto: ResetPasswordDto): Promise<FLOResponse> {
+        const data = await this.userService.resetPassword(req, resetPasswordDto);
+        return new FLOResponse(true, [USER_CONSTANT.RESET_PASSWORD_SUCCESS]).setSuccessData(data).setStatus(HttpStatus.OK);
     }
 
     @Put('change-password')
@@ -273,25 +263,9 @@ export class UserController {
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async changePassword(@Req() req: Request, @Body() changePasswordDto: ChangePasswordDto): Promise<CaseyResponse> {
-        try {
-            const data = await this.userService.changePassword(req, changePasswordDto);
-            return {
-                success: true,
-                message: USER_CONSTANT.PASSWORD_CHANGED_SUCCESSFULLY,
-                data: data,
-                error: null,
-                errorMessage: ''
-            };
-        } catch (err) {
-            return {
-                success: false,
-                message: err.message,
-                data: null,
-                error: err,
-                errorMessage: err.message
-            };
-        }
+    async changePassword(@Req() req: Request, @Body() changePasswordDto: ChangePasswordDto): Promise<FLOResponse> {
+        const data = await this.userService.changePassword(req, changePasswordDto);
+        return new FLOResponse(true, [USER_CONSTANT.PASSWORD_CHANGED_SUCCESSFULLY]).setSuccessData(data).setStatus(HttpStatus.OK);
     }
 
     @Put('verify')
@@ -307,17 +281,9 @@ export class UserController {
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async verifyUserByAdmin(@Body() verifyEmailDto: VerifyEmailDto, @Req() req: Request): Promise<CaseyResponse> {
-        try {
-            return await this.userService.verifyEmailByAdmin(verifyEmailDto, req);
-        } catch (err) {
-            return {
-                success: false,
-                message: 'Verification failed',
-                error: err,
-                errorMessage: err.message
-            };
-        }
+    async verifyUserByAdmin(@Body() verifyEmailDto: VerifyEmailDto, @Req() req: Request): Promise<FLOResponse> {
+        const verifyResponse = await this.userService.verifyEmailByAdmin(verifyEmailDto, req);
+        return new FLOResponse(true, [USER_CONSTANT.USER_VERIFIED]).setSuccessData(verifyResponse).setStatus(HttpStatus.OK);
     }
 
     @Put('add-subscription')
@@ -333,7 +299,7 @@ export class UserController {
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async addSubscriptionType(@Body() subscriptionTypeDto: SubscriptionTypeDto, @Req() req: Request) {
+    async addSubscriptionType(@Body() subscriptionTypeDto: SubscriptionTypeDto, @Req() req: Request): Promise<FLOResponse> {
         return new Response(true, [USER_CONSTANT.SUBSCRIPTION_UPDATED]).setSuccessData(await this.userService.addSubscriptionType(subscriptionTypeDto, req)).setStatus(HttpStatus.OK);
     }
 
@@ -352,7 +318,7 @@ export class UserController {
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async addCompany(@Body() addCompanyDto: AddCompanyDto, @Req() req: Request) {
+    async addCompany(@Body() addCompanyDto: AddCompanyDto, @Req() req: Request): Promise<FLOResponse> {
         return new Response(true, [USER_CONSTANT.NEW_COMPANY_ADDED]).setSuccessData(await this.userService.addCompanyToUser(addCompanyDto, req)).setStatus(HttpStatus.OK);
     }
 
@@ -364,8 +330,8 @@ export class UserController {
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async verifyUseraccept(@Param('token') token: string) {
-        return new Response(true, [USER_CONSTANT.NEW_COMPANY_ADDED]).setSuccessData(await this.userService.verifyUseraccept(token)).setStatus(HttpStatus.OK);
+    async verifyUserAccept(@Param('token') token: string): Promise<FLOResponse> {
+        return new Response(true, [USER_CONSTANT.NEW_COMPANY_ADDED]).setSuccessData(await this.userService.verifyUserAccept(token)).setStatus(HttpStatus.OK);
     }
 
     @Get('subscriptionType')
@@ -382,13 +348,9 @@ export class UserController {
     })
     @HttpCode(HttpStatus.OK)
     @ApiOkResponse({})
-    async getRecordsBySubscriptionType(@Req() req: Request) {
-        try {
-            const data = await this.userService.getRecordsBySubscriptionType(req);
-            return { success: true, data };
-        } catch (err) {
-            return { success: false, err };
-        }
+    async getRecordsBySubscriptionType(@Req() req: Request): Promise<FLOResponse> {
+        const data = await this.userService.getRecordsBySubscriptionType(req);
+        return new Response(true, [USER_CONSTANT.ALL_USERS_FOUND]).setSuccessData(data).setStatus(HttpStatus.OK);
     }
 
     @Post('create/:subscription')
@@ -404,8 +366,9 @@ export class UserController {
     })
     @HttpCode(HttpStatus.CREATED)
     @ApiOkResponse({})
-    async createUser(@Param('subscription') subscription: string, @Req() req: Request, @Body() newUserDto: NewUserDto) {
-        return await this.userService.createUserForOrganization(newUserDto, req, subscription);
+    async createUser(@Param('subscription') subscription: string, @Req() req: Request, @Body() newUserDto: NewUserDto): Promise<FLOResponse> {
+        const userData = await this.userService.createUserForOrganization(newUserDto, req, subscription);
+        return new Response(true, [USER_CONSTANT.USER_CREATED]).setSuccessData(userData).setStatus(HttpStatus.OK);
     }
 
     @Get('organization-user/all')
@@ -421,8 +384,9 @@ export class UserController {
     })
     @HttpCode(HttpStatus.OK)
     @ApiOkResponse({})
-    async getAllUserOfOrganization(@Req() req: Request) {
-        return await this.userService.findAllUserOfOrganization(req);
+    async getAllUserOfOrganization(@Req() req: Request): Promise<FLOResponse> {
+        const allUsers = await this.userService.findAllUserOfOrganization(req);
+        return new Response(true, [USER_CONSTANT.ALL_USERS_FOUND]).setSuccessData(allUsers).setStatus(HttpStatus.OK);
     }
 
     @Put('organization-user/verify')
@@ -438,8 +402,9 @@ export class UserController {
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async verifyOrganizationUserByAdmin(@Body() verifyEmailDto: VerifyEmailDto, @Req() req: Request): Promise<CaseyResponse> {
-        return await this.userService.verifyUserByOrganizationAdmin(verifyEmailDto, req);
+    async verifyOrganizationUserByAdmin(@Body() verifyEmailDto: VerifyEmailDto, @Req() req: Request): Promise<FLOResponse> {
+        const verifiedUser = await this.userService.verifyUserByOrganizationAdmin(verifyEmailDto, req);
+        return new Response(true, [USER_CONSTANT.USER_VERIFIED]).setSuccessData(verifiedUser).setStatus(HttpStatus.OK);
     }
 
     @Put('organization-user/enable')
@@ -455,12 +420,9 @@ export class UserController {
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async enableOrganizationUserByAdmin(@Body() verifyEmailDto: VerifyEmailDto, @Req() req: Request): Promise<CaseyResponse> {
-        try {
-            return await this.userService.enableUserByOrganizationAdmin(verifyEmailDto, req);
-        } catch (err) {
-            throw new BadRequestException(USER_CONSTANT.FAILED_TO_ENABLE_USER, err);
-        }
+    async enableOrganizationUserByAdmin(@Body() verifyEmailDto: VerifyEmailDto, @Req() req: Request): Promise<FLOResponse> {
+        const enabledUser = await this.userService.enableUserByOrganizationAdmin(verifyEmailDto, req);
+        return new Response(true, [USER_CONSTANT.USER_ENABLED]).setSuccessData(enabledUser).setStatus(HttpStatus.OK);
     }
 
     @Delete('organization-user/:userId')
@@ -476,8 +438,9 @@ export class UserController {
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async deleteOrganizationUserByAdmin(@Param('userId') userId: string, @Req() req: Request) {
-        return await this.userService.deleteUserByOrganizationAdmin(userId, req);
+    async deleteOrganizationUserByAdmin(@Param('userId') userId: string, @Req() req: Request): Promise<FLOResponse> {
+        const deletedUser = await this.userService.deleteUserByOrganizationAdmin(userId, req);
+        return new Response(true, [USER_CONSTANT.USER_DELETED]).setSuccessData(deletedUser).setStatus(HttpStatus.OK);
     }
 
     @Delete('organization-user/:staffingId/:userId')
@@ -487,14 +450,15 @@ export class UserController {
     @Roles(ROLE.OTHER, ROLE.SUPER_ADMIN, ROLE.STAFF)
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Deleted staffing user by admin of organization' })
+    @ApiOperation({ summary: 'Delete staffing user by admin of organization' })
     @ApiHeader({
         name: 'Bearer',
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async deleteTrainingUserByAdmin(@Param('userId') userId: string, @Param('staffingId') staffingId: string, @Req() req: Request) {
-        return await this.userService.deleteUserByOrganizationAdmin(userId, req, staffingId);
+    async deleteTrainingUserByAdmin(@Param('userId') userId: string, @Param('staffingId') staffingId: string, @Req() req: Request): Promise<FLOResponse> {
+        const deletedUser = await this.userService.deleteUserByOrganizationAdmin(userId, req, staffingId);
+        return new Response(true, [USER_CONSTANT.USER_DELETED]).setSuccessData(deletedUser).setStatus(HttpStatus.OK);
     }
 
     @Put('organization-user/:userId')
@@ -510,8 +474,9 @@ export class UserController {
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async updateOrganizationUserByAdmin(@Body() updateUserDto: NewUserDto, @Param('userId') userId: string, @Req() req: Request) {
-        return await this.userService.updateUserByOrganizationAdmin(updateUserDto, userId, req);
+    async updateOrganizationUserByAdmin(@Body() updateUserDto: NewUserDto, @Param('userId') userId: string, @Req() req: Request): Promise<FLOResponse> {
+        const editedUser = await this.userService.updateUserByOrganizationAdmin(updateUserDto, userId, req);
+        return new Response(true, [USER_CONSTANT.USER_UPDATED_SUCCESSFULLY]).setSuccessData(editedUser).setStatus(HttpStatus.OK);
     }
 
     @Put('organization-user')
@@ -529,8 +494,9 @@ export class UserController {
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async disableOrganizationUserByAdmin(@Body() disableUserDto: VerifyEmailDto, @Req() req: Request) {
-        return await this.userService.disableUserByOrganizationAdmin(disableUserDto, req);
+    async disableOrganizationUserByAdmin(@Body() disableUserDto: VerifyEmailDto, @Req() req: Request): Promise<FLOResponse> {
+        const disabledUser = await this.userService.disableUserByOrganizationAdmin(disableUserDto, req);
+        return new Response(true, [USER_CONSTANT.USER_DISABLED]).setSuccessData(disabledUser).setStatus(HttpStatus.OK);
     }
 
     @Get('email')
@@ -544,13 +510,14 @@ export class UserController {
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async findUserByEmail(@Req() req: Request) {
+    async findUserByEmail(@Req() req: Request): Promise<FLOResponse> {
         const email = <string>req.query.email;
-        const decodedUri = decodeURIComponent(email);
         if (email) {
-            return this.userService.buildRegistrationInfo(await this.userService.findByEmail(decodedUri));
+            const decodedUri = decodeURIComponent(email);
+            const userData = this.userService.buildRegistrationInfo(await this.userService.findByEmail(decodedUri));
+            return new Response(true, [USER_CONSTANT.USER_DISABLED]).setSuccessData(userData).setStatus(HttpStatus.OK);
         }
-        return false;
+        throw new BadRequestException(USER_CONSTANT.EMAIL_NOT_FOUND);
     }
 
     @Put('change-default')
@@ -564,7 +531,7 @@ export class UserController {
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async changeDefaultCompany(@Body() updateUserDto: SetDefaultCompanyDto, @Req() req: Request, @Res({ passthrough: true }) res: ExpressResponse) {
+    async changeDefaultCompany(@Body() updateUserDto: SetDefaultCompanyDto, @Req() req: Request, @Res({ passthrough: true }) res: ExpressResponse): Promise<FLOResponse> {
         return new Response(true, [USER_CONSTANT.USER_DETAIL_FOUND]).setSuccessData(await this.userService.setDefaultCompany(updateUserDto, req, res)).setStatus(HttpStatus.OK);
     }
 
@@ -573,7 +540,7 @@ export class UserController {
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Register user to blockchain' })
     @ApiCreatedResponse({})
-    async registerBcAdmin(@Body() enrollDto: BcUserDto) {
+    async registerBcAdmin(@Body() enrollDto: BcUserDto): Promise<FLOResponse> {
         return new Response(true, [BC_SUCCESS_RESPONSE.USER_ENROLL_SUCCESS]).setSuccessData(await this.userBcService.registerUser(enrollDto, '', '')).setStatus(HttpStatus.OK);
     }
 
@@ -585,7 +552,7 @@ export class UserController {
     })
     @ApiOperation({ summary: 'Reset block' })
     @ApiCreatedResponse({})
-    async resetBlockUser(@Body() resetBlockUserDto: ResetBlockUserDto, @Req() req: Request) {
+    async resetBlockUser(@Body() resetBlockUserDto: ResetBlockUserDto, @Req() req: Request): Promise<FLOResponse> {
         const resetBlockToken = req.headers['reset-block-token'] as string;
         return new Response(true, [USER_CONSTANT.SUCCESSFULLY_CLEARED_PASSWORD_WRONG_BLOCK]).setSuccessData(await this.userService.clearPasswordWrongBlock(resetBlockUserDto.email, resetBlockToken)).setStatus(HttpStatus.CREATED);
     }

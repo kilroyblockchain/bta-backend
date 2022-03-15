@@ -165,12 +165,9 @@ export class OrganizationUnitController {
     @ApiOkResponse({
         description: 'Organization Unit Enabled'
     })
-    async enableOrganizationUnit(@Param('id') unitId: string) {
-        try {
-            return new Response(true, [ORGANIZATION_UNIT_CONSTANT.ORGANIZATION_UNIT_ENABLED]).setSuccessData(await this.organizationUnitService.enableOrganizationUnit(unitId)).setStatus(HttpStatus.OK);
-        } catch (err) {
-            throw new BadRequestException(ORGANIZATION_UNIT_CONSTANT.CANNOT_ENABLE_ORGANIZATION_UNIT, err);
-        }
+    async enableOrganizationUnit(@Param('id') unitId: string): Promise<Response> {
+        const organizationUnit = await this.organizationUnitService.enableOrganizationUnit(unitId);
+        return new Response(true, [ORGANIZATION_UNIT_CONSTANT.ORGANIZATION_UNIT_ENABLED]).setSuccessData(organizationUnit).setStatus(HttpStatus.OK);
     }
 
     @Delete(':id')

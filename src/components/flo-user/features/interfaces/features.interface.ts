@@ -5,5 +5,5 @@ export interface IFeature extends Document {
     subscriptionId: Array<Types.ObjectId>;
     featureIdentifier: string;
     feature: string;
-    accessType?: Array<any>;
+    accessType?: Array<string>;
 }

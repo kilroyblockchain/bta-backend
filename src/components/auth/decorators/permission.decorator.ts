@@ -1,3 +1,3 @@
-import { SetMetadata } from '@nestjs/common';
+import { CustomDecorator, SetMetadata } from '@nestjs/common';
 
-export const Permission = (...permission: string[]) => SetMetadata('permission', permission);
+export const Permission = (...permission: string[]): CustomDecorator<string> => SetMetadata('permission', permission);

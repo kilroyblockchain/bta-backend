@@ -1,3 +1,4 @@
+import { StaffingInterface } from 'src/components/flo-user/user-roles/organization-staffing/interfaces/organization-staffing.interface';
 import { Injectable, BadRequestException, NotFoundException, ConflictException, ForbiddenException, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PaginateModel, PaginateResult } from 'mongoose';
@@ -27,10 +28,8 @@ import { MailService } from 'src/components/utils/mail/mail.service';
 import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 import { VerificationService } from '../verification/verification.service';
 import { OrganizationStaffingService } from '../user-roles/organization-staffing/organization-staffing.service';
-import { ICompany, IUser, ILoginCount } from './interfaces/user.interface';
-import { Err } from 'src/@core/interfaces/error.interface';
-import { IUserData } from './interfaces/response.interface';
-import { Organization } from '../organization/interfaces/organization.interface';
+import { ICompany, IUser, ILoginCount, IReturnResponse, IUserResponse, IUserWithBlockchain, ICompanyAdmin, IJWTUserData, IUserData } from './interfaces/user.interface';
+import { ICompanyDto, IOrganization } from '../organization/interfaces/organization.interface';
 import * as util from 'util';
 import { UserBcService } from './user-bc.service';
 import { BC_STATUS } from 'src/@core/constants/bc-status.enum';
@@ -46,7 +45,8 @@ import { RejectUserDto } from './dto/reject-user.dto';
 import { UserRejectInfoService } from '../user-reject-info/user-reject-info.service';
 import { CAPTCHA_STATUS } from 'src/@core/constants/captcha-status.enum';
 import { COOKIE_KEYS } from 'src/@core/constants/cookie-key.constant';
-import { IUserActivityResponse, RefreshToken } from 'src/components/auth/interfaces/refresh-token.interface';
+import { IUserActivityResponse, IRefreshToken } from 'src/components/auth/interfaces/refresh-token.interface';
+import { IVerifyEmail } from './interfaces/verified-email.interface';
 
 @Injectable()
 export class UserService {
@@ -54,13 +54,13 @@ export class UserService {
     HOURS_TO_BLOCK = 6;
     LOGIN_ATTEMPTS_TO_BLOCK = parseInt(process.env.LOGIN_ATTEMPTS_TO_BLOCK) || 5;
 
-    getImageHashPromise: any;
+    getImageHashPromise;
 
     constructor(
         @InjectModel('User') private readonly uModel: PaginateModel<IUser>,
         @InjectModel('User') private readonly UserModel: Model<IUser>,
         @InjectModel('RefreshToken')
-        private readonly RefreshTokenModel: PaginateModel<RefreshToken>,
+        private readonly RefreshTokenModel: PaginateModel<IRefreshToken>,
         private readonly organizationService: OrganizationService,
         private readonly authService: AuthService,
         private readonly mailService: MailService,
@@ -73,10 +73,10 @@ export class UserService {
     ) {
         this.getImageHashPromise = util.promisify(this.authService.getImageHash);
     }
-    async register(req: Request, logoName: string, registerUserDto: RegisterUserDto): Promise<IUser | Err> {
+    async register(req: Request, logoName: string, registerUserDto: RegisterUserDto): Promise<IUserWithBlockchain> {
         const user = new this.UserModel(registerUserDto);
         if (process.env.RE_CAPTCHA_STATUS !== CAPTCHA_STATUS.DISABLED) {
-            const captchaValidation: any = await this.validateUserRecaptcha(req, registerUserDto.reCaptchaToken);
+            const captchaValidation: boolean = await this.validateUserRecaptcha(req, registerUserDto.reCaptchaToken);
             if (!captchaValidation) throw new BadRequestException(USER_CONSTANT.PLEASE_VERIFY_THAT_YOU_ARE_A_HUMAN);
         }
         const isEmailUnique = await this.isEmailUnique(user.email);
@@ -86,7 +86,18 @@ export class UserService {
         const randomPassword = Math.random().toString(36).slice(-8);
         organizationData = await this.organizationService.getOrganizationByName(registerUserDto.companyName);
         if (!isOrganizationNameUnique) throw new BadRequestException([COMMON_ERROR.COMPANYNAME_HAS_ALREADY_BEEN_REGISTERED, registerUserDto.companyName]);
-        const orgData = await this.organizationService.buildEmptyOrganizaton(registerUserDto);
+        const companyDto: ICompanyDto = {
+            companyName: registerUserDto.companyName,
+            companyCountry: registerUserDto.companyCountry,
+            companyState: registerUserDto.state,
+            companyCity: registerUserDto.companyCity,
+            companyAddress: registerUserDto.companyAddress,
+            companyZipCode: registerUserDto.companyZipCode,
+            companyLogo: logoName,
+            image: null,
+            subscriptionType: ROLE[registerUserDto.subscriptionType.toUpperCase()]
+        };
+        const orgData = this.organizationService.buildEmptyOrganization(companyDto);
         const organization = await this.organizationService.createOrganization(req, logoName, orgData);
         organizationData = await organization.save();
 
@@ -97,7 +108,7 @@ export class UserService {
         return this.buildRegistrationInfo(user);
     }
 
-    initUserCompany(organizationData: Organization | any, registerUserDto: RegisterUserDto | any, isAdmin: boolean, verified: boolean, isDeleted = false): ICompany {
+    initUserCompany(organizationData: IOrganization, registerUserDto: RegisterUserDto, isAdmin: boolean, verified: boolean, isDeleted = false): ICompany {
         return {
             companyId: organizationData._id,
             staffingId: registerUserDto.staffingId,
@@ -106,21 +117,19 @@ export class UserService {
             default: true,
             verified,
             isDeleted,
-            isAdmin: registerUserDto.subcriptionType === 'vaccination-appointment' ? false : isAdmin
+            isAdmin: registerUserDto.subscriptionType === 'vaccination-appointment' ? false : isAdmin
         };
     }
 
-    async createUserForOrganization(newUserDto: NewUserDto, req: Request, subscription: string) {
+    async createUserForOrganization(newUserDto: NewUserDto, req: Request, subscription: string): Promise<IUser> {
         const newUser = new this.UserModel(newUserDto);
         const parentUser = req['user'];
         const defaultCompany = parentUser.company.find((defaultComp) => defaultComp.default);
-        const organizationData = {
-            _id: defaultCompany.companyId
-        };
-        const userDto = {
-            staffingId: newUserDto.staffingId,
-            subscriptionType: subscription && subscription !== 'undefined' ? subscription : defaultCompany.subscriptionType
-        };
+        const organizationData = {} as IOrganization;
+        organizationData._id = defaultCompany.companyId;
+        const userDto = {} as RegisterUserDto;
+        userDto.staffingId = newUserDto.staffingId;
+        userDto.subscriptionType = subscription && subscription !== 'undefined' ? subscription : defaultCompany.subscriptionType;
         let randomPassword = null;
         try {
             randomPassword = Math.random().toString(36).slice(-8);
@@ -132,7 +141,7 @@ export class UserService {
         if (!isEmailUnique) throw new BadRequestException([USER_CONSTANT.USER_EMAIL_HAS_ALREADY_BEEN_REGISTERED, newUser.email]);
         newUser.company = [this.initUserCompany(organizationData, userDto, false, true)];
         const user = await newUser.save();
-        const userDetail: any = await this.uModel
+        const userDetail = await this.uModel
             .findById(user._id)
             .populate({
                 path: 'company.companyId company.staffingId country state',
@@ -150,10 +159,10 @@ export class UserService {
             await this.userBcService.storeUserBc(user, bcUserDto, BC_PAYLOAD.CREATE_USER);
             await this.caService.userRegistrationListStaffing(newUserDto.staffingId, bcUserDto);
         }
-        const subcriptionTypeFull = await this.subsTypeService.getFullSubscription(userDto.subscriptionType);
+        const subscriptionTypeFull = await this.subsTypeService.getFullSubscription(userDto.subscriptionType);
         await this.mailService.sendMail(user.email, EMAIL_CONSTANTS.FLO, EMAIL_CONSTANTS.TITLE_WELCOME, config.MAIL_TYPES.SUBSCRIBER_EMAIL, {
             user: user,
-            subscriptionType: subcriptionTypeFull,
+            subscriptionType: subscriptionTypeFull,
             email: user.email,
             password: randomPassword,
             clientAppURL: process.env.CLIENT_APP_URL
@@ -168,7 +177,7 @@ export class UserService {
         return userDetail;
     }
 
-    async updatePersonalDetails(updateUserDto: UpdateUserDto, req: Request): Promise<IUser> {
+    async updatePersonalDetails(updateUserDto: UpdateUserDto, req: Request): Promise<IJWTUserData> {
         const user = await this.findVerifiedUserByEmail(updateUserDto.email);
         if (user) {
             user.firstName = updateUserDto.firstName;
@@ -180,14 +189,14 @@ export class UserService {
             user.address = updateUserDto.address;
             user.jobTitle = updateUserDto.jobTitle;
             user.zipCode = updateUserDto.zipCode;
-            const updatedUser: any = await user.save();
+            const updatedUser = await user.save();
             if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
                 const bcUserDto = new BcUserDto();
                 bcUserDto.loggedInUserId = req['user']._id;
                 bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
                 await this.userBcService.storeUserBc(updatedUser, bcUserDto, BC_PAYLOAD.UPDATE_USER);
                 const blockchainVerified = await this.userBcService.getBlockchainVerifiedUser(updatedUser, bcUserDto);
-                return { ...updatedUser._doc, blockchainVerified };
+                return { ...updatedUser['_doc'], blockchainVerified };
             }
             return await this.getUserDataByJWT(req);
         }
@@ -207,7 +216,7 @@ export class UserService {
         throw new NotFoundException(USER_CONSTANT.USER_NOT_FOUND);
     }
 
-    async updateUserByOrganizationAdmin(updateUserDto: NewUserDto, userId: string, req: Request) {
+    async updateUserByOrganizationAdmin(updateUserDto: NewUserDto, userId: string, req: Request): Promise<IUser> {
         const updatingUser = await this.uModel.findOne({ _id: userId });
         if (updatingUser) {
             const userWithEmail = await this.uModel.findOne({
@@ -237,7 +246,7 @@ export class UserService {
                     bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
                     await this.userBcService.storeUserBc(updatedUser, bcUserDto, BC_PAYLOAD.UPDATE_USER);
                 }
-                const userData: any = await this.uModel
+                const userData = await this.uModel
                     .findById(userId)
                     .populate({
                         path: 'company.companyId company.staffingId skill language education experience country state',
@@ -261,7 +270,7 @@ export class UserService {
         }
     }
 
-    isAdmin(user: any): boolean {
+    isAdmin(user: IUser): boolean {
         if (user) {
             const defaultCompany: ICompany = user.company.find((defaultComp) => defaultComp.default);
             if (defaultCompany.isAdmin) return true;
@@ -270,11 +279,11 @@ export class UserService {
         return false;
     }
 
-    async validateUserRecaptcha(req: Request, reCaptchaToken: string) {
+    async validateUserRecaptcha(req: Request, reCaptchaToken: string): Promise<boolean> {
         return await this.authService.validateUserRecaptcha(req, reCaptchaToken);
     }
 
-    async verifyEmail(req: Request, verifyUuidDto: VerifyUuidDto) {
+    async verifyEmail(req: Request, verifyUuidDto: VerifyUuidDto): Promise<IVerifyEmail> {
         const user = await this.findByVerification(verifyUuidDto.verification);
         await this.setUserAsVerified(user, verifyUuidDto.companyId);
 
@@ -287,7 +296,7 @@ export class UserService {
         };
     }
 
-    async deleteVaccinatedUser(id: string, req: Request) {
+    async deleteVaccinatedUser(id: string, req: Request): Promise<IReturnResponse> {
         const { deletingRole } = req.query;
         const company = this.authService.getDefaultCompany(req);
         const query = {
@@ -326,7 +335,7 @@ export class UserService {
         };
     }
 
-    async verifyEmailByAdmin(verifyEmailDto: VerifyEmailDto, req: Request): Promise<{ success: boolean; message: string }> {
+    async verifyEmailByAdmin(verifyEmailDto: VerifyEmailDto, req: Request): Promise<IReturnResponse> {
         const logger = new Logger('VerifyEmailByAdmin');
         if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
             if (!verifyEmailDto.channelId) {
@@ -396,7 +405,7 @@ export class UserService {
         };
     }
 
-    async verifyUserByOrganizationAdmin(verifyEmailDto: VerifyEmailDto, req: Request, staffingId?: string): Promise<{ success: boolean; message: string }> {
+    async verifyUserByOrganizationAdmin(verifyEmailDto: VerifyEmailDto, req: Request, staffingId?: string): Promise<IReturnResponse> {
         if (this.isAdmin(req['user'])) {
             const user = await this.UserModel.findOne({
                 _id: verifyEmailDto.userId,
@@ -538,7 +547,7 @@ export class UserService {
         };
     }
 
-    async setDefaultCompany(companyDto: SetDefaultCompanyDto, req: Request, res: Response) {
+    async setDefaultCompany(companyDto: SetDefaultCompanyDto, req: Request, res: Response): Promise<IUserResponse> {
         const { _id, company } = req['user'];
         const companyRowId = company.find((comp) => comp.companyId.toString() === companyDto.companyId && comp.isDeleted === false && comp.verified === true)._id;
         if (_id) {
@@ -557,10 +566,10 @@ export class UserService {
                 populate: { path: 'featureAndAccess.featureId' }
             });
             const defaultCompany: ICompany = user.company.find((company) => company.default && company.verified);
-            const organizationData: Organization = <Organization>defaultCompany.companyId;
+            const organizationData: IOrganization = <IOrganization>defaultCompany.companyId;
             const roles = [];
             user.company.filter((company) => {
-                if (company.verified && (<Organization>company.companyId)._id === organizationData._id) {
+                if (company.verified && (<IOrganization>company.companyId)._id === organizationData._id) {
                     roles.push(company.subscriptionType);
                 }
             });
@@ -583,9 +592,9 @@ export class UserService {
         throw new NotFoundException(USER_CONSTANT.USER_NOT_FOUND);
     }
 
-    async login(req: Request, loginUserDto: LoginUserDto, res: Response) {
+    async login(req: Request, loginUserDto: LoginUserDto, res: Response): Promise<IUserResponse> {
         if (process.env.RE_CAPTCHA_STATUS !== CAPTCHA_STATUS.DISABLED) {
-            const captchaValidation: any = await this.validateUserRecaptcha(req, loginUserDto.reCaptchaToken);
+            const captchaValidation = await this.validateUserRecaptcha(req, loginUserDto.reCaptchaToken);
             if (!captchaValidation) throw new BadRequestException(USER_CONSTANT.PLEASE_VERIFY_THAT_YOU_ARE_A_HUMAN);
         }
         const user = await this.findUserByEmail(loginUserDto.email);
@@ -639,14 +648,14 @@ export class UserService {
                 populate: { path: 'featureAndAccess.featureId', model: 'feature' }
             });
         }
-        const organizationData: Organization = <Organization>defaultCompany.companyId;
+        const organizationData: IOrganization = <IOrganization>defaultCompany.companyId;
         const company = await this.organizationService.findOrganizationById(organizationData._id);
         const allowSubscription = company.isRejected ? [] : company.subscription.filter((enableSubscription) => enableSubscription.status).map((subs) => subs.type);
         const roles = [];
         let newStaffing = [];
         newStaffing = defaultCompany.staffingId;
         user.company.filter((company) => {
-            if (company.verified && company.userAccept && ((!company.isDeleted && company.isAdmin) || (!company.isAdmin && company.staffingId.length)) && (<Organization>company.companyId)._id === organizationData._id) {
+            if (company.verified && company.userAccept && ((!company.isDeleted && company.isAdmin) || (!company.isAdmin && company.staffingId.length)) && (<IOrganization>company.companyId)._id === organizationData._id) {
                 roles.push(company.subscriptionType);
                 newStaffing = [...newStaffing, ...company.staffingId];
             }
@@ -675,17 +684,17 @@ export class UserService {
         return userData;
     }
 
-    async logoutUser(req: Request, res: Response) {
+    async logoutUser(req: Request, res: Response): Promise<string> {
         const refreshToken = req.cookies[COOKIE_KEYS.REFRESH_TOKEN];
         await this.authService.revokeRefreshToken(req);
         this.authService.destroyCookie(COOKIE_KEYS.REFRESH_TOKEN, res);
         return await this.authService.userNameFromRefreshToken(refreshToken);
     }
 
-    async findAllUser(req: Request): Promise<any> {
+    async findAllUser(req: Request): Promise<PaginateResult<IUser>> {
         const userId = req['user']._id;
         const { page, limit, status, subscriptionType, companyUsers, unverifiedUsers, rejectedCompanies, blockedUsers, search, searchValue } = req.query;
-        const searchQuery = search && search === 'true' && searchValue ? getSearchFilterWithRegexAll(searchValue, ['firstName', 'lastName', 'email', 'phone', 'company.subscriptionType']) : {};
+        const searchQuery = search && search === 'true' && searchValue ? getSearchFilterWithRegexAll(searchValue.toString(), ['firstName', 'lastName', 'email', 'phone', 'company.subscriptionType']) : {};
         let query;
         if (blockedUsers && blockedUsers === 'true') {
             query = { loginAttempts: { $gt: this.LOGIN_ATTEMPTS_TO_BLOCK - 1 } };
@@ -755,10 +764,10 @@ export class UserService {
         return users;
     }
 
-    async findAllUserOfOrganization(req: Request) {
+    async findAllUserOfOrganization(req: Request): Promise<PaginateResult<IUser>> {
         const { page, limit, status, subscriptionType, search, searchValue } = req.query;
         const verified = status && status.toString().toUpperCase() === 'VERIFIED' ? true : false;
-        const searchQuery = search && search === 'true' && searchValue ? getSearchFilterWithRegexAll(searchValue, ['firstName', 'lastName', 'email', 'zipCode', 'address']) : {};
+        const searchQuery = search && search === 'true' && searchValue ? getSearchFilterWithRegexAll(searchValue.toString(), ['firstName', 'lastName', 'email', 'zipCode', 'address']) : {};
         const user = req['user'];
         const filterTrainingStaffing = {
             staffingId: {
@@ -792,7 +801,9 @@ export class UserService {
 
         if (!page && !limit) {
             return {
-                docs: await this.uModel.find(query).select('firstName lastName email phone ')
+                docs: await this.uModel.find(query).select('firstName lastName email phone '),
+                total: null,
+                limit: null
             };
         }
         const options = {
@@ -822,7 +833,7 @@ export class UserService {
         return users;
     }
 
-    async getRecordsBySubscriptionType(req: Request): Promise<any> {
+    async getRecordsBySubscriptionType(req: Request): Promise<PaginateResult<IUser>> {
         const { subscriptionType, page, limit } = req.query;
         const query = {
             'company.subscriptionType': subscriptionType
@@ -839,9 +850,9 @@ export class UserService {
         return user;
     }
 
-    async refreshAccessToken(refreshAccessTokenDto: RefreshAccessTokenDto, req: Request, res: Response) {
+    async refreshAccessToken(refreshAccessTokenDto: RefreshAccessTokenDto, req: Request, res: Response): Promise<{ accessToken: string }> {
         const refreshToken = req.cookies[COOKIE_KEYS.REFRESH_TOKEN];
-        let decoded: any;
+        let decoded;
         if (refreshToken && refreshAccessTokenDto.accessToken) {
             decoded = this.authService.verifyExpiredToken(refreshAccessTokenDto.accessToken, process.env.JWT_SECRET);
         }
@@ -860,7 +871,7 @@ export class UserService {
         };
     }
 
-    async disableUserCompany(verifyEmailDto: VerifyEmailDto) {
+    async disableUserCompany(verifyEmailDto: VerifyEmailDto): Promise<{ success: boolean; user: IUser; message: string }> {
         let userData;
 
         const user = await this.UserModel.findById(verifyEmailDto.userId);
@@ -923,7 +934,7 @@ export class UserService {
                 $and: [{ expireIn: { $gte: new Date() } }, { $or: [{ revoke: { $eq: null } }, { revoke: { $exists: false } }] }]
             };
         }
-        const searchQuery = search && search === 'true' && searchValue ? getSearchFilterWithRegexAll(searchValue, ['firstName', 'lastName', 'email', 'phone', 'fullName', 'createdDateTime', 'organization.name']) : {};
+        const searchQuery = search && search === 'true' && searchValue ? getSearchFilterWithRegexAll(searchValue.toString(), ['firstName', 'lastName', 'email', 'phone', 'fullName', 'createdDateTime', 'organization.name']) : {};
         const page = req.query.page && req.query.page !== '0' ? Number(req.query.page) : null;
         const limit = req.query.limit ? Number(req.query.limit) : null;
 
@@ -1071,7 +1082,7 @@ export class UserService {
         return data && data.length ? data.length : 0;
     }
 
-    returnPaginatedUserActivity(userActivity: PaginateResult<RefreshToken>): PaginateResult<IUserActivityResponse> {
+    returnPaginatedUserActivity(userActivity: PaginateResult<IRefreshToken>): PaginateResult<IUserActivityResponse> {
         return {
             docs: userActivity.docs.map((data) => this.buildUserActivityResponse(data)),
             total: userActivity.total,
@@ -1081,7 +1092,7 @@ export class UserService {
         };
     }
 
-    buildUserActivityResponse(refreshTokenData: RefreshToken): IUserActivityResponse {
+    buildUserActivityResponse(refreshTokenData: IRefreshToken): IUserActivityResponse {
         return {
             userId: refreshTokenData.userId['_id'],
             firstName: refreshTokenData.userId['firstName'] || '',
@@ -1098,7 +1109,7 @@ export class UserService {
         };
     }
 
-    findUserProfile(req: Request): any {
+    findUserProfile(req: Request): Promise<IJWTUserData> {
         return this.getUserDataByJWT(req).then(
             (data) => {
                 return data;
@@ -1109,35 +1120,35 @@ export class UserService {
         );
     }
 
-    async findUserData(userId: string, req: Request) {
-        let userData: any = await this.UserModel.findById(userId);
+    async findUserData(userId: string, req: Request): Promise<IUserWithBlockchain> {
+        const userData = await this.UserModel.findById(userId);
         let blockchainVerified = false;
         if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
             const bcUserDto = new BcUserDto();
             bcUserDto.loggedInUserId = req['user']._id;
             bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
             blockchainVerified = await this.userBcService.getBlockchainVerifiedUser(userData, bcUserDto);
-            userData = this.buildRegistrationInfo(userData);
-            return { ...userData, blockchainVerified };
+            const returnData = this.buildRegistrationInfo(userData);
+            return { ...returnData, blockchainVerified };
         }
-        userData = this.buildRegistrationInfo(userData);
-        return userData;
+        const returnData = this.buildRegistrationInfo(userData);
+        return returnData;
     }
 
-    protected async getUserDataByJWT(req: Request) {
+    protected async getUserDataByJWT(req: Request): Promise<IJWTUserData> {
         const tokenExtractor = this.authService.returnJwtExtractor();
         const token = tokenExtractor(req);
         if (token) {
             const decoded = await this.authService.verifyToken(token, process.env.JWT_SECRET);
             if (decoded) {
-                let user: any = await this.UserModel.findOne({
+                let user = await this.UserModel.findOne({
                     _id: decoded.userId,
                     company: { $elemMatch: { default: true } }
                 })
-                    .select('id firstName lastName jobTitle email phone country state city address zipCode company userId birthDate skill language education experience')
+                    .select('id firstName lastName jobTitle email phone country state city address zipCode company')
                     .populate({
-                        path: 'company.companyId skill language education experience country state',
-                        select: 'companyName country state city address zipCode companyLogo contributionForApp helpNeededFromApp aboutOrganization createdAt title school degree fieldOfStudy grade startYear endYear employmentType company location startDate endDate createdAt updatedAt userId status name',
+                        path: 'company.companyId country state',
+                        select: 'companyName country state city address zipCode companyLogo createdAt company location startDate endDate createdAt updatedAt userId status name',
                         populate: { path: 'country state', select: 'name' }
                     })
                     .populate({
@@ -1149,13 +1160,13 @@ export class UserService {
                         }
                     });
                 const userCompany = user.company.find((defaultUser) => defaultUser.default);
-                const defaultCompany: Organization = <Organization>userCompany.companyId;
+                const defaultCompany: IOrganization = <IOrganization>userCompany.companyId;
                 if (!user) {
                     throw new NotFoundException(USER_CONSTANT.USER_NOT_FOUND);
                 }
                 this.isUserBlocked(user);
                 let bcVerified = false;
-                user = { ...user._doc };
+                user = { ...user['_doc'] };
                 if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
                     if (user) {
                         const bcUserDto = new BcUserDto();
@@ -1248,7 +1259,7 @@ export class UserService {
 
     async forgetPassword(req: Request, forgetPasswordDto: ForgetPasswordDto): Promise<{ success: boolean; message: string }> {
         if (process.env.RE_CAPTCHA_STATUS !== CAPTCHA_STATUS.DISABLED) {
-            const captchaValidation: any = await this.validateUserRecaptcha(req, forgetPasswordDto.reCaptchaToken);
+            const captchaValidation = await this.validateUserRecaptcha(req, forgetPasswordDto.reCaptchaToken);
             if (!captchaValidation) throw new BadRequestException(USER_CONSTANT.PLEASE_VERIFY_THAT_YOU_ARE_A_HUMAN);
         }
         let user;
@@ -1281,16 +1292,7 @@ export class UserService {
         return response;
     }
 
-    async findOrganizationIdByUser(id: string) {
-        const user = await this.UserModel.findOne({
-            _id: id,
-            'company.default': true,
-            'company.verified': true
-        }).exec();
-        return user.company.find((defaultUser) => defaultUser.default).companyId;
-    }
-
-    async isEmailUnique(email: string) {
+    async isEmailUnique(email: string): Promise<boolean> {
         const user = await this.UserModel.findOne({ email });
         if (user) {
             return false;
@@ -1298,12 +1300,12 @@ export class UserService {
         return true;
     }
 
-    private setRegistrationInfo(user): any {
+    private setRegistrationInfo(user): void {
         user.verification = v4();
         user.verificationExpires = addHours(new Date(), this.HOURS_TO_VERIFY);
     }
 
-    buildRegistrationInfo(user): any {
+    buildRegistrationInfo(user): IUserWithBlockchain {
         const userRegistrationInfo = {
             id: user._id,
             roles: user.roles,
@@ -1316,9 +1318,7 @@ export class UserService {
             city: user.city,
             address: user.address,
             zipCode: user.zipCode,
-            companyID: user.companyID,
-            jobTitle: user.jobTitle,
-            sponsorOrganizationName: user.sponsorOrganizationName,
+            companyId: user.companyID,
             verified: user.verified,
             blockchainVerified: user.blockchainVerified ? user.blockchainVerified : false
         };
@@ -1356,7 +1356,7 @@ export class UserService {
         return user;
     }
 
-    private async setUserAsVerified(user, companyId: string) {
+    private async setUserAsVerified(user, companyId: string): Promise<void> {
         await this.UserModel.findOneAndUpdate(
             { _id: user._id, 'company._id': companyId },
             {
@@ -1387,7 +1387,7 @@ export class UserService {
         return user;
     }
 
-    private async checkPassword(attemptPass: string, user) {
+    private async checkPassword(attemptPass: string, user): Promise<boolean> {
         const match = await bcrypt.compare(attemptPass, user.password);
         if (!match) {
             await this.passwordsDoNotMatch(user);
@@ -1396,13 +1396,13 @@ export class UserService {
         return match;
     }
 
-    private isUserBlocked(user) {
+    private isUserBlocked(user): void {
         if (user.blockExpires > Date.now()) {
             throw new ConflictException([USER_CONSTANT.USER_HAS_BEEN_BLOCKED_ATTEMPT, getHourMinuteDiff(user.blockExpires)]);
         }
     }
 
-    private async passwordsDoNotMatch(user) {
+    private async passwordsDoNotMatch(user): Promise<void> {
         user.loginAttempts += 1;
         await user.save();
         const remainingAttempts = this.LOGIN_ATTEMPTS_TO_BLOCK - user.loginAttempts;
@@ -1415,23 +1415,23 @@ export class UserService {
         }
     }
 
-    private async blockUser(user) {
+    private async blockUser(user): Promise<void> {
         user.blockExpires = addHours(new Date(), this.HOURS_TO_BLOCK);
         await user.save();
     }
 
-    private async passwordsAreMatch(user) {
+    private async passwordsAreMatch(user): Promise<void> {
         user.loginAttempts = 0;
         await user.save();
     }
 
-    async getAdminOfCompany(companyName: string) {
+    async getAdminOfCompany(companyName: string): Promise<ICompanyAdmin> {
         const orgDetail = await this.organizationService.getOrganizationByName(companyName);
         if (orgDetail) {
             const admin = await this.UserModel.findOne({
-                companyID: orgDetail._id,
-                verified: true,
-                staffingId: { $exists: true, $size: 0 }
+                'company.companyId': orgDetail._id,
+                'company.verified': true,
+                'company.staffingId': { $exists: true, $size: 0 }
             });
             if (admin) {
                 return {
@@ -1449,11 +1449,7 @@ export class UserService {
         }
     }
 
-    async unVerifyAllUsersByCompanyId(companyID: string) {
-        return await this.UserModel.updateMany({ companyID: companyID }, { verified: false, isAdmin: false });
-    }
-
-    async addSubscriptionType(subscriptionTypeDto: SubscriptionTypeDto, req: Request) {
+    async addSubscriptionType(subscriptionTypeDto: SubscriptionTypeDto, req: Request): Promise<IUser> {
         let newSubscription = [];
         let removedSubscription = [];
         const user = await this.UserModel.findById(subscriptionTypeDto.userId);
@@ -1491,7 +1487,7 @@ export class UserService {
                                     companyId: subscriptionTypeDto.companyId,
                                     subscriptionType
                                 };
-                            }) as any
+                            }) as Array<ICompany>
                         }
                     },
                     {
@@ -1520,7 +1516,7 @@ export class UserService {
         throw new NotFoundException(USER_CONSTANT.USER_NOT_FOUND);
     }
 
-    async addCompanyToUser(addCompanyDto: AddCompanyDto, req: Request) {
+    async addCompanyToUser(addCompanyDto: AddCompanyDto, req: Request): Promise<IUserWithBlockchain> {
         const loginUserDefaultCompany = this.authService.getDefaultCompany(req);
         const user = await this.UserModel.findById(addCompanyDto.userId);
         const companyName = (await this.organizationService.findOrganizationById(<string>loginUserDefaultCompany.companyId)).companyName;
@@ -1587,7 +1583,7 @@ export class UserService {
             subscriptionType: await this.subsTypeService.getFullSubscription(addCompanyDto.subscription ? addCompanyDto.subscription : loginUserDefaultCompany.subscriptionType),
             activationLink: process.env.CLIENT_APP_URL + `user-accept/${token.userAcceptToken}`
         });
-        const userSaved: any = (await user.save()).populate('country state');
+        const userSaved = await (await user.save()).populate('country state');
         if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
             const bcUserDto = new BcUserDto();
             bcUserDto.loggedInUserId = req['user']._id;
@@ -1601,10 +1597,10 @@ export class UserService {
         return { ...resUser, _id: resUser.id };
     }
 
-    async verifyUseraccept(token: string) {
+    async verifyUserAccept(token: string): Promise<boolean> {
         const userAccept = await this.verificationService.setUserAccept(token);
         if (!userAccept) {
-            return new BadRequestException(VERIFICATION_CONSTANT.INVALID_REQUEST);
+            throw new BadRequestException(VERIFICATION_CONSTANT.INVALID_REQUEST);
         }
         await this.UserModel.updateOne(
             {
@@ -1621,7 +1617,7 @@ export class UserService {
         return true;
     }
 
-    async deleteUserByOrganizationAdmin(userId: string, req: Request, staffingId?: string) {
+    async deleteUserByOrganizationAdmin(userId: string, req: Request, staffingId?: string): Promise<IReturnResponse> {
         const company = this.authService.getDefaultCompany(req);
         const user = await this.UserModel.updateMany(
             {
@@ -1662,7 +1658,7 @@ export class UserService {
         };
     }
 
-    async disableUserByOrganizationAdmin(verifyEmailDto: VerifyEmailDto, req: Request) {
+    async disableUserByOrganizationAdmin(verifyEmailDto: VerifyEmailDto, req: Request): Promise<IReturnResponse> {
         const company = this.authService.getDefaultCompany(req);
         const user = await this.UserModel.findOne({
             _id: verifyEmailDto.userId,
@@ -1706,17 +1702,17 @@ export class UserService {
         };
     }
 
-    getStaffingNameFromUserCompany(company: Array<ICompany>, loginUserCompanyId: string, verified: boolean) {
-        const requiredCompany = company.find((com) => (<Organization>com.companyId)._id.toString() === loginUserCompanyId.toString());
+    getStaffingNameFromUserCompany(company: Array<ICompany>, loginUserCompanyId: string, verified: boolean): string {
+        const requiredCompany = company.find((com) => (<IOrganization>com.companyId)._id.toString() === loginUserCompanyId.toString());
         if (verified) {
             return requiredCompany.staffingId
-                .filter((trainingStaffing) => [].includes(trainingStaffing['_id'].toString()))
-                .map((staff: any) => staff.staffingName)
+                .filter((trainingStaffing: StaffingInterface) => [].includes(trainingStaffing['_id'].toString()))
+                .map((staff: StaffingInterface) => staff.staffingName)
                 .join(', ');
         }
         return requiredCompany.deletedStaffingId
             .filter((trainingStaffing) => [].includes(trainingStaffing['_id'].toString()))
-            .map((staff: any) => staff.staffingName)
+            .map((staff: StaffingInterface) => staff.staffingName)
             .join(', ');
     }
 
@@ -1728,7 +1724,7 @@ export class UserService {
         return user;
     }
 
-    async clearPasswordWrongBlock(email: string, resetBlockToken: string) {
+    async clearPasswordWrongBlock(email: string, resetBlockToken: string): Promise<boolean> {
         if (resetBlockToken === process.env.RESET_WRONG_PASSWORD_BLOCK_TOKEN) {
             const user = await this.UserModel.findOne({ email });
             if (user) {
@@ -1743,7 +1739,7 @@ export class UserService {
 
     async rejectUser(rejectUserDto: RejectUserDto, req: Request): Promise<void> {
         const loggedInUser: IUser = req['user'];
-        let rejectedOrganization: Organization;
+        let rejectedOrganization: IOrganization;
         try {
             const rejectedUser = await this.UserModel.findOneAndUpdate(
                 {
@@ -1774,7 +1770,7 @@ export class UserService {
         });
     }
 
-    async unblockUser(id: string) {
+    async unblockUser(id: string): Promise<void> {
         try {
             const user = await this.UserModel.findById(id);
             user.loginAttempts = 0;
