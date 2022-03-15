@@ -10,7 +10,6 @@ export class RolesGuard extends AuthGuard('jwt') {
 
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     handleRequest(err, user, info: Error, context: ExecutionContext) {
-        console.log(12, user);
         const roles = this.reflector.get<string[]>('roles', context.getHandler());
         let hasRole: boolean;
         if (!user) {
