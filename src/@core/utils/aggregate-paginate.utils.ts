@@ -13,7 +13,7 @@ export interface IFinalResult {
     pages: number;
 }
 
-export const getFinalPaginationResult = (result, options: IOptions): IFinalResult => {
+export const getFinalPaginationResult = (result: any, options: IOptions): IFinalResult => {
     let finalResult: IFinalResult = {
         docs: [],
         limit: options.limit,
@@ -46,7 +46,6 @@ const getTotalPage = (total: number, limit: number): number => {
  * @param {string} select - Collection Field to be projected separated by space
  * @returns {Array<any>}  Project stage of aggregation
  */
-// eslint-disable-next-line @typescript-eslint/ban-types
 export const getProjectStageFromSelect = (select: string): Array<PipelineStage> => {
     const project = {};
     select.split(' ').forEach((propName: string) => {
@@ -73,7 +72,6 @@ export const getProjectStageFromSelect = (select: string): Array<PipelineStage> 
  * @param {string} foreignField - Field from the documents of the collection to be joined
  * @returns {Array<any>}  Populate stage and select stage
  */
-// eslint-disable-next-line @typescript-eslint/ban-types
 export const populateField = (collectionName: string, localField: string, foreignField: string): Array<PipelineStage> => [
     {
         $lookup: {
