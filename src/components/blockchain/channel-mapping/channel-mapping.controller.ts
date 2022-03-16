@@ -33,7 +33,7 @@ export class ChannelMappingController {
         description: 'Unauthorized.'
     })
     @Permission(ACCESS_TYPE.WRITE)
-    async addChannelMapping(@Body() channelMappingDto: ChannelMappingDto) {
+    async addChannelMapping(@Body() channelMappingDto: ChannelMappingDto): Promise<Response> {
         return new Response(true, [CHANNEL_MAPPING.SUCCESSFULLY_ADDED_CHANNEL_MAPPING]).setSuccessData(await this.channelMappingService.addChannelMapping(channelMappingDto)).setStatus(HttpStatus.OK);
     }
 
@@ -54,7 +54,7 @@ export class ChannelMappingController {
         description: 'Unauthorized.'
     })
     @Permission(ACCESS_TYPE.READ)
-    async getChannelMappingByUserAndOrganization(@Param('userId') userId: string, @Param('organizationId') organizationId: string) {
+    async getChannelMappingByUserAndOrganization(@Param('userId') userId: string, @Param('organizationId') organizationId: string): Promise<Response> {
         return new Response(true, [CHANNEL_MAPPING.FETCHED_CHANNEL_MAPPING]).setSuccessData(await this.channelMappingService.getChannelMappingByUserAndOrganization(userId, organizationId)).setStatus(HttpStatus.OK);
     }
 
@@ -66,7 +66,7 @@ export class ChannelMappingController {
     })
     @ApiOperation({ summary: 'Super admin channel mapping' })
     @ApiCreatedResponse({})
-    async superAdminChannelMapping(@Body() channelMappingDto: ChannelMappingDto, @Req() req: Request) {
+    async superAdminChannelMapping(@Body() channelMappingDto: ChannelMappingDto, @Req() req: Request): Promise<Response> {
         const channelMappingToken = req.headers['channel-mapping-token'] as string;
         if (channelMappingToken !== process.env.RESET_WRONG_PASSWORD_BLOCK_TOKEN) {
             throw new ForbiddenException(COMMON_ERROR.UNAUTHORIZED_TO_ACCESS);

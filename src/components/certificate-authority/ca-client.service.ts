@@ -6,16 +6,22 @@ import { ChannelMappingService } from '../blockchain/channel-mapping/channel-map
 import { ChannelMappingDto } from '../blockchain/channel-mapping/dto/channel-mapping.dto';
 import { generateUniqueId } from '../utils/helpers';
 import { BcConnectionService } from '../blockchain/bc-connection/bc-connection.service';
+import { IChannelMapping } from '../blockchain/channel-mapping/interfaces/channel-mapping.interface';
+import { BcConnectionDto } from '../blockchain/bc-connection/dto/bc-connection.dto';
+import { BcQueryResponseDto } from '../blockchain/dto/bc-query-response.dto';
+import { BcHistoryResponseDto } from '../blockchain/dto/bc-history-response.dto';
+import { ICompany } from '../flo-user/user/interfaces/user.interface';
+import { StaffingInterface } from '../flo-user/user-roles/organization-staffing/interfaces/organization-staffing.interface';
 
 @Injectable()
 export class CaService {
     constructor(private readonly channelMappingService: ChannelMappingService, private readonly bcConnectionService: BcConnectionService) {}
 
-    async checkBcUser(username: string): Promise<any> {
+    async checkBcUser(username: string): Promise<void> {
         await this.bcConnectionService.checkUser(username);
     }
 
-    async userRegistrationListStaffing(staffingList: [string], bcUserDto: BcUserDto, organizationId?: string, channelId?: string): Promise<any> {
+    async userRegistrationListStaffing(staffingList: [string], bcUserDto: BcUserDto, organizationId?: string, channelId?: string): Promise<void> {
         for (const staffing of staffingList) {
             await this.userRegistration(bcUserDto, staffing, organizationId, channelId);
         }
@@ -31,7 +37,7 @@ export class CaService {
      *
      *
      **/
-    async userRegistration(bcUserDto: BcUserDto, staffingId: string, organizationId?: string, channelId?: string): Promise<any> {
+    async userRegistration(bcUserDto: BcUserDto, staffingId: string, organizationId?: string, channelId?: string): Promise<void> {
         const logger = new Logger('UserRegistration');
         try {
             // const loggedInUser = this.request['user']._id;
@@ -61,13 +67,13 @@ export class CaService {
         }
     }
 
-    async createEntry(bcRequestDto: BcRequestDto, bcUserDto: BcUserDto): Promise<any> {
+    async createEntry(bcRequestDto: BcRequestDto, bcUserDto: BcUserDto): Promise<BcConnectionDto> {
         // const company = this.request['user'].company.find(defaultCompany => defaultCompany.default);
         const channelMappingResponse = await this.channelMappingService.getChannelMappingByUserAndOrganization(bcUserDto.loggedInUserId, bcUserDto.company.companyId);
         return await this.bcConnectionService.invoke(bcRequestDto, channelMappingResponse.walletId);
     }
 
-    async getEntryByKey(bcRequestDto: BcRequestDto, bcUserDto: BcUserDto): Promise<any> {
+    async getEntryByKey(bcRequestDto: BcRequestDto, bcUserDto: BcUserDto): Promise<BcConnectionDto> {
         // const company = this.request['user'].company.find(defaultCompany => defaultCompany.default);
         const channelMappingResponse = await this.channelMappingService.getChannelMappingByUserAndOrganization(bcUserDto.loggedInUserId, bcUserDto.company.companyId);
         return await this.bcConnectionService.query(bcRequestDto, channelMappingResponse.walletId);
@@ -83,8 +89,9 @@ export class CaService {
      */
     async getBlockchainVerified(hashDataToCompare: string, bcRequestDto: BcRequestDto, bcUserDto: BcUserDto): Promise<boolean> {
         const blockchainData = await this.getEntryByKey(bcRequestDto, bcUserDto);
-        if (blockchainData != '' && blockchainData.data) {
-            const hashFromBc = blockchainData.data.hash;
+        if (blockchainData.data) {
+            const bcData = blockchainData.data as BcQueryResponseDto;
+            const hashFromBc = bcData.hash;
             return hashFromBc == hashDataToCompare ? true : false;
         } else {
             return false;
@@ -99,12 +106,13 @@ export class CaService {
      * @return {Promise<Boolean>} - Returns history from blockchain.
      *
      */
-    async getBlockchainHistory(bcUserDto: BcUserDto, bcRequestDto: BcRequestDto): Promise<any> {
+    async getBlockchainHistory(bcUserDto: BcUserDto, bcRequestDto: BcRequestDto): Promise<BcHistoryResponseDto[]> {
         const blockchainData = await this.getEntryByKey(bcRequestDto, bcUserDto);
-        blockchainData.data.forEach((blockchainHistory) => {
-            blockchainHistory.Timestamp = new Date(blockchainHistory.Timestamp);
+        const blockchainHistoryList = blockchainData.data as BcHistoryResponseDto[];
+        blockchainHistoryList.forEach((blockchainHistory) => {
+            blockchainHistory.TransactionDateTime = new Date(blockchainHistory.Timestamp);
         });
-        return blockchainData.data;
+        return blockchainHistoryList;
     }
 
     /**
@@ -116,7 +124,7 @@ export class CaService {
      *
      *
      **/
-    async revokeUserCert(bcUserDto: BcUserDto, staffingId: string) {
+    async revokeUserCert(bcUserDto: BcUserDto, staffingId: string): Promise<void> {
         const logger = new Logger('RevokeUserCert');
         try {
             logger.log(bcUserDto);
@@ -140,7 +148,7 @@ export class CaService {
      *
      *
      **/
-    async userReEnroll(bcUserDto: BcUserDto, staffingId: string) {
+    async userReEnroll(bcUserDto: BcUserDto, staffingId: string): Promise<void> {
         const logger = new Logger('UserReEnroll');
         try {
             logger.log(bcUserDto);
@@ -155,10 +163,10 @@ export class CaService {
         }
     }
 
-    async getUserCert(userName: any, company: any) {
+    async checkUserCert(userName: string, company: ICompany): Promise<boolean> {
         // const company = this.request['user'].company.find(defaultCompany => defaultCompany.default);
-        const staffingId = company.staffingId.length > 0 ? company.staffingId[0]._id : null;
-        const channelMappingResponse: any = await this.channelMappingService.getChannelMappingByUserOrganizationAndStaffing(userName, company.companyId, staffingId);
+        const staffingId = company.staffingId.length > 0 ? (company.staffingId[0] as StaffingInterface)._id : null;
+        const channelMappingResponse: IChannelMapping = await this.channelMappingService.getChannelMappingByUserOrganizationAndStaffing(userName, company.companyId as string, staffingId);
         const walletId = channelMappingResponse.walletId;
         try {
             await this.checkBcUser(walletId);
@@ -168,7 +176,7 @@ export class CaService {
         }
     }
 
-    async registerSuperAdmin(userId: string) {
+    async registerSuperAdmin(userId: string): Promise<unknown> {
         return this.bcConnectionService.registerUser(userId, null, true);
     }
 }

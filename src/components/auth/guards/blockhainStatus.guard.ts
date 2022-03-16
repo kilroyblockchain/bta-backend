@@ -18,7 +18,7 @@ export class BlockchainStatusGuard extends AuthGuard('jwt') implements CanActiva
         const request = context.switchToHttp().getRequest();
         if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
             const company = request['user'].company.find((defaultCompany) => defaultCompany.default);
-            const response = await this.caService.getUserCert(request.user._id, company);
+            const response = await this.caService.checkUserCert(request.user._id, company);
             if (!response) {
                 logger.error('User not registered on the network: ' + request.user._id);
                 throw new UnauthorizedException('User not registered on the network');

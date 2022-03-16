@@ -21,7 +21,7 @@ export class OrganizationBcService {
      *
      *
      **/
-    async storeOrganizationBC(organizationData: any, bcUserDto: BcUserDto, payload: string) {
+    async storeOrganizationBC(organizationData: any, bcUserDto: BcUserDto, payload: string): Promise<void> {
         const logger = new Logger('StoreOrganizationBC');
         try {
             // Organization Data type any to Organization BC Dto data
@@ -53,7 +53,7 @@ export class OrganizationBcService {
      *
      *
      **/
-    async getBlockchainVerified(organizationData: any, bcUserDto: BcUserDto) {
+    async getBlockchainVerified(organizationData: any, bcUserDto: BcUserDto): Promise<boolean> {
         const logger = new Logger('GetBlockchainVerifiedOrganization');
         let blockchainVerified = false;
         try {
