@@ -176,7 +176,7 @@ export class CaService {
         }
     }
 
-    async registerSuperAdmin(userId: string): Promise<unknown> {
-        return this.bcConnectionService.registerUser(userId, null, true);
+    async registerSuperAdmin(userId: string): Promise<void> {
+        await this.bcConnectionService.registerUser(userId, null, true);
     }
 }
