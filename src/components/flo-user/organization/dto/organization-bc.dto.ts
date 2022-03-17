@@ -3,13 +3,7 @@ export class OrganizationBcDto {
     isDeleted: boolean;
     companyName: string;
     country: string;
-    state: boolean;
+    state: string;
     address: string;
     zipCode: string;
-    aboutOrganization: string;
-    contributionForApp: string;
-    helpNeededFromApp: string;
-    subscription: string[];
-    createdAt: string;
-    updatedAt: string;
 }

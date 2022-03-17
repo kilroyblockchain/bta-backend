@@ -51,3 +51,5 @@ export interface ICompanyDto {
     image: string;
     subscriptionType: ROLE;
 }
+
+export type IOrganizationBc = IOrganization;

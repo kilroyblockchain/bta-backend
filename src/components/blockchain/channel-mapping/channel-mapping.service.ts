@@ -6,6 +6,7 @@ import { ConflictException, Injectable, Logger, NotFoundException } from '@nestj
 import { CHANNEL_MAPPING } from 'src/@core/constants/bc-constants/channel-mapping.constant';
 import { ChannelDetailService } from '../channel-detail/channel-detail.service';
 import { CHANNEL_DETAIL } from 'src/@core/constants/bc-constants/channel-detail.constant';
+import { ChannelMappingResponseDto } from './dto/channel-mapping-response.dto';
 
 @Injectable()
 export class ChannelMappingService {
@@ -59,9 +60,9 @@ export class ChannelMappingService {
      *
      *
      **/
-    async getChannelMappingByUserAndOrganization(userId: string, organizationId: string): Promise<IChannelMapping> {
+    async getChannelMappingByUserAndOrganization(userId: string, organizationId: string): Promise<ChannelMappingResponseDto> {
         const logger = new Logger('GetChannelMappingByUserAndOrganization');
-        const channelMapping: any = await this.ChannelMappingModel.findOne({
+        const channelMapping: IChannelMapping = await this.ChannelMappingModel.findOne({
             userId: userId,
             organizationId: organizationId
         });
@@ -72,7 +73,10 @@ export class ChannelMappingService {
             throw new NotFoundException(CHANNEL_MAPPING.CHANNEL_MAPPING_NOT_FOUND);
         }
         const channelDetail = await this.channelDetailService.getChannelDetailById(channelMapping.channelId);
-        return { ...channelMapping._doc, channelDetail };
+        const channelMappingResponseDto = new ChannelMappingResponseDto();
+        channelMappingResponseDto.channelMapping = channelMapping;
+        channelMappingResponseDto.channelDetail = channelDetail;
+        return channelMappingResponseDto;
     }
 
     /**
@@ -86,9 +90,9 @@ export class ChannelMappingService {
      *
      *
      **/
-    async getChannelMappingByUserOrganizationAndStaffing(userId: string, organizationId: string, staffingId: string): Promise<IChannelMapping> {
+    async getChannelMappingByUserOrganizationAndStaffing(userId: string, organizationId: string, staffingId: string): Promise<ChannelMappingResponseDto> {
         const logger = new Logger('GetChannelMappingByUserOrganizationAndStaffing');
-        const channelMapping: any = await this.ChannelMappingModel.findOne({
+        const channelMapping: IChannelMapping = await this.ChannelMappingModel.findOne({
             userId: userId,
             organizationId: organizationId,
             staffingId: staffingId
@@ -101,6 +105,9 @@ export class ChannelMappingService {
             throw new NotFoundException(CHANNEL_MAPPING.CHANNEL_MAPPING_NOT_FOUND);
         }
         const channelDetail = await this.channelDetailService.getChannelDetailById(channelMapping.channelId);
-        return { ...channelMapping._doc, channelDetail };
+        const channelMappingResponseDto = new ChannelMappingResponseDto();
+        channelMappingResponseDto.channelMapping = channelMapping;
+        channelMappingResponseDto.channelDetail = channelDetail;
+        return channelMappingResponseDto;
     }
 }

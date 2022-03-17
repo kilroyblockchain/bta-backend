@@ -40,16 +40,4 @@ export class UserBcDto {
 
     @IsArray()
     company: string[];
-
-    @IsArray()
-    skill: string[];
-
-    @IsArray()
-    language: string[];
-
-    @IsArray()
-    education: string[];
-
-    @IsArray()
-    experience: string[];
 }

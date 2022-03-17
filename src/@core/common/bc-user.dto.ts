@@ -1,9 +1,11 @@
+import { ICompany } from 'src/components/flo-user/user/interfaces/user.interface';
+
 export class BcUserDto {
     enrollmentId: string;
 
     enrollmentSecret: string;
 
-    company: any;
+    company: ICompany;
 
     staffingId: string;
 

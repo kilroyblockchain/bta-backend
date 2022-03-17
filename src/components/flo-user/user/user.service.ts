@@ -47,6 +47,10 @@ import { CAPTCHA_STATUS } from 'src/@core/constants/captcha-status.enum';
 import { COOKIE_KEYS } from 'src/@core/constants/cookie-key.constant';
 import { IUserActivityResponse, IRefreshToken } from 'src/components/auth/interfaces/refresh-token.interface';
 import { IVerifyEmail } from './interfaces/verified-email.interface';
+import { ChannelMappingDto } from 'src/components/blockchain/channel-mapping/dto/channel-mapping.dto';
+import { generateUniqueId } from 'src/components/utils/helpers';
+import { ChannelMappingService } from 'src/components/blockchain/channel-mapping/channel-mapping.service';
+import { ChannelDetailService } from 'src/components/blockchain/channel-detail/channel-detail.service';
 
 @Injectable()
 export class UserService {
@@ -69,7 +73,9 @@ export class UserService {
         private readonly verificationService: VerificationService,
         private readonly staffingService: OrganizationStaffingService,
         private readonly caService: CaService,
-        private readonly userRejectInfoService: UserRejectInfoService
+        private readonly userRejectInfoService: UserRejectInfoService,
+        private readonly channelMappingService: ChannelMappingService,
+        private readonly channelDetailService: ChannelDetailService
     ) {
         this.getImageHashPromise = util.promisify(this.authService.getImageHash);
     }
@@ -191,11 +197,19 @@ export class UserService {
             user.zipCode = updateUserDto.zipCode;
             const updatedUser = await user.save();
             if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
+                const userDetail = await this.uModel
+                    .findById(user._id)
+                    .populate({
+                        path: 'company.companyId company.staffingId country state',
+                        select: '-countryCode -idNumber -phoneCode -states -countryId -countryObjectId -__v',
+                        populate: { path: 'featureAndAccess.featureId organizationUnitId' }
+                    })
+                    .select('-password');
                 const bcUserDto = new BcUserDto();
                 bcUserDto.loggedInUserId = req['user']._id;
                 bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                await this.userBcService.storeUserBc(updatedUser, bcUserDto, BC_PAYLOAD.UPDATE_USER);
-                const blockchainVerified = await this.userBcService.getBlockchainVerifiedUser(updatedUser, bcUserDto);
+                await this.userBcService.storeUserBc(userDetail, bcUserDto, BC_PAYLOAD.UPDATE_USER);
+                const blockchainVerified = await this.userBcService.getBlockchainVerifiedUser(userDetail, bcUserDto);
                 return { ...updatedUser['_doc'], blockchainVerified };
             }
             return await this.getUserDataByJWT(req);
@@ -372,12 +386,20 @@ export class UserService {
         const defaultCompany: ICompany = user.company.find((defaultComp) => defaultComp.default);
         const subcriptionTypeFull = await this.subsTypeService.getFullSubscription(defaultCompany.subscriptionType);
         if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
+            const userDetail = await this.uModel
+                .findById(user._id)
+                .populate({
+                    path: 'company.companyId company.staffingId country state',
+                    select: '-countryCode -idNumber -phoneCode -states -countryId -countryObjectId -__v',
+                    populate: { path: 'featureAndAccess.featureId organizationUnitId' }
+                })
+                .select('-password');
             const organization = user.company.find((defaultComp) => defaultComp.default);
             const channelId = verifyEmailDto.channelId;
             const bcUserDto = new BcUserDto();
             bcUserDto.loggedInUserId = req['user']._id;
             bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-            await this.userBcService.storeUserBc(userSaved, bcUserDto, BC_PAYLOAD.CREATE_USER);
+            await this.userBcService.storeUserBc(userDetail, bcUserDto, BC_PAYLOAD.CREATE_USER);
             bcUserDto.enrollmentId = userSaved._id;
             bcUserDto.enrollmentSecret = randomPassword;
             await this.caService.userRegistration(bcUserDto, userSaved.company[0].staffingId[0] as string, organization.companyId.toString(), channelId);
@@ -1779,5 +1801,26 @@ export class UserService {
         } catch (err) {
             throw new BadRequestException(USER_CONSTANT.FAILED_TO_UNBLOCK_USER, err);
         }
+    }
+
+    async migrateSuperAdmin(): Promise<string> {
+        const logger = new Logger('MigrateBcUser');
+        const user = await this.UserModel.findOne({ 'company.subscriptionType': 'super-admin' });
+        if (!user) {
+            logger.error('Super Admin User Not Found');
+            throw new NotFoundException('Super Admin User Not Found');
+        }
+        const defaultChannelDetail = await this.channelDetailService.getDefaultChannelDetail();
+        const channelMappingDto = new ChannelMappingDto();
+        channelMappingDto.channelId = defaultChannelDetail._id;
+        channelMappingDto.organizationId = user.company[0].companyId as string;
+        channelMappingDto.staffingId = null;
+        channelMappingDto.userId = user._id;
+        const walletId = generateUniqueId();
+        channelMappingDto.walletId = walletId;
+        await this.channelMappingService.addChannelMapping(channelMappingDto);
+        await this.caService.registerSuperAdmin(walletId);
+
+        return walletId;
     }
 }

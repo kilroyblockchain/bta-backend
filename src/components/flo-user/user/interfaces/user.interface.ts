@@ -27,6 +27,7 @@ export interface IUser extends Document {
 }
 
 export interface ICompany {
+    _id?: string;
     companyId: string | IOrganization;
     staffingId: Array<string | StaffingInterface>;
     deletedStaffingId?: Array<string | StaffingInterface>;
@@ -122,3 +123,5 @@ export interface IUserData {
     accessToken?: string;
     refreshToken?: string;
 }
+
+export type IUserBc = IUser;
