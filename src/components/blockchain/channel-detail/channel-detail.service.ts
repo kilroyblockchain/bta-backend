@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { PaginateModel } from 'mongoose';
+import { PaginateModel, PaginateResult } from 'mongoose';
 import { ChannelDetailDto } from './dto/channel-detail.dto';
 import { IChannelDetail } from './interfaces/channel-detail.interface';
 import { Request } from 'express';
@@ -67,7 +67,7 @@ export class ChannelDetailService {
      * @param {Request} req - API Request that includes page no and limit used for pagination
      *
      **/
-    async getAllChannelDetail(req: Request) {
+    async getAllChannelDetail(req: Request): Promise<PaginateResult<IChannelDetail>> {
         const query = {};
         const option = {
             page: req.query.page ? Number(req.query.page) : 1,
@@ -83,7 +83,7 @@ export class ChannelDetailService {
      * @param {string} channelId - Id of the channel Detail saved
      *
      **/
-    async getChannelDetailById(channelId: string) {
+    async getChannelDetailById(channelId: string): Promise<IChannelDetail> {
         const channelDetail = await this.ChannelDetailModel.findById(channelId);
         if (!channelDetail) {
             throw new NotFoundException(CHANNEL_DETAIL.CHANNEL_DETAIL_NOT_FOUND);
@@ -98,7 +98,7 @@ export class ChannelDetailService {
      * @param {bolean} status - Channel Detail status 'true' | 'false'
      *
      **/
-    async getAllChannelDetailByStatus(req: Request, status: boolean) {
+    async getAllChannelDetailByStatus(req: Request, status: boolean): Promise<PaginateResult<IChannelDetail>> {
         const query = { status: status };
         const option = {
             page: req.query.page ? Number(req.query.page) : 1,
@@ -114,7 +114,7 @@ export class ChannelDetailService {
      * @param {string} channelId - Id of the channel Detail to be deleted
      *
      **/
-    async deleteChannelDetail(channelId: string) {
+    async deleteChannelDetail(channelId: string): Promise<void> {
         const channelDetail = await this.ChannelDetailModel.findById(channelId);
         if (!channelDetail) {
             throw new NotFoundException(CHANNEL_DETAIL.CHANNEL_DETAIL_NOT_FOUND);
@@ -126,7 +126,7 @@ export class ChannelDetailService {
      * Function to Get Default Channel Detail
      *
      **/
-    async getDefaultChannelDetail() {
+    async getDefaultChannelDetail(): Promise<IChannelDetail> {
         const logger = new Logger('GetDefaultChannel');
         const channelDetail = await this.ChannelDetailModel.findOne({
             isDefault: true
@@ -142,7 +142,7 @@ export class ChannelDetailService {
      * Function to Get All Non Channel Detail List
      *
      **/
-    async getAllNonDefaultChannelDetails() {
+    async getAllNonDefaultChannelDetails(): Promise<Promise<IChannelDetail | string>[]> {
         return await this.ChannelDetailModel.find({ isDefault: false });
     }
 }

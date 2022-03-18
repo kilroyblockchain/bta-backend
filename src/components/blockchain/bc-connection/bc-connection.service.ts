@@ -2,13 +2,14 @@ import { HttpException, HttpStatus, Injectable, InternalServerErrorException, Lo
 import { BcRequestDto } from 'src/@core/constants/dto/bc-request.dto';
 import axios, { AxiosError } from 'axios';
 import { BC_CONNECTION_API } from 'src/@core/constants/bc-constants/bc-connection.api.constant';
+import { BcConnectionDto } from './dto/bc-connection.dto';
 
 const BC_CONNECTION_HOST = process.env.BC_CONNECTION_HOST;
 const AUTHORIZATION_TOKEN = process.env.AUTHORIZATION_TOKEN;
 
 @Injectable()
 export class BcConnectionService {
-    async invoke(bcRequestDto: BcRequestDto, userId: string) {
+    async invoke(bcRequestDto: BcRequestDto, userId: string): Promise<BcConnectionDto> {
         const logger = new Logger('BcConnectionInvoke');
         try {
             const response = await axios.post(BC_CONNECTION_HOST + BC_CONNECTION_API.INVOKE_BC, bcRequestDto, {
@@ -18,7 +19,7 @@ export class BcConnectionService {
                     authorization: 'Basic ' + AUTHORIZATION_TOKEN
                 }
             });
-            return response.data;
+            return new BcConnectionDto(response.data);
         } catch (error) {
             if (error.status) {
                 logger.error(error);
@@ -34,7 +35,7 @@ export class BcConnectionService {
         }
     }
 
-    async query(bcRequestDto: BcRequestDto, userId: string) {
+    async query(bcRequestDto: BcRequestDto, userId: string): Promise<BcConnectionDto> {
         const logger = new Logger('BcConnectionQuery');
         try {
             const response = await axios.post(BC_CONNECTION_HOST + BC_CONNECTION_API.QUERY_BC, bcRequestDto, {
@@ -44,7 +45,7 @@ export class BcConnectionService {
                     authorization: 'Basic ' + AUTHORIZATION_TOKEN
                 }
             });
-            return response.data;
+            return new BcConnectionDto(response.data);
         } catch (error) {
             logger.error(error);
             const err = error as AxiosError;
@@ -53,7 +54,7 @@ export class BcConnectionService {
         }
     }
 
-    async registerUser(userId: string, registrar: string, superAdmin?: boolean) {
+    async registerUser(userId: string, registrar: string, superAdmin?: boolean): Promise<BcConnectionDto> {
         const logger = new Logger('BcRegisterUser');
         const registerUserRequest = {
             userName: userId
@@ -71,7 +72,7 @@ export class BcConnectionService {
                     authorization: 'Basic ' + AUTHORIZATION_TOKEN
                 }
             });
-            return response.data;
+            return new BcConnectionDto(response.data);
         } catch (error) {
             logger.error(error);
             const err = error as AxiosError;
@@ -80,7 +81,7 @@ export class BcConnectionService {
         }
     }
 
-    async activateUser(userId: string) {
+    async activateUser(userId: string): Promise<BcConnectionDto> {
         const logger = new Logger('BcActivateUser');
         try {
             const response = await axios.get(BC_CONNECTION_HOST + BC_CONNECTION_API.ACTIVATE_USER + '/' + userId, {
@@ -88,7 +89,7 @@ export class BcConnectionService {
                     authorization: 'Basic ' + AUTHORIZATION_TOKEN
                 }
             });
-            return response.data;
+            return new BcConnectionDto(response.data);
         } catch (error) {
             logger.error(error);
             const err = error as AxiosError;
@@ -97,7 +98,7 @@ export class BcConnectionService {
         }
     }
 
-    async deactivateUser(userId: string) {
+    async deactivateUser(userId: string): Promise<BcConnectionDto> {
         const logger = new Logger('BcDeactivateUser');
         try {
             const response = await axios.get(BC_CONNECTION_HOST + BC_CONNECTION_API.DEACTIVATE_USER + '/' + userId, {
@@ -105,7 +106,7 @@ export class BcConnectionService {
                     authorization: 'Basic ' + AUTHORIZATION_TOKEN
                 }
             });
-            return response.data;
+            return new BcConnectionDto(response.data);
         } catch (error) {
             logger.error(error);
             const err = error as AxiosError;
@@ -114,7 +115,7 @@ export class BcConnectionService {
         }
     }
 
-    async checkUser(userId: string) {
+    async checkUser(userId: string): Promise<BcConnectionDto> {
         const logger = new Logger('BcCheckUser');
         try {
             const response = await axios.get(BC_CONNECTION_HOST + BC_CONNECTION_API.CHECK_USER + '/' + userId, {
@@ -122,7 +123,7 @@ export class BcConnectionService {
                     authorization: 'Basic ' + AUTHORIZATION_TOKEN
                 }
             });
-            return response.data;
+            return new BcConnectionDto(response.data);
         } catch (error) {
             logger.error(error);
             const err = error as AxiosError;

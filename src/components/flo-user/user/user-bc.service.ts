@@ -11,7 +11,7 @@ import { UserBcDto } from './dto/user-bc.dto';
 export class UserBcService {
     constructor(private readonly caService: CaService) {}
 
-    async storeUserBc(userRes: any, bcUserDto: BcUserDto, payload: string) {
+    async storeUserBc(userRes: any, bcUserDto: BcUserDto, payload: string): Promise<boolean> {
         const logger = new Logger('StoreUserBc');
         try {
             // User Data type any to Education BC Dto data
@@ -33,7 +33,7 @@ export class UserBcService {
         }
     }
 
-    async getBlockchainVerifiedUser(userData: any, bcUserDto: BcUserDto) {
+    async getBlockchainVerifiedUser(userData: any, bcUserDto: BcUserDto): Promise<boolean> {
         const logger = new Logger('GetUserBc');
         let blockchainVerified = false;
         try {
@@ -56,7 +56,7 @@ export class UserBcService {
         }
     }
 
-    async getBlockchainVerifiedUserList(userList: any, bcUserDto: BcUserDto) {
+    async getBlockchainVerifiedUserList(userList: any, bcUserDto: BcUserDto): Promise<any> {
         let responses = null;
         responses = await Promise.all(
             await userList.map(async (doc) => {
@@ -71,7 +71,7 @@ export class UserBcService {
         return responses;
     }
 
-    async getBlockchainVerifiedTraineeUserList(userList: any, bcUserDto: BcUserDto) {
+    async getBlockchainVerifiedTraineeUserList(userList: any, bcUserDto: BcUserDto): Promise<any> {
         let responses = null;
         responses = await Promise.all(
             await userList.map(async (doc) => {
@@ -86,11 +86,11 @@ export class UserBcService {
         return responses;
     }
 
-    private async createHash(userBcDto: UserBcDto) {
+    private async createHash(userBcDto: UserBcDto): Promise<string> {
         return await sha256Hash(JSON.stringify(userBcDto));
     }
 
-    private async toUserBcDto(userData: any) {
+    private async toUserBcDto(userData: any): Promise<UserBcDto> {
         const companyIdList = [];
         const skillIdList = [];
         const languageIdList = [];
@@ -134,7 +134,7 @@ export class UserBcService {
         return userBcDto;
     }
 
-    async registerUser(bcUserDto: BcUserDto, staffingId: string, organizationId?: string, channelId?: string) {
+    async registerUser(bcUserDto: BcUserDto, staffingId: string, organizationId?: string, channelId?: string): Promise<void> {
         const logger = new Logger('BcRegisterUser');
         try {
             await this.caService.userRegistration(bcUserDto, staffingId, organizationId, channelId);

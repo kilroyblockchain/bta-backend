@@ -33,7 +33,7 @@ export class ChannelDetailController {
     })
     @Permission(ACCESS_TYPE.WRITE)
     @Roles(ROLE.SUPER_ADMIN)
-    async addChannelDetails(@Body() channelDetailDto: ChannelDetailDto) {
+    async addChannelDetails(@Body() channelDetailDto: ChannelDetailDto): Promise<Response> {
         return new Response(true, [CHANNEL_DETAIL.SUCCESSFULLY_ADDED_CHANNEL_DETAIL]).setSuccessData(await this.channelDetailService.addChannelDetail(channelDetailDto)).setStatus(HttpStatus.OK);
     }
 
@@ -53,7 +53,7 @@ export class ChannelDetailController {
     })
     @Permission(ACCESS_TYPE.WRITE)
     @Roles(ROLE.SUPER_ADMIN)
-    async updateChannelDetails(@Param('channelDetailId') channelDetailId: string, @Body() channelDetailDto: ChannelDetailDto) {
+    async updateChannelDetails(@Param('channelDetailId') channelDetailId: string, @Body() channelDetailDto: ChannelDetailDto): Promise<Response> {
         return new Response(true, [CHANNEL_DETAIL.SUCCESSFULLY_UPDATED_CHANNEL_DETAIL]).setSuccessData(await this.channelDetailService.updateChannelDetail(channelDetailId, channelDetailDto)).setStatus(HttpStatus.OK);
     }
 
@@ -73,7 +73,7 @@ export class ChannelDetailController {
     })
     @Permission(ACCESS_TYPE.READ)
     @Roles(ROLE.SUPER_ADMIN)
-    async getAllChannelDetails(@Req() req: Request) {
+    async getAllChannelDetails(@Req() req: Request): Promise<Response> {
         return new Response(true, [CHANNEL_DETAIL.FETCHED_ALL_CHANNEL_DETAIL]).setSuccessData(await this.channelDetailService.getAllChannelDetail(req)).setStatus(HttpStatus.OK);
     }
 
@@ -93,7 +93,7 @@ export class ChannelDetailController {
     })
     @Permission(ACCESS_TYPE.READ)
     @Roles(ROLE.SUPER_ADMIN)
-    async getChannelDetailById(@Param('channelDetailId') channelDetailId: string) {
+    async getChannelDetailById(@Param('channelDetailId') channelDetailId: string): Promise<Response> {
         return new Response(true, [CHANNEL_DETAIL.FETCHED_CHANNEL_DETAIL]).setSuccessData(await this.channelDetailService.getChannelDetailById(channelDetailId)).setStatus(HttpStatus.OK);
     }
 
@@ -115,7 +115,7 @@ export class ChannelDetailController {
     })
     @Permission(ACCESS_TYPE.READ)
     @Roles(ROLE.SUPER_ADMIN)
-    async getAllEnabledChannelDetails(@Req() req: Request, @Param('status') status: boolean) {
+    async getAllEnabledChannelDetails(@Req() req: Request, @Param('status') status: boolean): Promise<Response> {
         return new Response(true, [CHANNEL_DETAIL.FETCHED_ALL_CHANNEL_DETAIL]).setSuccessData(await this.channelDetailService.getAllChannelDetailByStatus(req, status)).setStatus(HttpStatus.OK);
     }
 
@@ -135,7 +135,7 @@ export class ChannelDetailController {
     })
     @Permission(ACCESS_TYPE.READ)
     @Roles(ROLE.SUPER_ADMIN)
-    async deleteChannelDetail(@Param('channelDetailId') channelDetailId: string) {
+    async deleteChannelDetail(@Param('channelDetailId') channelDetailId: string): Promise<Response> {
         return new Response(true, [CHANNEL_DETAIL.SUCCESSFULLY_DELETED_CHANNEL_DETAIL]).setSuccessData(await this.channelDetailService.deleteChannelDetail(channelDetailId)).setStatus(HttpStatus.OK);
     }
 
@@ -155,7 +155,7 @@ export class ChannelDetailController {
     })
     @Permission(ACCESS_TYPE.READ)
     @Roles(ROLE.SUPER_ADMIN)
-    async getDefaultChannelDetail() {
+    async getDefaultChannelDetail(): Promise<Response> {
         return new Response(true, [CHANNEL_DETAIL.FETCHED_DEFAULT_CHANNEL_DETAIL]).setSuccessData(await this.channelDetailService.getDefaultChannelDetail()).setStatus(HttpStatus.OK);
     }
 
@@ -175,7 +175,7 @@ export class ChannelDetailController {
     })
     @Permission(ACCESS_TYPE.READ)
     @Roles(ROLE.SUPER_ADMIN)
-    async getAllNonDefaultChannelDetail() {
+    async getAllNonDefaultChannelDetail(): Promise<Response> {
         return new Response(true, [CHANNEL_DETAIL.FETCHED_ALL_NON_DEFAULT_CHANNEL_DETAILS]).setSuccessData(await this.channelDetailService.getAllNonDefaultChannelDetails()).setStatus(HttpStatus.OK);
     }
 }
