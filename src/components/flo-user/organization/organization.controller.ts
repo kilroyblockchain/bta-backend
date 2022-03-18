@@ -130,7 +130,6 @@ export class OrganizationController {
         description: 'Organization Blockchain history retrieved successfully.'
     })
     async getBlockchainHistory(@Req() req: Request, @Param('organizationId') organizationId: string): Promise<FLOResponse> {
-        const bcHistory = await this.organizationService.findOrganizationBlockchainHistory(req, organizationId);
-        return new FLOResponse(true, [BC_SUCCESS_RESPONSE.BLOCKCHAIN_HISTORY_FOUND]).setSuccessData(bcHistory).setStatus(HttpStatus.OK);
+        return new FLOResponse(true, [BC_SUCCESS_RESPONSE.BLOCKCHAIN_HISTORY_FOUND]).setSuccessData(await this.organizationService.findOrganizationBlockchainHistory(req, organizationId)).setStatus(HttpStatus.OK);
     }
 }

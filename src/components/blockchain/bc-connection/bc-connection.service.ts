@@ -45,7 +45,7 @@ export class BcConnectionService {
                     authorization: 'Basic ' + AUTHORIZATION_TOKEN
                 }
             });
-            return new BcConnectionDto(response.data);
+            return new BcConnectionDto(response.data.data);
         } catch (error) {
             logger.error(error);
             const err = error as AxiosError;

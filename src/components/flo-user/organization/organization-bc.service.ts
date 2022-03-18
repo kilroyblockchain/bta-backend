@@ -4,9 +4,11 @@ import { COMMON_ERROR } from 'src/@core/constants/api-error-constants';
 import { BC_CHAINCODE_FUNCTION } from 'src/@core/constants/bc-constants/bc-chaincode-function.constant';
 import { BC_ERROR_RESPONSE } from 'src/@core/constants/bc-constants/bc-error-response.constants';
 import { BcRequestDto } from 'src/@core/constants/dto/bc-request.dto';
+import { BcHistoryResponseDto } from 'src/components/blockchain/dto/bc-history-response.dto';
 import { CaService } from 'src/components/certificate-authority/ca-client.service';
 import { sha256Hash } from 'src/components/utils/helpers';
 import { OrganizationBcDto } from './dto/organization-bc.dto';
+import { IOrganizationBc } from './interfaces/organization.interface';
 
 @Injectable()
 export class OrganizationBcService {
@@ -15,13 +17,13 @@ export class OrganizationBcService {
     /**
      * Store Organization data on BC
      *
-     * @param {any} organizationData - Object of Organization Data
+     * @param {IOrganizationBc} organizationData - Object of Organization Data
      * @param {string} userId - Logged in user Id
      * @param {string} payload - Value to be passed on payload to differentiate Create/Update
      *
      *
      **/
-    async storeOrganizationBC(organizationData: any, bcUserDto: BcUserDto, payload: string): Promise<void> {
+    async storeOrganizationBC(organizationData: IOrganizationBc, bcUserDto: BcUserDto, payload: string): Promise<void> {
         const logger = new Logger('StoreOrganizationBC');
         try {
             // Organization Data type any to Organization BC Dto data
@@ -48,12 +50,12 @@ export class OrganizationBcService {
      * Get's single data from blockchain current state and check's the hash from the blockchain with the MongoDB payload
      *
      *
-     * @param {any} organizationData - Object of organization data from mongodb
+     * @param {IOrganizationBc} organizationData - Object of organization data from mongodb
      * @param {string} userId - Unique Id of the logged in user
      *
      *
      **/
-    async getBlockchainVerified(organizationData: any, bcUserDto: BcUserDto): Promise<boolean> {
+    async getBlockchainVerified(organizationData: IOrganizationBc, bcUserDto: BcUserDto): Promise<boolean> {
         const logger = new Logger('GetBlockchainVerifiedOrganization');
         let blockchainVerified = false;
         try {
@@ -81,20 +83,17 @@ export class OrganizationBcService {
      * Get list data from blockchain current state and check's the hashes from the blockchain with the MongoDB payload
      *
      *
-     * @param {any} organizationIdList - List of OrganizationId from mongodb
+     * @param {IOrganizationBc[]} organizationIdList - List of OrganizationId from mongodb
      * @param {string} userId - Unique Id of the logged in user
      *
      *
      **/
-    async getBlockchainVerifiedList(organizationIdList: any, bcUserDto: BcUserDto): Promise<any> {
+    async getBlockchainVerifiedList(organizationIdList: IOrganizationBc[], bcUserDto: BcUserDto): Promise<IOrganizationBc[]> {
         return await Promise.all(
-            await organizationIdList.map(async (doc) => {
-                const blockchainVerified = await this.getBlockchainVerified(doc, bcUserDto);
-                if ('_doc' in doc) {
-                    return { ...doc._doc, blockchainVerified };
-                } else {
-                    return { ...doc, blockchainVerified };
-                }
+            await organizationIdList.map(async (organization) => {
+                const blockchainVerified = await this.getBlockchainVerified(organization, bcUserDto);
+                organization.blockchainVerified = blockchainVerified;
+                return organization;
             })
         );
     }
@@ -108,7 +107,7 @@ export class OrganizationBcService {
      *
      *
      **/
-    async getOrganizationBcHistory(bcUserDto: BcUserDto, organizationId: string): Promise<any> {
+    async getOrganizationBcHistory(bcUserDto: BcUserDto, organizationId: string): Promise<BcHistoryResponseDto[]> {
         const logger = new Logger('GetOrganizationBcHistory');
         try {
             const bcRequestDto = new BcRequestDto();
@@ -140,20 +139,14 @@ export class OrganizationBcService {
      * Map Data to Organization Bc Dto
      *
      *
-     * @param {any} organizationData - Object of training organization data for mapping to BC Dto
+     * @param {IOrganizationBc} organizationData - Object of training organization data for mapping to BC Dto
      * @return {Promise<OrganizationBcDto>} - Returns Promise of OrganizationBcDto
      *
      *
      **/
-    private async toOrganizationBcDto(organizationData: any): Promise<OrganizationBcDto> {
+    private async toOrganizationBcDto(organizationData: IOrganizationBc): Promise<OrganizationBcDto> {
         const logger = new Logger('ToOrganizationBcDto');
         try {
-            const subscriptionList = [];
-            await Promise.all(
-                organizationData.subscription.map(async (subscription) => {
-                    subscriptionList.push(subscription._id);
-                })
-            );
             const organizationBcDto = new OrganizationBcDto();
             organizationBcDto._id = organizationData._id;
             organizationBcDto.isDeleted = organizationData.isDeleted;
@@ -162,12 +155,6 @@ export class OrganizationBcService {
             organizationBcDto.state = organizationData.state;
             organizationBcDto.address = organizationData.address;
             organizationBcDto.zipCode = organizationData.zipCode;
-            organizationBcDto.aboutOrganization = organizationData.aboutOrganization;
-            organizationBcDto.contributionForApp = organizationData.contributionForApp;
-            organizationBcDto.helpNeededFromApp = organizationData.helpNeededFromApp;
-            organizationBcDto.subscription = subscriptionList;
-            organizationBcDto.createdAt = organizationData.createdAt;
-            organizationBcDto.updatedAt = organizationData.updatedAt;
             return organizationBcDto;
         } catch (err) {
             logger.error(err);

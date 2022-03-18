@@ -13,6 +13,7 @@ import { BC_PAYLOAD } from 'src/@core/constants/bc-constants/bc-payload.constant
 import { BC_ERROR_RESPONSE } from 'src/@core/constants/bc-constants/bc-error-response.constants';
 import { BcUserDto } from 'src/@core/common/bc-user.dto';
 import { ORGANIZATION_CONSTANT, USER_CONSTANT } from 'src/@core/constants/api-error-constants';
+import { OrganizationBcHistoryDto } from './dto/organization-bc-history.dto';
 @Injectable()
 export class OrganizationService {
     constructor(
@@ -272,7 +273,7 @@ export class OrganizationService {
      *
      *
      **/
-    async findOrganizationBlockchainHistory(options: Request, organizationId: string): Promise<any> {
+    async findOrganizationBlockchainHistory(options: Request, organizationId: string): Promise<OrganizationBcHistoryDto> {
         if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
             const bcUserDto = new BcUserDto();
             bcUserDto.loggedInUserId = options['user']._id;
@@ -282,10 +283,10 @@ export class OrganizationService {
                 throw new NotFoundException(BC_ERROR_RESPONSE.BLOCKCHAIN_HISTORY_NOT_FOUND);
             }
             const organizationData = await this.findOrganizationById(organizationId);
-            return {
-                blockchainHistory,
-                organizationData
-            };
+            const organizationBcHistoryDto = new OrganizationBcHistoryDto();
+            organizationBcHistoryDto.blockchainHistory = blockchainHistory;
+            organizationBcHistoryDto.organizationData = organizationData;
+            return organizationBcHistoryDto;
         } else {
             throw new BadRequestException(BC_ERROR_RESPONSE.BLOCKCHAIN_NOT_ENABLED);
         }

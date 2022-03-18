@@ -6,12 +6,12 @@ import { ChannelMappingService } from '../blockchain/channel-mapping/channel-map
 import { ChannelMappingDto } from '../blockchain/channel-mapping/dto/channel-mapping.dto';
 import { generateUniqueId } from '../utils/helpers';
 import { BcConnectionService } from '../blockchain/bc-connection/bc-connection.service';
-import { IChannelMapping } from '../blockchain/channel-mapping/interfaces/channel-mapping.interface';
 import { BcConnectionDto } from '../blockchain/bc-connection/dto/bc-connection.dto';
 import { BcQueryResponseDto } from '../blockchain/dto/bc-query-response.dto';
 import { BcHistoryResponseDto } from '../blockchain/dto/bc-history-response.dto';
 import { ICompany } from '../flo-user/user/interfaces/user.interface';
 import { StaffingInterface } from '../flo-user/user-roles/organization-staffing/interfaces/organization-staffing.interface';
+import { ChannelMappingResponseDto } from '../blockchain/channel-mapping/dto/channel-mapping-response.dto';
 
 @Injectable()
 export class CaService {
@@ -44,14 +44,13 @@ export class CaService {
             const loggedInUser = bcUserDto.loggedInUserId;
             const company = bcUserDto.company;
             // const company = this.request['user'].company.find(defaultCompany => defaultCompany.default);
-            const companyId = company.companyId;
-            const loginUserStaffingId = company.staffingId.length > 0 ? company.staffingId[0]._id : null;
-            const channelMappingResponse = await this.channelMappingService.getChannelMappingByUserOrganizationAndStaffing(loggedInUser, companyId, loginUserStaffingId);
+            const loginUserStaffingId = company.staffingId.length > 0 ? (company.staffingId[0] as StaffingInterface)._id : null;
+            const channelMappingResponse = await this.channelMappingService.getChannelMappingByUserOrganizationAndStaffing(loggedInUser, company.companyId as string, loginUserStaffingId);
             const walletId = generateUniqueId();
             const channelMappingDto = new ChannelMappingDto();
             if (!organizationId) {
-                channelMappingDto.channelId = channelMappingResponse.channelId;
-                channelMappingDto.organizationId = companyId;
+                channelMappingDto.channelId = channelMappingResponse.channelMapping.channelId;
+                channelMappingDto.organizationId = company.companyId as string;
             } else {
                 channelMappingDto.channelId = channelId;
                 channelMappingDto.organizationId = organizationId;
@@ -60,7 +59,7 @@ export class CaService {
             channelMappingDto.userId = bcUserDto.enrollmentId;
             channelMappingDto.walletId = walletId;
             await this.channelMappingService.addChannelMapping(channelMappingDto);
-            await this.bcConnectionService.registerUser(walletId, channelMappingResponse.walletId);
+            await this.bcConnectionService.registerUser(walletId, channelMappingResponse.channelMapping.walletId);
         } catch (error) {
             logger.error(error);
             throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -69,14 +68,14 @@ export class CaService {
 
     async createEntry(bcRequestDto: BcRequestDto, bcUserDto: BcUserDto): Promise<BcConnectionDto> {
         // const company = this.request['user'].company.find(defaultCompany => defaultCompany.default);
-        const channelMappingResponse = await this.channelMappingService.getChannelMappingByUserAndOrganization(bcUserDto.loggedInUserId, bcUserDto.company.companyId);
-        return await this.bcConnectionService.invoke(bcRequestDto, channelMappingResponse.walletId);
+        const channelMappingResponse = await this.channelMappingService.getChannelMappingByUserAndOrganization(bcUserDto.loggedInUserId, bcUserDto.company.companyId as string);
+        return await this.bcConnectionService.invoke(bcRequestDto, channelMappingResponse.channelMapping.walletId);
     }
 
     async getEntryByKey(bcRequestDto: BcRequestDto, bcUserDto: BcUserDto): Promise<BcConnectionDto> {
         // const company = this.request['user'].company.find(defaultCompany => defaultCompany.default);
-        const channelMappingResponse = await this.channelMappingService.getChannelMappingByUserAndOrganization(bcUserDto.loggedInUserId, bcUserDto.company.companyId);
-        return await this.bcConnectionService.query(bcRequestDto, channelMappingResponse.walletId);
+        const channelMappingResponse = await this.channelMappingService.getChannelMappingByUserAndOrganization(bcUserDto.loggedInUserId, bcUserDto.company.companyId as string);
+        return await this.bcConnectionService.query(bcRequestDto, channelMappingResponse.channelMapping.walletId);
     }
 
     /**
@@ -166,8 +165,8 @@ export class CaService {
     async checkUserCert(userName: string, company: ICompany): Promise<boolean> {
         // const company = this.request['user'].company.find(defaultCompany => defaultCompany.default);
         const staffingId = company.staffingId.length > 0 ? (company.staffingId[0] as StaffingInterface)._id : null;
-        const channelMappingResponse: IChannelMapping = await this.channelMappingService.getChannelMappingByUserOrganizationAndStaffing(userName, company.companyId as string, staffingId);
-        const walletId = channelMappingResponse.walletId;
+        const channelMappingResponse: ChannelMappingResponseDto = await this.channelMappingService.getChannelMappingByUserOrganizationAndStaffing(userName, company.companyId as string, staffingId);
+        const walletId = channelMappingResponse.channelMapping.walletId;
         try {
             await this.checkBcUser(walletId);
             return true;
