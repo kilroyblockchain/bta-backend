@@ -1,9 +1,9 @@
-import FeatureModel from 'migrations/feature-migrate/schemas/feature.schema';
-import { generalFeatures, superAdminFeatures } from 'migrations/feature-migrate/data';
-import { featureProduction } from 'migrations/feature-migrate/data/index.prod';
-import { consoleLogWrapper } from 'migrations/helper-func';
+import FeatureModel from 'flo-migrations/feature-migrate/schemas/feature.schema';
+import { generalFeatures, superAdminFeatures } from 'flo-migrations/feature-migrate/data';
+import { featureProduction } from 'flo-migrations/feature-migrate/data/index.prod';
+import { consoleLogWrapper } from 'flo-migrations/helper-func';
 
-async function up() {
+async function up(): Promise<void> {
     try {
         const featuresLocal = [...superAdminFeatures, ...generalFeatures];
         const features = process.env.ENVIRONMENT === 'prod' ? featureProduction : featuresLocal;
@@ -24,7 +24,7 @@ async function up() {
 /**
  * Make any changes that UNDO the up function side effects here (if possible)
  */
-async function down() {
+async function down(): Promise<void> {
     // Write migration here
 }
 

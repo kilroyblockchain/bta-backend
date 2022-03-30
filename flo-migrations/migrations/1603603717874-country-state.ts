@@ -4,12 +4,12 @@ import { statesJSON } from '../country-migrate/data/states';
 import { IStateJSON } from '../country-migrate/interfaces/state-json.interface';
 import { ICountry } from '../country-migrate/interfaces/country.interface';
 import { IState } from '../country-migrate/interfaces/state.interface';
-import { consoleLogWrapper } from 'migrations/helper-func';
+import { consoleLogWrapper } from 'flo-migrations/helper-func';
 
 const { countries } = countryJSON;
 const { states } = statesJSON;
 
-async function up() {
+async function up(): Promise<void> {
     try {
         if (!(await Country.find().exec()).length) {
             for (const country of countries) {
@@ -51,7 +51,7 @@ async function up() {
 /**
  * Make any changes that UNDO the up function side effects here (if possible)
  */
-async function down() {
+async function down(): Promise<void> {
     // Write migration here
 }
 

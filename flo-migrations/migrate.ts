@@ -7,7 +7,7 @@ import { buildMongoURI, consoleLogWrapper } from './helper-func';
 const mongoURI = buildMongoURI(process.env.MONGO_URI, process.env.DATABASE_NAME, process.env.MONGO_HOST, process.env.MONGO_USERNAME, process.env.MONGO_PASSWORD);
 
 mongoose.connect(mongoURI);
-const migrationsDir = join(__dirname, 'flo-migrations'),
+const migrationsDir = join(__dirname, 'migrations'),
     dbUrl = mongoURI,
     collectionName = 'migrations',
     autosync = true;

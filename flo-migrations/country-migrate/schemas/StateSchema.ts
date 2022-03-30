@@ -1,4 +1,4 @@
-import { IState } from 'migrations/country-migrate/interfaces/state.interface';
+import { IState } from 'flo-migrations/country-migrate/interfaces/state.interface';
 import * as mongoose from 'mongoose';
 
 const State = new mongoose.Schema({
