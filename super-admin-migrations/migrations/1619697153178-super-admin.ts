@@ -1,4 +1,4 @@
-import { consoleLogWrapper } from 'migrations/helper-func';
+import { consoleLogWrapper } from 'flo-migrations/helper-func';
 import * as mongoose from 'mongoose';
 import { IOrganization } from 'src/components/flo-user/organization/interfaces/organization.interface';
 import { OrganizationSchema } from 'src/components/flo-user/organization/schemas/organization.schema';

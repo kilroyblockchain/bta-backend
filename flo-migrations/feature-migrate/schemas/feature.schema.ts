@@ -1,4 +1,4 @@
-import { IFeature } from 'migrations/feature-migrate/interfaces/feature.interface';
+import { IFeature } from 'flo-migrations/feature-migrate/interfaces/feature.interface';
 import * as mongoose from 'mongoose';
 
 const FeatureSchema = new mongoose.Schema(

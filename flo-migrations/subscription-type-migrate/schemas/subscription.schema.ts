@@ -1,4 +1,4 @@
-import { ISubscription } from 'migrations/subscription-type-migrate/interfaces/subscription.interface';
+import { ISubscription } from 'flo-migrations/subscription-type-migrate/interfaces/subscription.interface';
 import * as mongoose from 'mongoose';
 
 const SubscriptionSchema = new mongoose.Schema(
