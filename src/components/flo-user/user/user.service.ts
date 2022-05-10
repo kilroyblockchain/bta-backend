@@ -787,9 +787,10 @@ export class UserService {
     }
 
     getSearchFilterQuery(searchValue: string): FilterQuery<IUser>[] {
+        searchValue = searchValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         return [
             { fullName: { $regex: searchValue, $options: 'i' } },
-            { email: { $regex: searchValue.replace('+', '\\+'), $options: 'i' } },
+            { email: { $regex: searchValue, $options: 'i' } },
             { phone: { $regex: searchValue, $options: 'i' } },
             { zipCode: { $regex: searchValue, $options: 'i' } },
             { address: { $regex: searchValue, $options: 'i' } },
