@@ -789,7 +789,7 @@ export class UserService {
     getSearchFilterQuery(searchValue: string): FilterQuery<IUser>[] {
         return [
             { fullName: { $regex: searchValue, $options: 'i' } },
-            { email: { $regex: searchValue, $options: 'i' } },
+            { email: { $regex: searchValue.replace('+', '\\+'), $options: 'i' } },
             { phone: { $regex: searchValue, $options: 'i' } },
             { zipCode: { $regex: searchValue, $options: 'i' } },
             { address: { $regex: searchValue, $options: 'i' } },
@@ -801,7 +801,7 @@ export class UserService {
     async findAllUserOfOrganization(req: Request): Promise<PaginateResult<IUser>> {
         const { page, limit, status, subscriptionType, search, searchValue } = req.query;
         const verified = status && status.toString().toUpperCase() === 'VERIFIED' ? true : false;
-        const searchQuery = search && search === 'true' && searchValue ? { $or: this.getSearchFilterQuery(searchValue.toString()) } : {};
+        const searchQuery = search && search === 'true' && searchValue ? { $or: this.getSearchFilterQuery(decodeURIComponent(searchValue.toString())) } : {};
         const user = req['user'];
         const filterTrainingStaffing = {
             staffingId: {
