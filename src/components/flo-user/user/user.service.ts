@@ -799,15 +799,10 @@ export class UserService {
         ];
     }
 
-    async findAllUserOfOrganization(req: Request): Promise<PaginateResult<IUser> | any> {
-        const { page, limit, status, subscriptionType, search, searchValue, blocked } = req.query;
-        const verified = status && status.toString().toUpperCase() === 'VERIFIED' ? true : false;
-        const searchQuery = search && search === 'true' && searchValue ? { $or: this.getSearchFilterQuery(decodeURIComponent(searchValue.toString())) } : {};
-        const user = req['user'];
-
+    getBlockedQuery(loggedInUser: IUser, blocked: string): FilterQuery<IUser> {
         let getBlockedUserQuery = {};
-        if (blocked && blocked.toString() === 'true') {
-            const hasAccess = this.authService.canAccess(user, FEATURE_IDENTIFIER.MANAGE_BLOCKED_COMPANY_USERS, [ACCESS_TYPE.READ]);
+        if (blocked === 'true') {
+            const hasAccess = this.authService.canAccess(loggedInUser, FEATURE_IDENTIFIER.MANAGE_BLOCKED_COMPANY_USERS, [ACCESS_TYPE.READ]);
             if (hasAccess) {
                 getBlockedUserQuery = {
                     blockExpires: {
@@ -818,6 +813,16 @@ export class UserService {
                 throw new ForbiddenException(USER_CONSTANT.YOU_DONT_HAVE_ACCESS_TO_MANAGE_BLOCKED_COMPANY_USERS);
             }
         }
+        return getBlockedUserQuery;
+    }
+
+    async findAllUserOfOrganization(req: Request): Promise<PaginateResult<IUser>> {
+        const { page, limit, status, subscriptionType, search, searchValue, blocked } = req.query;
+        const verified = status && status.toString().toUpperCase() === 'VERIFIED' ? true : false;
+        const searchQuery = search && search === 'true' && searchValue ? { $or: this.getSearchFilterQuery(decodeURIComponent(searchValue.toString())) } : {};
+        const user = req['user'];
+        const getBlockedUserQuery = this.getBlockedQuery(user, blocked?.toString());
+
         const query = {
             ...getBlockedUserQuery,
             company: {
@@ -925,22 +930,25 @@ export class UserService {
 
         const users = buildPaginateResult(aggregateResult[0] as PaginateResult<IUser>);
         users.docs = await Promise.all(
-            users.docs.map(
-                async (doc) =>
-                    await this.UserModel.findById(doc._id).populate({
-                        path: 'company.companyId company.staffingId company.deletedStaffingId skill language education experience country state',
-                        select: '-countryCode -idNumber -phoneCode -states -countryId -countryObjectId -__v ',
-                        populate: {
-                            path: 'featureAndAccess.featureId organizationUnitId country state'
-                        }
-                    })
-            )
+            users.docs.map(async (doc) => {
+                const fetchedUser = await this.UserModel.findById(doc._id).populate({
+                    path: 'company.companyId company.staffingId company.deletedStaffingId skill language education experience country state',
+                    select: '-countryCode -idNumber -phoneCode -states -countryId -countryObjectId -__v ',
+                    populate: {
+                        path: 'featureAndAccess.featureId organizationUnitId country state'
+                    }
+                });
+                if (fetchedUser) {
+                    return fetchedUser['_doc'];
+                }
+                return fetchedUser;
+            })
         );
 
         if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
             const bcUserDto = new BcUserDto();
-            bcUserDto.loggedInUserId = req['user']._id;
-            bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
+            bcUserDto.loggedInUserId = user._id;
+            bcUserDto.company = user.company.find((defaultCompany) => defaultCompany.default);
             users.docs = await this.userBcService.getBlockchainVerifiedUserList(users.docs, bcUserDto);
         }
         return users;
