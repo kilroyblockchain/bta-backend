@@ -925,16 +925,19 @@ export class UserService {
 
         const users = buildPaginateResult(aggregateResult[0] as PaginateResult<IUser>);
         users.docs = await Promise.all(
-            users.docs.map(
-                async (doc) =>
-                    await this.UserModel.findById(doc._id).populate({
-                        path: 'company.companyId company.staffingId company.deletedStaffingId skill language education experience country state',
-                        select: '-countryCode -idNumber -phoneCode -states -countryId -countryObjectId -__v ',
-                        populate: {
-                            path: 'featureAndAccess.featureId organizationUnitId country state'
-                        }
-                    })
-            )
+            users.docs.map(async (doc) => {
+                const fetchedUser = await this.UserModel.findById(doc._id).populate({
+                    path: 'company.companyId company.staffingId company.deletedStaffingId skill language education experience country state',
+                    select: '-countryCode -idNumber -phoneCode -states -countryId -countryObjectId -__v ',
+                    populate: {
+                        path: 'featureAndAccess.featureId organizationUnitId country state'
+                    }
+                });
+                if (fetchedUser) {
+                    return fetchedUser['_doc'];
+                }
+                return fetchedUser;
+            })
         );
 
         if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
