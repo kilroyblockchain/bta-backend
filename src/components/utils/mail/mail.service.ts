@@ -26,7 +26,7 @@ export class MailService {
                     // Data to be sent to template engine
                     title: title,
                     partialContext: partialContext,
-                    clientAppURL: process.env.CLIENT_ASSETS_URL
+                    clientAppURL: process.env.CLIENT_APP_URL
                 }
             })
             .then(() => {

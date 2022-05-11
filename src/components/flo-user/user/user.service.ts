@@ -1386,7 +1386,7 @@ export class UserService {
             return response;
         }
         const token = await this.authService.createResetToken(user._id);
-        const forgetLink = `${process.env.CLIENT_APP_URL}/auth/reset-password/${token}`;
+        const forgetLink = `${process.env.CLIENT_APP_URL}/#/auth/reset-password/${token}`;
         try {
             await user
                 .updateOne({ resetLink: token })
@@ -1694,7 +1694,7 @@ export class UserService {
             userName: user.firstName,
             roles: staffing.join(),
             subscriptionType: await this.subsTypeService.getFullSubscription(addCompanyDto.subscription ? addCompanyDto.subscription : loginUserDefaultCompany.subscriptionType),
-            activationLink: process.env.CLIENT_APP_URL + `user-accept/${token.userAcceptToken}`
+            activationLink: process.env.CLIENT_APP_URL + `/#/user-accept/${token.userAcceptToken}`
         });
         const userSaved = await (await user.save()).populate('country state');
         if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
@@ -1902,7 +1902,7 @@ export class UserService {
                 user.blockExpires = new Date();
                 await user.save();
                 const token = await this.authService.createResetToken(user._id);
-                const forgetLink = `${process.env.CLIENT_APP_URL}/auth/reset-password/${token}`;
+                const forgetLink = `${process.env.CLIENT_APP_URL}/#/auth/reset-password/${token}`;
                 await user
                     .updateOne({ resetLink: token })
                     .then(async () => {
