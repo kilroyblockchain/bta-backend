@@ -1,7 +1,7 @@
 import { StaffingInterface } from 'src/components/flo-user/user-roles/organization-staffing/interfaces/organization-staffing.interface';
 import { Injectable, BadRequestException, NotFoundException, ConflictException, ForbiddenException, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, PaginateModel, PaginateResult } from 'mongoose';
+import { FilterQuery, Model, PaginateModel, PaginateResult } from 'mongoose';
 import { Request, Response } from 'express';
 import { v4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
@@ -37,7 +37,7 @@ import { getArraysComplement, getClientTimezoneId, getHourMinuteDiff } from 'src
 import { BC_PAYLOAD } from 'src/@core/constants/bc-constants/bc-payload.constant';
 import { fullSubscriptionType } from '../subscription-type/subscription-type.constant';
 import { getSearchFilterWithRegexAll } from 'src/@core/utils/query-filter.utils';
-import { getFinalPaginationResult, populateField } from 'src/@core/utils/aggregate-paginate.utils';
+import { buildPaginateResult, getFinalPaginationResult, getPaginateDocumentStage, populateField, sortDocumentsBy } from 'src/@core/utils/aggregate-paginate.utils';
 import { BcUserDto } from 'src/@core/common/bc-user.dto';
 import { CaService } from 'src/components/certificate-authority/ca-client.service';
 import { CHANNEL_DETAIL } from 'src/@core/constants/bc-constants/channel-detail.constant';
@@ -786,10 +786,23 @@ export class UserService {
         return users;
     }
 
+    getSearchFilterQuery(searchValue: string): FilterQuery<IUser>[] {
+        searchValue = searchValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return [
+            { fullName: { $regex: searchValue, $options: 'i' } },
+            { email: { $regex: searchValue, $options: 'i' } },
+            { phone: { $regex: searchValue, $options: 'i' } },
+            { zipCode: { $regex: searchValue, $options: 'i' } },
+            { address: { $regex: searchValue, $options: 'i' } },
+            { 'company.staffingId.staffingName': { $regex: searchValue, $options: 'i' } },
+            { 'company.staffingId.organizationUnitId.unitName': { $regex: searchValue, $options: 'i' } }
+        ];
+    }
+
     async findAllUserOfOrganization(req: Request): Promise<PaginateResult<IUser>> {
         const { page, limit, status, subscriptionType, search, searchValue } = req.query;
         const verified = status && status.toString().toUpperCase() === 'VERIFIED' ? true : false;
-        const searchQuery = search && search === 'true' && searchValue ? getSearchFilterWithRegexAll(searchValue.toString(), ['firstName', 'lastName', 'email', 'zipCode', 'address']) : {};
+        const searchQuery = search && search === 'true' && searchValue ? { $or: this.getSearchFilterQuery(decodeURIComponent(searchValue.toString())) } : {};
         const user = req['user'];
         const filterTrainingStaffing = {
             staffingId: {
@@ -799,7 +812,6 @@ export class UserService {
             }
         };
         const query = {
-            ...searchQuery,
             company: {
                 $elemMatch: {
                     verified: true,
@@ -828,22 +840,77 @@ export class UserService {
                 limit: null
             };
         }
-        const options = {
-            select: 'firstName lastName jobTitle email phone country state city address zipCode company',
-            sort: { updatedAt: -1 },
-            populate: {
-                path: 'company.companyId company.staffingId company.deletedStaffingId skill language education experience country state',
-                select: '-countryCode -idNumber -phoneCode -states -countryId -countryObjectId -__v ',
-                populate: {
-                    path: 'featureAndAccess.featureId organizationUnitId country state'
+        const aggregateResult = await this.UserModel.aggregate([
+            {
+                $match: {
+                    ...query
                 }
             },
-            lean: true,
-            limit: Number(limit),
-            page: Number(page)
-        };
-
-        const users = await this.uModel.paginate(query, options);
+            {
+                $project: {
+                    firstName: 1,
+                    lastName: 1,
+                    company: 1,
+                    email: 1,
+                    phone: 1,
+                    zipCode: 1,
+                    address: 1,
+                    fullName: { $concat: ['$firstName', ' ', '$lastName'] }
+                }
+            },
+            {
+                $unwind: '$company'
+            },
+            ...populateField('organizations', 'company.companyId', '_id'),
+            ...populateField('staffings', 'company.staffingId', '_id'),
+            {
+                $unwind: '$company.staffingId'
+            },
+            ...populateField('organizationunits', 'company.staffingId.organizationUnitId', '_id'),
+            {
+                $group: {
+                    _id: '$_id',
+                    company: {
+                        $push: '$company'
+                    },
+                    fullName: { $first: '$fullName' },
+                    firstName: { $first: '$firstName' },
+                    lastName: { $first: '$lastName' },
+                    jobTitle: { $first: '$jobTitle' },
+                    email: { $first: '$email' },
+                    phone: { $first: '$phone' },
+                    country: { $first: '$country' },
+                    state: { $first: '$state' },
+                    city: { $first: '$city' },
+                    address: { $first: '$address' },
+                    zipCode: { $first: '$zipCode' }
+                }
+            },
+            ...(search && search === 'true' && searchValue
+                ? [
+                      {
+                          $match: {
+                              ...searchQuery
+                          }
+                      }
+                  ]
+                : []),
+            ...sortDocumentsBy('updatedAt', 'DESC'),
+            ...getPaginateDocumentStage(page ? (!isNaN(Number(page)) ? Number(page) : 1) : 1, limit ? (!isNaN(Number(limit)) ? Number(limit) : 15) : 15)
+        ]);
+        const users = buildPaginateResult(aggregateResult[0] as PaginateResult<IUser>);
+        users.docs = await Promise.all(
+            users.docs.map(
+                async (doc) =>
+                    await this.UserModel.findById(doc._id).populate({
+                        path: 'company.companyId company.staffingId company.deletedStaffingId skill language education experience country state',
+                        select: '-countryCode -idNumber -phoneCode -states -countryId -countryObjectId -__v ',
+                        populate: {
+                            path: 'featureAndAccess.featureId organizationUnitId country state'
+                        }
+                    })
+            )
+        );
 
         if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
             const bcUserDto = new BcUserDto();
