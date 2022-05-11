@@ -799,13 +799,13 @@ export class UserService {
         ];
     }
 
-    async findAllUserOfOrganization(req: Request): Promise<PaginateResult<IUser>> {
+    async findAllUserOfOrganization(req: Request): Promise<PaginateResult<IUser> | any> {
         const { page, limit, status, subscriptionType, search, searchValue, blocked } = req.query;
         const verified = status && status.toString().toUpperCase() === 'VERIFIED' ? true : false;
         const searchQuery = search && search === 'true' && searchValue ? { $or: this.getSearchFilterQuery(decodeURIComponent(searchValue.toString())) } : {};
         const user = req['user'];
+
         let getBlockedUserQuery = {};
-        console.log(user.company[0]);
         if (blocked && blocked.toString() === 'true') {
             const hasAccess = this.authService.canAccess(user, FEATURE_IDENTIFIER.MANAGE_BLOCKED_COMPANY_USERS, [ACCESS_TYPE.READ]);
             if (hasAccess) {
@@ -827,9 +827,16 @@ export class UserService {
                     subscriptionType: subscriptionType,
                     ...(verified
                         ? {
-                              'staffingId.0': {
-                                  $exists: true
-                              }
+                              $or: [
+                                  {
+                                      'staffingId.0': {
+                                          $exists: true
+                                      }
+                                  },
+                                  {
+                                      isAdmin: true
+                                  }
+                              ]
                           }
                         : {
                               'staffingId.0': {
@@ -872,15 +879,13 @@ export class UserService {
             ...(verified
                 ? [
                       ...populateField('staffings', 'company.staffingId', '_id'),
-
                       {
-                          $unwind: '$company.staffingId'
+                          $unwind: { path: '$company.staffingId', preserveNullAndEmptyArrays: true }
                       },
                       ...populateField('organizationunits', 'company.staffingId.organizationUnitId', '_id')
                   ]
                 : [
                       ...populateField('staffings', 'company.deletedStaffingId', '_id'),
-
                       {
                           $unwind: '$company.deletedStaffingId'
                       },
@@ -917,6 +922,7 @@ export class UserService {
             ...sortDocumentsBy('updatedAt', 'DESC'),
             ...getPaginateDocumentStage(page ? (!isNaN(Number(page)) ? Number(page) : 1) : 1, limit ? (!isNaN(Number(limit)) ? Number(limit) : 15) : 15)
         ]);
+
         const users = buildPaginateResult(aggregateResult[0] as PaginateResult<IUser>);
         users.docs = await Promise.all(
             users.docs.map(
@@ -937,7 +943,6 @@ export class UserService {
             bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
             users.docs = await this.userBcService.getBlockchainVerifiedUserList(users.docs, bcUserDto);
         }
-
         return users;
     }
 
