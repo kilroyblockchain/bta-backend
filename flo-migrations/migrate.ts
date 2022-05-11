@@ -2,11 +2,12 @@ import * as migrateMongoose from 'migrate-mongoose';
 import * as mongoose from 'mongoose';
 import 'dotenv/config';
 import { join } from 'path';
-import { buildMongoURI, consoleLogWrapper } from './helper-func';
+import { buildMongoURI, consoleLogWrapper, dropCollectionIfExist } from './helper-func';
 
 const mongoURI = buildMongoURI(process.env.MONGO_URI, process.env.DATABASE_NAME, process.env.MONGO_HOST, process.env.MONGO_USERNAME, process.env.MONGO_PASSWORD);
 
-mongoose.connect(mongoURI);
+export const mongooseConnection = mongoose.connect(mongoURI);
+
 const migrationsDir = join(__dirname, 'migrations'),
     dbUrl = mongoURI,
     collectionName = 'migrations',
@@ -19,11 +20,18 @@ const migrator = new migrateMongoose({
     autosync: autosync // if making a CLI app, set this to false to prompt the user, otherwise true
 });
 consoleLogWrapper('Starting Migration...');
-migrator
-    .run('up')
-    .then(() => {
+
+const runMigrator = async (migrator: migrateMongoose): Promise<void> => {
+    try {
+        const collectionName = 'migrations';
+        await dropCollectionIfExist((await mongooseConnection).connection, collectionName);
+        await migrator.run('up');
         consoleLogWrapper('Completed Migrations. \nThank You!!!');
-    })
-    .finally(() => {
+    } catch (err) {
+        console.log(err);
+    } finally {
         process.exit();
-    });
+    }
+};
+
+runMigrator(migrator);

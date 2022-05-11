@@ -1,21 +1,20 @@
 import FeatureModel from 'flo-migrations/feature-migrate/schemas/feature.schema';
 import { generalFeatures, superAdminFeatures } from 'flo-migrations/feature-migrate/data';
 import { featureProduction } from 'flo-migrations/feature-migrate/data/index.prod';
-import { consoleLogWrapper } from 'flo-migrations/helper-func';
+import { consoleLogWrapper, dropCollectionIfExist } from 'flo-migrations/helper-func';
+import { mongooseConnection } from 'flo-migrations/migrate';
 
 async function up(): Promise<void> {
     try {
         const featuresLocal = [...superAdminFeatures, ...generalFeatures];
         const features = process.env.ENVIRONMENT === 'prod' ? featureProduction : featuresLocal;
-        if (!(await FeatureModel.find()).length) {
-            for (const feature of features) {
-                const newFeature = new FeatureModel(feature);
-                await newFeature.save();
-            }
-            consoleLogWrapper('Successfully added all feature list from data.');
-        } else {
-            consoleLogWrapper('Already migrated feature list.');
+        const collectionName = 'features';
+        await dropCollectionIfExist((await mongooseConnection).connection, collectionName);
+        for (const feature of features) {
+            const newFeature = new FeatureModel(feature);
+            await newFeature.save();
         }
+        consoleLogWrapper('Successfully added all feature list from data.');
     } catch (err) {
         console.error(err.message);
     }
