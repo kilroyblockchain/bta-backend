@@ -800,33 +800,33 @@ export class UserService {
     }
 
     async findAllUserOfOrganization(req: Request): Promise<PaginateResult<IUser>> {
-        const { page, limit, status, subscriptionType, search, searchValue } = req.query;
+        const { page, limit, status, subscriptionType, search, searchValue, blocked } = req.query;
         const verified = status && status.toString().toUpperCase() === 'VERIFIED' ? true : false;
         const searchQuery = search && search === 'true' && searchValue ? { $or: this.getSearchFilterQuery(decodeURIComponent(searchValue.toString())) } : {};
         const user = req['user'];
-        const filterTrainingStaffing = {
-            staffingId: {
-                $elemMatch: {
-                    $nin: []
-                }
-            }
-        };
+
         const query = {
+            ...(blocked && blocked.toString() === 'true'
+                ? {
+                      blockExpires: {
+                          $gte: new Date()
+                      }
+                  }
+                : {}),
             company: {
                 $elemMatch: {
                     verified: true,
                     companyId: user.company.find((defCompany) => defCompany.default).companyId,
                     subscriptionType: subscriptionType,
-
                     ...(verified
                         ? {
-                              $or: [filterTrainingStaffing, { isAdmin: true }]
+                              'staffingId.0': {
+                                  $exists: true
+                              }
                           }
                         : {
-                              deletedStaffingId: {
-                                  $elemMatch: {
-                                      $nin: []
-                                  }
+                              'staffingId.0': {
+                                  $exists: false
                               }
                           })
                 }
@@ -862,11 +862,23 @@ export class UserService {
                 $unwind: '$company'
             },
             ...populateField('organizations', 'company.companyId', '_id'),
-            ...populateField('staffings', 'company.staffingId', '_id'),
-            {
-                $unwind: '$company.staffingId'
-            },
-            ...populateField('organizationunits', 'company.staffingId.organizationUnitId', '_id'),
+            ...(verified
+                ? [
+                      ...populateField('staffings', 'company.staffingId', '_id'),
+
+                      {
+                          $unwind: '$company.staffingId'
+                      },
+                      ...populateField('organizationunits', 'company.staffingId.organizationUnitId', '_id')
+                  ]
+                : [
+                      ...populateField('staffings', 'company.deletedStaffingId', '_id'),
+
+                      {
+                          $unwind: '$company.deletedStaffingId'
+                      },
+                      ...populateField('organizationunits', 'company.deletedStaffingId.organizationUnitId', '_id')
+                  ]),
             {
                 $group: {
                     _id: '$_id',
