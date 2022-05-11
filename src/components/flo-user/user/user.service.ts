@@ -7,7 +7,7 @@ import { v4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
 import { addHours } from 'date-fns';
 import config from 'src/@core/config/keys';
-import { EMAIL_CONSTANTS, ROLE } from 'src/@core/constants';
+import { ACCESS_TYPE, EMAIL_CONSTANTS, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
 import { COMMON_ERROR, USER_CONSTANT, VERIFICATION_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { SubscriptionTypeDto } from './dto/add-subscription.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -804,15 +804,22 @@ export class UserService {
         const verified = status && status.toString().toUpperCase() === 'VERIFIED' ? true : false;
         const searchQuery = search && search === 'true' && searchValue ? { $or: this.getSearchFilterQuery(decodeURIComponent(searchValue.toString())) } : {};
         const user = req['user'];
-
+        console.log(user.company.find((company) => company.default).staffingId[0]);
+        let getBlockedUserQuery = {};
+        if (blocked && blocked.toString() === 'true') {
+            const hasAccess = this.authService.canAccess(user, FEATURE_IDENTIFIER.MANAGE_BLOCKED_COMPANY_USERS, [ACCESS_TYPE.READ]);
+            if (hasAccess) {
+                getBlockedUserQuery = {
+                    blockExpires: {
+                        $gte: new Date()
+                    }
+                };
+            } else {
+                throw new ForbiddenException(USER_CONSTANT.YOU_DONT_HAVE_ACCESS_TO_MANAGE_BLOCKED_COMPANY_USERS);
+            }
+        }
         const query = {
-            ...(blocked && blocked.toString() === 'true'
-                ? {
-                      blockExpires: {
-                          $gte: new Date()
-                      }
-                  }
-                : {}),
+            ...getBlockedUserQuery,
             company: {
                 $elemMatch: {
                     verified: true,
