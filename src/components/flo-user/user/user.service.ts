@@ -804,8 +804,8 @@ export class UserService {
         const verified = status && status.toString().toUpperCase() === 'VERIFIED' ? true : false;
         const searchQuery = search && search === 'true' && searchValue ? { $or: this.getSearchFilterQuery(decodeURIComponent(searchValue.toString())) } : {};
         const user = req['user'];
-        console.log(user.company.find((company) => company.default).staffingId[0]);
         let getBlockedUserQuery = {};
+        console.log(user.company[0]);
         if (blocked && blocked.toString() === 'true') {
             const hasAccess = this.authService.canAccess(user, FEATURE_IDENTIFIER.MANAGE_BLOCKED_COMPANY_USERS, [ACCESS_TYPE.READ]);
             if (hasAccess) {
@@ -1886,6 +1886,34 @@ export class UserService {
             await user.save();
         } catch (err) {
             throw new BadRequestException(USER_CONSTANT.FAILED_TO_UNBLOCK_USER, err);
+        }
+    }
+
+    async unblockCompanyUser(loggedInUser: IUser, userId: string): Promise<void> {
+        try {
+            const user = await this.UserModel.findById(userId);
+            if (user?.company?.some((company) => company.companyId.toString() === loggedInUser.company.find((company) => company.default).companyId?.toString())) {
+                user.loginAttempts = 0;
+                user.blockExpires = new Date();
+                await user.save();
+                const token = await this.authService.createResetToken(user._id);
+                const forgetLink = `${process.env.CLIENT_APP_URL}/auth/reset-password/${token}`;
+                await user
+                    .updateOne({ resetLink: token })
+                    .then(async () => {
+                        await this.mailService.sendMail(user.email, 'Reset Password', 'Reset Password Link', config.MAIL_TYPES.FORGET_PASSWORD_EMAIL, {
+                            userFirstName: user.firstName,
+                            forgetPasswordLink: forgetLink
+                        });
+                    })
+                    .catch(() => {
+                        throw new BadRequestException(USER_CONSTANT.RESET_PASSWORD_LINK_ERROR);
+                    });
+            } else {
+                throw new ForbiddenException(USER_CONSTANT.YOU_CANT_UNBLOCK_THIS_USER);
+            }
+        } catch (err) {
+            throw new BadRequestException(USER_CONSTANT.FAILED_TO_UNBLOCK_COMPANY_USER, err);
         }
     }
 
