@@ -14,6 +14,8 @@ import { imageHash } from 'image-hash';
 import { COOKIE_KEYS } from 'src/@core/constants/cookie-key.constant';
 import { USER_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { HttpService } from '@nestjs/axios';
+import { StaffingInterface } from '../flo-user/user-roles/organization-staffing/interfaces/organization-staffing.interface';
+import { IFeature } from '../flo-user/features/interfaces/features.interface';
 
 @Injectable()
 export class AuthService {
@@ -279,5 +281,24 @@ export class AuthService {
         } else {
             throw new UnauthorizedException(USER_CONSTANT.USER_HAS_BEEN_LOGGED_OUT);
         }
+    }
+
+    canAccess(loggedInUser: IUser, featureIdentifier: string, featureAccessType: string[]): boolean {
+        const defaultCompany = loggedInUser.company.find((company) => company.default);
+        let returnValue = defaultCompany?.isAdmin;
+        if (!returnValue && defaultCompany?.staffingId) {
+            (defaultCompany?.staffingId as StaffingInterface[]).map((staffing) => {
+                staffing.featureAndAccess.map((feature) => {
+                    if (feature.featureId && (feature.featureId as IFeature).featureIdentifier === featureIdentifier) {
+                        feature.accessType.map((access) => {
+                            if (featureAccessType.includes(access)) {
+                                returnValue = true;
+                            }
+                        });
+                    }
+                });
+            });
+        }
+        return returnValue ?? false;
     }
 }

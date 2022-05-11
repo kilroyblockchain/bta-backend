@@ -26,8 +26,7 @@ export const UserSchema = new mongoose.Schema(
             unique: true
         },
         phone: {
-            type: String,
-            required: true
+            type: String
         },
         country: {
             type: mongoose.Schema.Types.ObjectId,

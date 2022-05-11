@@ -7,7 +7,7 @@ import { v4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
 import { addHours } from 'date-fns';
 import config from 'src/@core/config/keys';
-import { EMAIL_CONSTANTS, ROLE } from 'src/@core/constants';
+import { ACCESS_TYPE, EMAIL_CONSTANTS, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
 import { COMMON_ERROR, USER_CONSTANT, VERIFICATION_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { SubscriptionTypeDto } from './dto/add-subscription.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -799,34 +799,48 @@ export class UserService {
         ];
     }
 
-    async findAllUserOfOrganization(req: Request): Promise<PaginateResult<IUser>> {
-        const { page, limit, status, subscriptionType, search, searchValue } = req.query;
+    async findAllUserOfOrganization(req: Request): Promise<PaginateResult<IUser> | any> {
+        const { page, limit, status, subscriptionType, search, searchValue, blocked } = req.query;
         const verified = status && status.toString().toUpperCase() === 'VERIFIED' ? true : false;
         const searchQuery = search && search === 'true' && searchValue ? { $or: this.getSearchFilterQuery(decodeURIComponent(searchValue.toString())) } : {};
         const user = req['user'];
-        const filterTrainingStaffing = {
-            staffingId: {
-                $elemMatch: {
-                    $nin: []
-                }
+
+        let getBlockedUserQuery = {};
+        if (blocked && blocked.toString() === 'true') {
+            const hasAccess = this.authService.canAccess(user, FEATURE_IDENTIFIER.MANAGE_BLOCKED_COMPANY_USERS, [ACCESS_TYPE.READ]);
+            if (hasAccess) {
+                getBlockedUserQuery = {
+                    blockExpires: {
+                        $gte: new Date()
+                    }
+                };
+            } else {
+                throw new ForbiddenException(USER_CONSTANT.YOU_DONT_HAVE_ACCESS_TO_MANAGE_BLOCKED_COMPANY_USERS);
             }
-        };
+        }
         const query = {
+            ...getBlockedUserQuery,
             company: {
                 $elemMatch: {
                     verified: true,
                     companyId: user.company.find((defCompany) => defCompany.default).companyId,
                     subscriptionType: subscriptionType,
-
                     ...(verified
                         ? {
-                              $or: [filterTrainingStaffing, { isAdmin: true }]
+                              $or: [
+                                  {
+                                      'staffingId.0': {
+                                          $exists: true
+                                      }
+                                  },
+                                  {
+                                      isAdmin: true
+                                  }
+                              ]
                           }
                         : {
-                              deletedStaffingId: {
-                                  $elemMatch: {
-                                      $nin: []
-                                  }
+                              'staffingId.0': {
+                                  $exists: false
                               }
                           })
                 }
@@ -862,11 +876,21 @@ export class UserService {
                 $unwind: '$company'
             },
             ...populateField('organizations', 'company.companyId', '_id'),
-            ...populateField('staffings', 'company.staffingId', '_id'),
-            {
-                $unwind: '$company.staffingId'
-            },
-            ...populateField('organizationunits', 'company.staffingId.organizationUnitId', '_id'),
+            ...(verified
+                ? [
+                      ...populateField('staffings', 'company.staffingId', '_id'),
+                      {
+                          $unwind: { path: '$company.staffingId', preserveNullAndEmptyArrays: true }
+                      },
+                      ...populateField('organizationunits', 'company.staffingId.organizationUnitId', '_id')
+                  ]
+                : [
+                      ...populateField('staffings', 'company.deletedStaffingId', '_id'),
+                      {
+                          $unwind: '$company.deletedStaffingId'
+                      },
+                      ...populateField('organizationunits', 'company.deletedStaffingId.organizationUnitId', '_id')
+                  ]),
             {
                 $group: {
                     _id: '$_id',
@@ -898,6 +922,7 @@ export class UserService {
             ...sortDocumentsBy('updatedAt', 'DESC'),
             ...getPaginateDocumentStage(page ? (!isNaN(Number(page)) ? Number(page) : 1) : 1, limit ? (!isNaN(Number(limit)) ? Number(limit) : 15) : 15)
         ]);
+
         const users = buildPaginateResult(aggregateResult[0] as PaginateResult<IUser>);
         users.docs = await Promise.all(
             users.docs.map(
@@ -918,7 +943,6 @@ export class UserService {
             bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
             users.docs = await this.userBcService.getBlockchainVerifiedUserList(users.docs, bcUserDto);
         }
-
         return users;
     }
 
@@ -1867,6 +1891,34 @@ export class UserService {
             await user.save();
         } catch (err) {
             throw new BadRequestException(USER_CONSTANT.FAILED_TO_UNBLOCK_USER, err);
+        }
+    }
+
+    async unblockCompanyUser(loggedInUser: IUser, userId: string): Promise<void> {
+        try {
+            const user = await this.UserModel.findById(userId);
+            if (user?.company?.some((company) => company.companyId.toString() === loggedInUser.company.find((company) => company.default).companyId?.toString())) {
+                user.loginAttempts = 0;
+                user.blockExpires = new Date();
+                await user.save();
+                const token = await this.authService.createResetToken(user._id);
+                const forgetLink = `${process.env.CLIENT_APP_URL}/auth/reset-password/${token}`;
+                await user
+                    .updateOne({ resetLink: token })
+                    .then(async () => {
+                        await this.mailService.sendMail(user.email, 'Reset Password', 'Reset Password Link', config.MAIL_TYPES.FORGET_PASSWORD_EMAIL, {
+                            userFirstName: user.firstName,
+                            forgetPasswordLink: forgetLink
+                        });
+                    })
+                    .catch(() => {
+                        throw new BadRequestException(USER_CONSTANT.RESET_PASSWORD_LINK_ERROR);
+                    });
+            } else {
+                throw new ForbiddenException(USER_CONSTANT.YOU_CANT_UNBLOCK_THIS_USER);
+            }
+        } catch (err) {
+            throw new BadRequestException(USER_CONSTANT.FAILED_TO_UNBLOCK_COMPANY_USER, err);
         }
     }
 

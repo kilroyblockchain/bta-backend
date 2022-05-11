@@ -1,10 +1,16 @@
 import { OTHER, STAFF, SUPER_ADMIN } from 'flo-migrations/subscription-type-migrate/constants';
 import { Types } from 'mongoose';
 
+export enum SubscriptionTypeID {
+    SUPER_ADMIN = '6020e66b93e1822970210001',
+    OTHER = '6020e66b93e1822970210002',
+    STAFF = '6020e66b93e1822970210003'
+}
+
 export const subscriptionTypes = [
     /* 1 */
     {
-        _id: new Types.ObjectId('6020e66b93e1822970210001'),
+        _id: new Types.ObjectId(SubscriptionTypeID.SUPER_ADMIN),
         subscriptionTypeIdentifier: SUPER_ADMIN,
         subscriptionType: 'Super Admin',
         position: 0
@@ -12,7 +18,7 @@ export const subscriptionTypes = [
 
     /* 2 */
     {
-        _id: new Types.ObjectId('6020e66b93e1822970210002'),
+        _id: new Types.ObjectId(SubscriptionTypeID.OTHER),
         subscriptionTypeIdentifier: OTHER,
         subscriptionType: 'Other',
         position: 2
@@ -20,7 +26,7 @@ export const subscriptionTypes = [
 
     /* 3 */
     {
-        _id: new Types.ObjectId('6020e66b93e1822970210003'),
+        _id: new Types.ObjectId(SubscriptionTypeID.STAFF),
         subscriptionTypeIdentifier: STAFF,
         subscriptionType: 'Staff',
         position: 1

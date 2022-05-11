@@ -3,7 +3,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RegisterUserDto } from './dto/register-user.dto';
-import { Roles, Permission, Feature } from 'src/components/auth/decorators';
+import { Roles, Permission, Feature, GetUser } from 'src/components/auth/decorators';
 import { Request, Response as ExpressResponse } from 'express';
 import { LoginUserDto } from './dto/login-user.dto';
 import { Controller, Get, Post, Body, UseGuards, Req, HttpCode, HttpStatus, Put, Delete, UploadedFile, UseInterceptors, Param, BadRequestException, Res, ForbiddenException } from '@nestjs/common';
@@ -32,6 +32,7 @@ import { BcUserDto } from 'src/@core/common/bc-user.dto';
 import { RejectUserDto } from './dto/reject-user.dto';
 import { Response as FLOResponse } from 'src/@core/response';
 import { BC_PAYLOAD } from 'src/@core/constants/bc-constants/bc-payload.constant';
+import { IUser } from './interfaces/user.interface';
 
 @ApiTags('User')
 @Controller('user')
@@ -584,5 +585,23 @@ export class UserController {
             throw new ForbiddenException(COMMON_ERROR.UNAUTHORIZED_TO_ACCESS);
         }
         return new Response(true, [BC_PAYLOAD.MIGRATION_SUCCESS]).setSuccessData(await this.userService.migrateSuperAdmin());
+    }
+
+    @Put('unblock-company-user/:userId')
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @Permission(ACCESS_TYPE.UPDATE)
+    @Feature(FEATURE_IDENTIFIER.MANAGE_BLOCKED_COMPANY_USERS)
+    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Unblock company user' })
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'the token we need for auth.'
+    })
+    @ApiOkResponse({})
+    async unblockCompanyUser(@Param('userId') userId: string, @GetUser() user: IUser): Promise<FLOResponse> {
+        await this.userService.unblockCompanyUser(user, userId);
+        return new Response(true, [USER_CONSTANT.SUCCESSFULLY_UNBLOCKED_COMPANY_USER]).setStatus(HttpStatus.OK);
     }
 }
