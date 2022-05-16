@@ -1348,6 +1348,27 @@ export class UserService {
         };
     }
 
+    async changeOrganizationUserPassword(loggedInUser: IUser, userId: string, changePasswordDto: ChangePasswordDto): Promise<void> {
+        try {
+            const { password, currentPassword } = changePasswordDto;
+            const passwordMatched = await bcrypt.compare(currentPassword, loggedInUser.password);
+            if (passwordMatched) {
+                const targetUser = await this.UserModel.findById(userId);
+                targetUser.password = password;
+                targetUser.autoPassword = false;
+                targetUser.blockExpires = new Date();
+                await targetUser.save();
+            } else {
+                throw new ForbiddenException(USER_CONSTANT.FAILED_TO_CHANGE_PASSWORD);
+            }
+        } catch (err) {
+            if (err.statusCode === 403) {
+                throw err;
+            }
+            throw new BadRequestException(USER_CONSTANT.FAILED_TO_CHANGE_PASSWORD);
+        }
+    }
+
     async resetPassword(req: Request, resetPasswordDto: ResetPasswordDto): Promise<IUserData> {
         const { resetToken, password } = resetPasswordDto;
         let user;
