@@ -74,5 +74,13 @@ export const generalFeatures = [
         subscriptionId: [new Types.ObjectId(SubscriptionTypeID.SUPER_ADMIN), new Types.ObjectId(SubscriptionTypeID.OTHER), new Types.ObjectId(SubscriptionTypeID.STAFF)],
         featureIdentifier: FEATURE_IDENTIFIER.MANAGE_BLOCKED_COMPANY_USERS,
         feature: 'Manage Blocked Company Users'
+    },
+    /* 9 */
+    {
+        _id: new Types.ObjectId('602102d7dfbf432c8c4f0009'),
+        accessType: [ACCESS_TYPE.WRITE],
+        subscriptionId: [new Types.ObjectId(SubscriptionTypeID.SUPER_ADMIN), new Types.ObjectId(SubscriptionTypeID.OTHER), new Types.ObjectId(SubscriptionTypeID.STAFF)],
+        featureIdentifier: FEATURE_IDENTIFIER.CHANGE_USER_PASSWORD,
+        feature: 'Change user password'
     }
 ];

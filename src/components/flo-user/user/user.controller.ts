@@ -245,6 +245,24 @@ export class UserController {
         return new FLOResponse(true, [USER_CONSTANT.FORGET_PASSWORD_LINK_SENT]).setSuccessData({ success, message }).setStatus(HttpStatus.OK);
     }
 
+    @Put('change-password/:userId')
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard)
+    @Permission(ACCESS_TYPE.WRITE)
+    @Feature(FEATURE_IDENTIFIER.CHANGE_USER_PASSWORD)
+    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Change user password from company admin' })
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'the token we need for auth.'
+    })
+    @HttpCode(HttpStatus.OK)
+    @ApiOkResponse({})
+    async changeOrganizationUserPassword(@Param('userId') userId: string, @GetUser() user: IUser, @Body() changePasswordDto: ChangePasswordDto): Promise<FLOResponse> {
+        const data = await this.userService.changeOrganizationUserPassword(user, userId, changePasswordDto);
+        return new FLOResponse(true, [USER_CONSTANT.PASSWORD_CHANGED_SUCCESSFULLY]).setSuccessData(data).setStatus(HttpStatus.OK);
+    }
+
     @Put('reset-password')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Reset Password when forget' })
