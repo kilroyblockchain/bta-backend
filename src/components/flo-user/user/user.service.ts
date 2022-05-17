@@ -1359,10 +1359,10 @@ export class UserService {
                 targetUser.blockExpires = new Date();
                 await targetUser.save();
             } else {
-                throw new ForbiddenException(USER_CONSTANT.FAILED_TO_CHANGE_PASSWORD);
+                throw new ForbiddenException(USER_CONSTANT.PLEASE_ENTER_CORRECT_PASSWORD_TO_CONTINUE);
             }
         } catch (err) {
-            if (err.statusCode === 403) {
+            if (err.status === 403) {
                 throw err;
             }
             throw new BadRequestException(USER_CONSTANT.FAILED_TO_CHANGE_PASSWORD);
