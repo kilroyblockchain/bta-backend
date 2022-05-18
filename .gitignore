@@ -82,3 +82,4 @@ Thumbs.db
 package-lock.json
 uploads/*
 !uploads/*.md
+psvolumes/*

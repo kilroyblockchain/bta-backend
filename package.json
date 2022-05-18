@@ -11,7 +11,7 @@
         "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
         "start": "nest start",
         "start:dev": "nest start --watch",
-        "debug": "nest start --debug --watch",
+        "start:debug": "nest start --debug --watch",
         "start:migrate": "node dist/flo-migrations/migrate.js",
         "start:migrate:prefill": "node dist/super-admin-migrations/migrate.js",
         "start:prod": "nest build && npm run start:migrate &&  node dist/src/main",
