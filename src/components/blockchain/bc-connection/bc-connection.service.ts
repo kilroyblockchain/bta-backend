@@ -27,7 +27,7 @@ export class BcConnectionService {
             }
             const err = error as AxiosError;
             logger.error(err.response ? JSON.stringify(err.response.data) : err);
-            if (err.response && err.response.status == HttpStatus.CONFLICT) {
+            if (err.response && err.response.status == HttpStatus.CONFLICT && err.response.data && err.response.data.detail) {
                 throw new HttpException(err.response.data.detail, err.response.status);
             } else {
                 throw new InternalServerErrorException();
