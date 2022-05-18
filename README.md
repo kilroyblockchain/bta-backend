@@ -2,11 +2,19 @@
 
 ## Start Appplication
 
+Make sure your local environment has mongoDB
+
 `npm install`
 
 Copy `.env.sample` and create `.env` and change the required field if necessary
 
 `npm run debug`
+
+## Docker Setup
+
+Make sure you have installed both docker and docker-compose
+
+`docker-compose up -d local`
 
 ## Development Environment
 
