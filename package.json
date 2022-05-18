@@ -108,5 +108,17 @@
         ],
         "coverageDirectory": "../coverage",
         "testEnvironment": "node"
+    },
+    "validate-branch-name": {
+        "pattern": "^(feature|bugfix|hotfix)/(FLO-).+$",
+        "errorMsg": "Branch name should have proper pattern"
+    },
+    "jira-prepare-commit-msg": {
+        "messagePattern": "[$J]: $M",
+        "jiraTicketPattern": "([A-Z]+-\\d+)",
+        "commentChar": "#",
+        "isConventionalCommit": false,
+        "allowEmptyCommitMessage": false,
+        "gitRoot": ""
     }
 }
