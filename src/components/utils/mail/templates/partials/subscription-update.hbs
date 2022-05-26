@@ -1,0 +1,30 @@
+<div class="content">
+    <div class="welcome">
+        <h2>Hello {{email}},</h2>
+        <p>Your subscription in FLO has been updated in <b>{{currentCompany}}</b>:</p>
+    </div>
+    <div class="credential-group">
+        <div class="input-field">
+            <label for="subscriptionType">Current Subscriptions</label>
+            {{#each currentSubscription}}
+            <p id="subscriptionType"><b>{{this}}</b></p>
+            {{/each}}
+        </div>
+        {{#if newSubscription.length}}
+        <div class="input-field">
+            <label for="subscriptionType">Added Subscriptions</label>
+            {{#each newSubscription}}
+            <p id="subscriptionType"><b>{{this}}</b></p>
+            {{/each}}
+        </div>
+        {{/if}}
+        {{#if removedSubscription.length}}
+        <div class="input-field">
+            <label for="subscriptionType">Deleted Subscriptions</label>
+            {{#each removedSubscription}}
+            <p id="subscriptionType"><b>{{this}}</b></p>
+            {{/each}}
+        </div>
+        {{/if}}
+    </div>
+</div>

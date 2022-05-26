@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <style>
+        body {
+            color: #363636;
+            margin: 0;
+        }
+
+        header {
+            margin: 20px;
+        }
+
+        hr {
+            border: 1px solid rgb(232, 232, 232);
+        }
+
+        .part-container {
+            margin: 20px;
+        }
+
+        .content {
+            border-bottom: 1px solid rgb(232, 232, 232);
+        }
+
+        footer {
+            margin: 20px;
+        }
+
+        .help-head {
+            font-size: 1rem;
+            margin-bottom: 0;
+        }
+
+        .thank-you p {
+            margin: 0;
+        }
+
+        a {
+            color: #9e0303;
+        }
+
+        .welcome {
+            border-bottom: 1px solid rgb(232, 232, 232);
+        }
+
+        .welcome a {
+            background-color: #363636;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+
+        .credential-group {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-field {
+            position: relative;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-field label {
+            position: absolute;
+            top: 0;
+            font-size: 1rem;
+            cursor: text;
+            transform: translateY(-16px) !important;
+            transform-origin: 0 0 !important;
+        }
+
+        .input-field span {
+            display: block;
+            color: black;
+            font-size: 1.3rem;
+        }
+
+        span a {
+            text-decoration: none;
+            color: black !important;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid lightgrey;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 2px 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <img src="{{clientAppURL}}/assets/images/logo/base-logo.png" alt="flo-logo" height="50" />
+    </header>
+    <div class="part-container">
+        {{> (whichMail) partialContext}}
+    </div>
+    <footer>
+        <div class="help-holder">
+            <h4 class="help-head">We're here to help!</h4>
+            <p class="help-message">If you have any questions, please feel free to <a
+                    href="https://kilroyblockchain.com/contact" target="_blank">contact us</a>.</p>
+        </div>
+        <div class="thank-you">
+            <p>Thank you,</p>
+            <p>Kilroy Blockchain</p>
+            <p>FLO Team</p>
+        </div>
+    </footer>
+</body>
+
+</html>

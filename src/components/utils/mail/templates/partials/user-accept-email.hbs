@@ -1,0 +1,23 @@
+<div class="content">
+    <div class="welcome">
+        <h3>Hello {{userName}},</h3>
+        <p>You are assigned with a new role. Please use the following url to verify.</p>
+    </div>
+    <div class="credential-group">
+        <div class="input-field">
+            <label for="subscriptionType">Subscription</label>
+            <span id="subscriptionType">{{subscriptionType}}</span>
+        </div>
+        <div class="input-field">
+            <label for="subscriptionType">Assigned Roles</label>
+            <span id="subscriptionType">{{roles}}</span>
+        </div>
+        <div class="input-field">
+            <label for="email">Requested By:</label>
+            <span id="email">{{requestedBy}}</span>
+        </div>
+        <div class="welcome">
+            <a href="{{activationLink}}">Verify</a>
+        </div>
+    </div>
+</div>
