@@ -25,7 +25,7 @@ import { consoleTransportOptions, dailyRotateFileTransportOptions } from './@cor
 async function bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule, {
         logger: WinstonModule.createLogger({
-            transports: [new transports.Console(consoleTransportOptions), new DailyRotateFile(dailyRotateFileTransportOptions)]
+            transports: [new transports.Console(consoleTransportOptions), ...(process.env.NO_APP_LOG_T_FILE ? [] : [new DailyRotateFile(dailyRotateFileTransportOptions)])]
         })
     });
     app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));

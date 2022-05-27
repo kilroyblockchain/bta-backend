@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import 'dotenv/config';
 import { FLOUserModule } from './components/flo-user/flo-user.module';
 import { UtilsModule } from './components/utils/utils.module';
 import { BlockchainModule } from './components/blockchain/blockchain.module';
@@ -23,7 +24,7 @@ import { consoleTransportOptions, dailyRotateFileTransportOptions } from './@cor
             dest: './uploads'
         }),
         WinstonModule.forRoot({
-            transports: [new transports.Console(consoleTransportOptions), new DailyRotateFile(dailyRotateFileTransportOptions)]
+            transports: [new transports.Console(consoleTransportOptions), ...(process.env.NO_APP_LOG_T_FILE ? [] : [new DailyRotateFile(dailyRotateFileTransportOptions)])]
         }),
         ScheduleModule.forRoot(),
         FLOUserModule,

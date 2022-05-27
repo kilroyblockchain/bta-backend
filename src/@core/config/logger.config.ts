@@ -1,6 +1,7 @@
 import { format } from 'winston';
 import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
+import 'dotenv/config';
 import { myFormat } from '../utils/logger.utils';
 import { ConsoleTransportOptions } from 'winston/lib/winston/transports';
 
@@ -12,9 +13,9 @@ export const consoleTransportOptions: ConsoleTransportOptions = {
 
 export const dailyRotateFileTransportOptions: DailyRotateFile.DailyRotateFileTransportOptions = {
     filename: 'logs/application-%DATE%.log',
-    datePattern: 'YYYY-MM-DD-HH',
-    zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '14d',
+    datePattern: process.env.APP_LOG_DATE_PATTERN ?? 'YYYY-MM-DD-HH',
+    zippedArchive: process.env.APP_LOG_ZIPPED_ARCHIVE ? Boolean(process.env.APP_LOG_ZIPPED_ARCHIVE) : false,
+    maxSize: process.env.APP_LOG_MAX_SIZE ?? '20m',
+    maxFiles: process.env.APP_LOG_MAX_FILES ?? '14d',
     format: combine(format.timestamp(), format.ms(), myFormat)
 };
