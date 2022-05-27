@@ -17,9 +17,18 @@ import rateLimit from 'express-rate-limit';
 import * as cookieParser from 'cookie-parser';
 import { UserModule } from './components/flo-user/user/user.module';
 import { OrganizationModule } from './components/flo-user/organization/organization.module';
+import { WinstonModule, WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { transports } from 'winston';
+import * as DailyRotateFile from 'winston-daily-rotate-file';
+import { consoleTransportOptions, dailyRotateFileTransportOptions } from './@core/config/logger.config';
 
 async function bootstrap(): Promise<void> {
-    const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create(AppModule, {
+        logger: WinstonModule.createLogger({
+            transports: [new transports.Console(consoleTransportOptions), ...(process.env.NO_APP_LOG_T_FILE ? [] : [new DailyRotateFile(dailyRotateFileTransportOptions)])]
+        })
+    });
+    app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
     app.enableCors({ origin: true, credentials: true });
     app.setGlobalPrefix('api/v1');
 
