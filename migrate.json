@@ -1,4 +1,0 @@
-{
-    "dbConnectionUri": "mongodb://localhost:27017/flo",
-    "migrationsDir": "flo-migrations/migrations"
-  }

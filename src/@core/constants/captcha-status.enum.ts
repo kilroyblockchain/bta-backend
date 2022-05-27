@@ -1,4 +1,0 @@
-export enum CAPTCHA_STATUS {
-    ENABLED = 'ENABLED',
-    DISABLED = 'DISABLED'
-}
