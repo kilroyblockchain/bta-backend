@@ -1,0 +1,7 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+npx validate-branch-name
+npm run prettier:check
+npm run prettier:write
+npm run lint
