@@ -17,29 +17,15 @@ import rateLimit from 'express-rate-limit';
 import * as cookieParser from 'cookie-parser';
 import { UserModule } from './components/flo-user/user/user.module';
 import { OrganizationModule } from './components/flo-user/organization/organization.module';
-import { utilities as nestWinstonModuleUtilities, WinstonModule, WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { format, transports } from 'winston';
+import { WinstonModule, WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { transports } from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
-import { myFormat } from './@core/utils/logger.utils';
-
-const { combine } = format;
+import { consoleTransportOptions, dailyRotateFileTransportOptions } from './@core/config/logger.config';
 
 async function bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule, {
         logger: WinstonModule.createLogger({
-            transports: [
-                new transports.Console({
-                    format: format.combine(format.timestamp(), format.ms(), nestWinstonModuleUtilities.format.nestLike('MyApp', { prettyPrint: true }))
-                }),
-                new DailyRotateFile({
-                    filename: 'logs/application-%DATE%.log',
-                    datePattern: 'YYYY-MM-DD-HH',
-                    zippedArchive: true,
-                    maxSize: '20m',
-                    maxFiles: '14d',
-                    format: combine(format.timestamp(), format.ms(), myFormat)
-                })
-            ]
+            transports: [new transports.Console(consoleTransportOptions), new DailyRotateFile(dailyRotateFileTransportOptions)]
         })
     });
     app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));

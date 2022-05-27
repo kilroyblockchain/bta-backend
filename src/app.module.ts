@@ -6,12 +6,10 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { FLOUserModule } from './components/flo-user/flo-user.module';
 import { UtilsModule } from './components/utils/utils.module';
 import { BlockchainModule } from './components/blockchain/blockchain.module';
-import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
-import { format, transports } from 'winston';
+import { WinstonModule } from 'nest-winston';
+import { transports } from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
-import { myFormat } from './@core/utils/logger.utils';
-
-const { combine } = format;
+import { consoleTransportOptions, dailyRotateFileTransportOptions } from './@core/config/logger.config';
 
 @Module({
     imports: [
@@ -25,19 +23,7 @@ const { combine } = format;
             dest: './uploads'
         }),
         WinstonModule.forRoot({
-            transports: [
-                new transports.Console({
-                    format: combine(format.timestamp(), format.ms(), nestWinstonModuleUtilities.format.nestLike('MyApp', { prettyPrint: true }))
-                }),
-                new DailyRotateFile({
-                    filename: 'logs/application-%DATE%.log',
-                    datePattern: 'YYYY-MM-DD-HH',
-                    zippedArchive: true,
-                    maxSize: '20m',
-                    maxFiles: '14d',
-                    format: combine(format.timestamp(), format.ms(), myFormat)
-                })
-            ]
+            transports: [new transports.Console(consoleTransportOptions), new DailyRotateFile(dailyRotateFileTransportOptions)]
         }),
         ScheduleModule.forRoot(),
         FLOUserModule,
