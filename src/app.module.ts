@@ -6,6 +6,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { FLOUserModule } from './components/flo-user/flo-user.module';
 import { UtilsModule } from './components/utils/utils.module';
 import { BlockchainModule } from './components/blockchain/blockchain.module';
+import { OracleModule } from './components/oracle/oracle.module';
 
 @Module({
     imports: [
@@ -21,7 +22,8 @@ import { BlockchainModule } from './components/blockchain/blockchain.module';
         ScheduleModule.forRoot(),
         FLOUserModule,
         UtilsModule,
-        BlockchainModule
+        BlockchainModule,
+        OracleModule
     ]
 })
 export class AppModule {}
