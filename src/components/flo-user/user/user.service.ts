@@ -30,7 +30,6 @@ import { VerificationService } from '../verification/verification.service';
 import { OrganizationStaffingService } from '../user-roles/organization-staffing/organization-staffing.service';
 import { ICompany, IUser, ILoginCount, IReturnResponse, IUserResponse, IUserWithBlockchain, ICompanyAdmin, IJWTUserData, IUserData } from './interfaces/user.interface';
 import { ICompanyDto, IOrganization } from '../organization/interfaces/organization.interface';
-import * as util from 'util';
 import { UserBcService } from './user-bc.service';
 import { BC_STATUS } from 'src/@core/constants/bc-status.enum';
 import { getArraysComplement, getClientTimezoneId, getHourMinuteDiff } from 'src/@core/utils/common.utils';
@@ -58,8 +57,6 @@ export class UserService {
     HOURS_TO_BLOCK = 6;
     LOGIN_ATTEMPTS_TO_BLOCK = parseInt(process.env.LOGIN_ATTEMPTS_TO_BLOCK) || 5;
 
-    getImageHashPromise;
-
     constructor(
         @InjectModel('User') private readonly uModel: PaginateModel<IUser>,
         @InjectModel('User') private readonly UserModel: Model<IUser>,
@@ -76,9 +73,7 @@ export class UserService {
         private readonly userRejectInfoService: UserRejectInfoService,
         private readonly channelMappingService: ChannelMappingService,
         private readonly channelDetailService: ChannelDetailService
-    ) {
-        this.getImageHashPromise = util.promisify(this.authService.getImageHash);
-    }
+    ) {}
 
     async register(req: Request, logoName: string, registerUserDto: RegisterUserDto): Promise<IUserWithBlockchain> {
         const logger = new Logger(`${UserService.name}-register`);
