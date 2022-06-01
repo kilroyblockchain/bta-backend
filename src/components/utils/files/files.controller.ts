@@ -1,4 +1,4 @@
-import { Controller, Get, Res, Param, HttpStatus, UseGuards, Logger, StreamableFile } from '@nestjs/common';
+import { Controller, Get, Res, Param, HttpStatus, UseGuards, Logger } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
 import { Feature, Permission, Roles } from 'src/components/auth/decorators';
@@ -19,13 +19,36 @@ export class FilesController {
     @Permission(ACCESS_TYPE.READ)
     @Feature(FEATURE_IDENTIFIER.APPLICATION_LOGS)
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get stream of application logs' })
+    @ApiOperation({ summary: 'Get list of application logs' })
     @ApiHeader({
         name: 'Bearer',
         description: 'the token we need for auth.'
     })
-    getLogs(): StreamableFile {
-        return this.fileService.streamLogs();
+    getLogList(): string[] {
+        return this.fileService.getLogFiles();
+    }
+
+    @Get('logs/:filename')
+    @UseGuards(PermissionGuard)
+    @Roles(ROLE.SUPER_ADMIN)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.APPLICATION_LOGS)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get log file from log filename' })
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'the token we need for auth.'
+    })
+    getLogFile(@Param('filename') filename: string, @Res() res): void {
+        const logger = new Logger(FilesController.name + '-getLogFile');
+        try {
+            res.sendFile(filename, {
+                root: `./logs`
+            });
+        } catch (err) {
+            logger.error(err);
+            throw err;
+        }
     }
 
     @Get(':imagename')
