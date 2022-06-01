@@ -11,6 +11,18 @@ export const superAdminFeatures = [
         subscriptionId: [new Types.ObjectId(SubscriptionTypeID.SUPER_ADMIN), new Types.ObjectId(SubscriptionTypeID.OTHER), new Types.ObjectId(SubscriptionTypeID.STAFF)],
         featureIdentifier: FEATURE_IDENTIFIER.MANAGE_ALL_USER,
         feature: 'Manage all users'
+    },
+    /* 2 */
+    /**
+     * Allocate 602102d7dfcf432c8c4f0002 - 602102d7dfcf432c8c4f1000
+     * For Super admin, in 11th position 'b' is changed to 'c' to make unique id than generalFeatures
+     */
+    {
+        _id: new Types.ObjectId('602102d7dfcf432c8c4f0002'),
+        accessType: [ACCESS_TYPE.READ],
+        subscriptionId: [new Types.ObjectId(SubscriptionTypeID.SUPER_ADMIN)],
+        featureIdentifier: FEATURE_IDENTIFIER.APPLICATION_LOGS,
+        feature: 'Application Logs'
     }
 ];
 
