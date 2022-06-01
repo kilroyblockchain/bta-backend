@@ -54,6 +54,7 @@
         "migrate-mongoose": "^4.0.0",
         "mongoose": "^6.2.4",
         "mongoose-paginate": "^5.0.3",
+        "multistream": "^4.1.0",
         "nest-winston": "^1.6.2",
         "passport": "^0.5.2",
         "passport-jwt": "^4.0.0",
