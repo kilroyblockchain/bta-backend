@@ -8,5 +8,7 @@ export enum FEATURE_IDENTIFIER {
     ORGANIZATION_STAFFING = 'organization-staffing',
     ORGANIZATION_USER = 'organization-user',
     BLOCKCHAIN_HISTORY = 'blockchain-history',
-    MANAGE_BLOCKED_COMPANY_USERS = 'manage-blocked-company-user'
+    MANAGE_BLOCKED_COMPANY_USERS = 'manage-blocked-company-user',
+    OC_GROUP = 'oracle-group',
+    OC_USER = 'oracle-user'
 }
