@@ -10,5 +10,6 @@ export enum FEATURE_IDENTIFIER {
     BLOCKCHAIN_HISTORY = 'blockchain-history',
     MANAGE_BLOCKED_COMPANY_USERS = 'manage-blocked-company-user',
     OC_GROUP = 'oracle-group',
-    OC_USER = 'oracle-user'
+    OC_USER = 'oracle-user',
+    APPLICATION_LOGS = 'application-logs'
 }
