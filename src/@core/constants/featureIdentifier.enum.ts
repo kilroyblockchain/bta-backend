@@ -11,5 +11,6 @@ export enum FEATURE_IDENTIFIER {
     MANAGE_BLOCKED_COMPANY_USERS = 'manage-blocked-company-user',
     OC_GROUP = 'oracle-group',
     OC_USER = 'oracle-user',
-    APPLICATION_LOGS = 'application-logs'
+    APPLICATION_LOGS = 'application-logs',
+    MANAGE_PROJECT = 'manage-project'
 }
