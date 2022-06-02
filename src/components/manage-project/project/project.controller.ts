@@ -16,7 +16,7 @@ import { Request } from 'express';
 export class ProjectController {
     constructor(private readonly projectService: ProjectService) {}
 
-    @Post('create')
+    @Post('')
     @HttpCode(HttpStatus.CREATED)
     @UseGuards(AuthGuard('jwt'), PermissionGuard)
     @Permission(ACCESS_TYPE.WRITE)

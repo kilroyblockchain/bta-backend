@@ -9,7 +9,7 @@ import { IProject } from './interfaces/project.interface';
 
 @Injectable()
 export class ProjectService {
-    constructor(@InjectModel('Project') private readonly projectModel: PaginateModel<IProject>, @InjectModel('User') private readonly UserModel: Model<IUser>) {}
+    constructor(@InjectModel('Project') private readonly projectModel: PaginateModel<IProject>, @InjectModel('User') private readonly userModel: Model<IUser>) {}
 
     async createNewProject(newProject: CreateProjectDto, req: Request): Promise<IProject> {
         const user = req['user']._id;
@@ -18,7 +18,7 @@ export class ProjectService {
             throw new ConflictException(PROJECT_CONSTANT.PROJECT_NAME_CONFLICT);
         }
         for (const userId of newProject.members) {
-            const user = await this.UserModel.findById(userId).select('_id');
+            const user = await this.userModel.findById(userId).select('_id');
             if (!user) {
                 throw new NotFoundException(USER_CONSTANT.USER_NOT_FOUND);
             }
