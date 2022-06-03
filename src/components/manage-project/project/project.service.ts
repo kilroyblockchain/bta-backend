@@ -1,8 +1,9 @@
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Request } from 'express';
-import { Model, PaginateModel } from 'mongoose';
+import { Model, PaginateModel, PaginateResult } from 'mongoose';
 import { PROJECT_CONSTANT, USER_CONSTANT } from 'src/@core/constants/api-error-constants';
+import { getSearchFilterWithRegexAll } from 'src/@core/utils/query-filter.utils';
 import { IUser } from 'src/components/flo-user/user/interfaces/user.interface';
 import { CreateProjectDto } from './dto';
 import { IProject } from './interfaces/project.interface';
@@ -34,5 +35,20 @@ export class ProjectService {
             return false;
         }
         return true;
+    }
+    async getAllProject(req: Request): Promise<PaginateResult<IProject>> {
+        const { page = 1, limit = 10, status = true, search, searchValue } = req.query;
+        const searchQuery = search && search === 'true' && searchValue ? getSearchFilterWithRegexAll(searchValue.toString(), ['name', 'details', 'domain', 'purpose']) : {};
+        const options = {
+            populate: [
+                { path: 'members', select: 'firstName lastName email -_id' },
+                { path: 'createdBy', select: 'firstName lastName email -_id' }
+            ],
+            lean: true,
+            limit: Number(limit),
+            page: Number(page),
+            sort: { updatedAt: -1 }
+        };
+        return await this.projectModel.paginate({ status, ...searchQuery }, options);
     }
 }

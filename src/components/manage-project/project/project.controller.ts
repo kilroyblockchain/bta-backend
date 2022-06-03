@@ -1,8 +1,8 @@
-import { BadRequestException, Body, Controller, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, NotFoundException, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProjectService } from './project.service';
 import { Response as FLOResponse } from 'src/@core/response';
-import { CreateProjectDto, ProjectResponseDto } from './dto';
+import { AllProjectResponseDto, CreateProjectDto, ProjectResponseDto } from './dto';
 import { PROJECT_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { PermissionGuard, RolesGuard } from 'src/components/auth/guards';
 import { AuthGuard } from '@nestjs/passport';
@@ -38,6 +38,30 @@ export class ProjectController {
             return new FLOResponse(true, [PROJECT_CONSTANT.NEW_PROJECT_CREATED]).setSuccessData(await this.projectService.createNewProject(newProject, req)).setStatus(HttpStatus.CREATED);
         } catch (err) {
             throw new BadRequestException(PROJECT_CONSTANT.UNABLE_TO_CREATE_PROJECT, err);
+        }
+    }
+
+    @Get('all')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(AuthGuard('jwt'), PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MANAGE_PROJECT)
+    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Get all Projects' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.OK, type: AllProjectResponseDto, description: PROJECT_CONSTANT.ALL_PROJECT_RETRIEVED })
+    async findAllUser(@Req() req: Request): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [PROJECT_CONSTANT.ALL_PROJECT_RETRIEVED]).setSuccessData(await this.projectService.getAllProject(req)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new NotFoundException(PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND, err);
         }
     }
 }

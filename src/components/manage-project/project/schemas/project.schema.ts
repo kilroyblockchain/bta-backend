@@ -31,7 +31,6 @@ export const ProjectSchema = new mongoose.Schema(
         },
         purpose: {
             type: String,
-            minlength: 2,
             maxlength: 40
         },
         status: {
