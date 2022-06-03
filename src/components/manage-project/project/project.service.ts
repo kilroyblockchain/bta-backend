@@ -76,4 +76,8 @@ export class ProjectService {
     async deleteProject(id: string): Promise<IProject> {
         return await this.projectModel.findOneAndUpdate({ _id: id }, { status: false }, { new: true });
     }
+
+    async enableProject(id: string): Promise<IProject> {
+        return await this.projectModel.findOneAndUpdate({ _id: id }, { status: true }, { new: true });
+    }
 }

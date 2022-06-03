@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProjectService } from './project.service';
 import { Response as FLOResponse } from 'src/@core/response';
@@ -112,6 +112,31 @@ export class ProjectController {
             return new FLOResponse(true, [PROJECT_CONSTANT.PROJECT_DELETE_SUCCESS]).setSuccessData(await this.projectService.deleteProject(id)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(PROJECT_CONSTANT.UNABLE_TO_DELETE_PROJECT, err);
+        }
+    }
+
+    @Patch('enable/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(AuthGuard('jwt'), PermissionGuard)
+    @Permission(ACCESS_TYPE.DELETE)
+    @Feature(FEATURE_IDENTIFIER.MANAGE_PROJECT)
+    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Enable project' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: PROJECT_CONSTANT.UNABLE_TO_ENABLE_PROJECT })
+    @ApiResponse({ status: HttpStatus.OK, type: ProjectResponseDto, description: PROJECT_CONSTANT.PROJECT_ENABLED_SUCCESS })
+    async enableProject(@Param('id') id: string): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [PROJECT_CONSTANT.PROJECT_ENABLED_SUCCESS]).setSuccessData(await this.projectService.enableProject(id)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(PROJECT_CONSTANT.UNABLE_TO_ENABLE_PROJECT, err);
         }
     }
 }
