@@ -12,6 +12,7 @@ import { WinstonModule } from 'nest-winston';
 import { transports } from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
 import { consoleTransportOptions, dailyRotateFileTransportOptions } from './@core/config/logger.config';
+import { ManageProjectModule } from './components/manage-project/manage-project.module';
 
 @Module({
     imports: [
@@ -31,7 +32,8 @@ import { consoleTransportOptions, dailyRotateFileTransportOptions } from './@cor
         FLOUserModule,
         UtilsModule,
         BlockchainModule,
-        OracleModule
+        OracleModule,
+        ManageProjectModule
     ]
 })
 export class AppModule {}

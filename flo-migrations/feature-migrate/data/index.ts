@@ -94,5 +94,13 @@ export const generalFeatures = [
         subscriptionId: [new Types.ObjectId(SubscriptionTypeID.SUPER_ADMIN), new Types.ObjectId(SubscriptionTypeID.OTHER), new Types.ObjectId(SubscriptionTypeID.STAFF)],
         featureIdentifier: FEATURE_IDENTIFIER.CHANGE_USER_PASSWORD,
         feature: 'Change user password'
+    },
+    /* 10 */
+    {
+        _id: new Types.ObjectId('602102d7dfbf432c8c4f0010'),
+        accessType: [ACCESS_TYPE.READ, ACCESS_TYPE.WRITE, ACCESS_TYPE.UPDATE, ACCESS_TYPE.DELETE],
+        subscriptionId: [new Types.ObjectId(SubscriptionTypeID.SUPER_ADMIN), new Types.ObjectId(SubscriptionTypeID.OTHER), new Types.ObjectId(SubscriptionTypeID.STAFF)],
+        featureIdentifier: FEATURE_IDENTIFIER.MANAGE_PROJECT,
+        feature: 'Manage Project'
     }
 ];

@@ -25,3 +25,11 @@ export const getArraysComplement = (largeArray: Array<string>, smallArray: Array
         return smallArray.indexOf(element.toString()) === -1;
     });
 };
+
+export const getCompanyId = (req: Request): string => {
+    if (req && req['user'] && req['user'].company) {
+        return req['user'].company[0].companyId;
+    }
+
+    return null;
+};
