@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProjectService } from './project.service';
 import { Response as FLOResponse } from 'src/@core/response';
@@ -87,6 +87,31 @@ export class ProjectController {
             return new FLOResponse(true, [PROJECT_CONSTANT.PROJECT_RECORD_UPDATED]).setSuccessData(await this.projectService.updateProject(id, updateProject)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(PROJECT_CONSTANT.UNABLE_TO_UPDATE_PROJECT, err);
+        }
+    }
+
+    @Delete('delete/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(AuthGuard('jwt'), PermissionGuard)
+    @Permission(ACCESS_TYPE.DELETE)
+    @Feature(FEATURE_IDENTIFIER.MANAGE_PROJECT)
+    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Delete/disable a Project', description: 'This is soft delete api which change status of project to false' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: PROJECT_CONSTANT.UNABLE_TO_DELETE_PROJECT })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.OK, type: ProjectResponseDto, description: PROJECT_CONSTANT.PROJECT_DELETE_SUCCESS })
+    async deleteProject(@Param('id') id: string): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [PROJECT_CONSTANT.PROJECT_DELETE_SUCCESS]).setSuccessData(await this.projectService.deleteProject(id)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(PROJECT_CONSTANT.UNABLE_TO_DELETE_PROJECT, err);
         }
     }
 }
