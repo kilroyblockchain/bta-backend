@@ -29,6 +29,7 @@ export class ProjectService {
         project.createdBy = user;
         return await project.save();
     }
+
     async isProjectUnique(name: string): Promise<boolean> {
         const project = await this.projectModel.findOne({ name: { $regex: name, $options: 'i' } });
         if (project) {
@@ -36,6 +37,7 @@ export class ProjectService {
         }
         return true;
     }
+
     async getAllProject(req: Request): Promise<PaginateResult<IProject>> {
         const { page = 1, limit = 10, status = true, search, searchValue } = req.query;
         const searchQuery = search && search === 'true' && searchValue ? getSearchFilterWithRegexAll(searchValue.toString(), ['name', 'details', 'domain', 'purpose']) : {};
@@ -50,5 +52,24 @@ export class ProjectService {
             sort: { updatedAt: -1 }
         };
         return await this.projectModel.paginate({ status, ...searchQuery }, options);
+    }
+
+    async getProjectById(id: string): Promise<IProject> {
+        const project = await this.projectModel.findOne({ _id: id });
+        if (project) {
+            return project;
+        }
+        throw new NotFoundException(PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
+    }
+
+    async updateProject(id: string, updateProject: CreateProjectDto): Promise<IProject> {
+        const project = await this.getProjectById(id);
+        if (!project) throw new NotFoundException([PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND]);
+        const isProjectUnique = await this.isProjectUnique(updateProject.name);
+        if (!isProjectUnique && project.name !== updateProject.name) {
+            throw new ConflictException(PROJECT_CONSTANT.PROJECT_NAME_CONFLICT);
+        }
+
+        return await this.projectModel.findOneAndUpdate({ _id: id }, updateProject, { new: true });
     }
 }
