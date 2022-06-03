@@ -11,4 +11,5 @@ export interface IProject extends Document {
     updatedAt: Date;
     createdAt: Date;
     createdBy: string;
+    companyId: string;
 }

@@ -40,6 +40,10 @@ export const ProjectSchema = new mongoose.Schema(
         createdBy: {
             type: mongoose.Types.ObjectId,
             ref: 'User'
+        },
+        companyId: {
+            type: mongoose.Types.ObjectId,
+            ref: 'Organization'
         }
     },
     {

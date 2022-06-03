@@ -61,6 +61,12 @@ export class ProjectResponseDto {
         format: 'string'
     })
     createdBy: string;
+
+    @ApiProperty({
+        example: '608a49c2899c17003f7d2576',
+        description: 'Company id where project was created'
+    })
+    companyId: string;
 }
 
 export class AllProjectResponseDto {
@@ -134,4 +140,10 @@ export class AllProjectResponseDto {
         format: 'object'
     })
     createdBy: string;
+
+    @ApiProperty({
+        example: '608a49c2899c17003f7d2576',
+        description: 'Company id where project was created'
+    })
+    companyId: string;
 }

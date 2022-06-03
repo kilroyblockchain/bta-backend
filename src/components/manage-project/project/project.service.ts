@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Request } from 'express';
 import { Model, PaginateModel, PaginateResult } from 'mongoose';
 import { PROJECT_CONSTANT, USER_CONSTANT } from 'src/@core/constants/api-error-constants';
+import { getCompanyId } from 'src/@core/utils/common.utils';
 import { getSearchFilterWithRegexAll } from 'src/@core/utils/query-filter.utils';
 import { IUser } from 'src/components/flo-user/user/interfaces/user.interface';
 import { CreateProjectDto } from './dto';
@@ -27,6 +28,7 @@ export class ProjectService {
         const project = new this.projectModel(newProject);
         project.members = newProject.members;
         project.createdBy = user;
+        project.companyId = getCompanyId(req);
         return await project.save();
     }
 
@@ -39,6 +41,7 @@ export class ProjectService {
     }
 
     async getAllProject(req: Request): Promise<PaginateResult<IProject>> {
+        const companyId = getCompanyId(req);
         const { page = 1, limit = 10, status = true, search, searchValue } = req.query;
         const searchQuery = search && search === 'true' && searchValue ? getSearchFilterWithRegexAll(searchValue.toString(), ['name', 'details', 'domain', 'purpose']) : {};
         const options = {
@@ -51,33 +54,37 @@ export class ProjectService {
             page: Number(page),
             sort: { updatedAt: -1 }
         };
-        return await this.projectModel.paginate({ status, ...searchQuery }, options);
+        return await this.projectModel.paginate({ status, ...searchQuery, companyId }, options);
     }
 
-    async getProjectById(id: string): Promise<IProject> {
-        const project = await this.projectModel.findOne({ _id: id });
+    async getProjectById(id: string, req: Request): Promise<IProject> {
+        const companyId = getCompanyId(req);
+        const project = await this.projectModel.findOne({ _id: id, companyId });
         if (project) {
             return project;
         }
         throw new NotFoundException(PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
     }
 
-    async updateProject(id: string, updateProject: CreateProjectDto): Promise<IProject> {
-        const project = await this.getProjectById(id);
+    async updateProject(id: string, updateProject: CreateProjectDto, req: Request): Promise<IProject> {
+        const project = await this.getProjectById(id, req);
+
         if (!project) throw new NotFoundException([PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND]);
         const isProjectUnique = await this.isProjectUnique(updateProject.name);
         if (!isProjectUnique && project.name !== updateProject.name) {
             throw new ConflictException(PROJECT_CONSTANT.PROJECT_NAME_CONFLICT);
         }
 
-        return await this.projectModel.findOneAndUpdate({ _id: id }, updateProject, { new: true });
+        return await this.projectModel.findOneAndUpdate({ _id: project._id }, updateProject, { new: true });
     }
 
-    async deleteProject(id: string): Promise<IProject> {
-        return await this.projectModel.findOneAndUpdate({ _id: id }, { status: false }, { new: true });
+    async deleteProject(id: string, req: Request): Promise<IProject> {
+        const companyId = getCompanyId(req);
+        return await this.projectModel.findOneAndUpdate({ _id: id, companyId }, { status: false }, { new: true });
     }
 
-    async enableProject(id: string): Promise<IProject> {
-        return await this.projectModel.findOneAndUpdate({ _id: id }, { status: true }, { new: true });
+    async enableProject(id: string, req: Request): Promise<IProject> {
+        const companyId = getCompanyId(req);
+        return await this.projectModel.findOneAndUpdate({ _id: id, companyId }, { status: true }, { new: true });
     }
 }
