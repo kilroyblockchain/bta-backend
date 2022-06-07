@@ -12,7 +12,7 @@ services:
             - ${APP_DEBUG_PORT}:9229
         volumes:
             - .:/usr/src/app
-            - notused:/usr/src/app/node_modules
+            - ./node_modules:/usr/src/app/node_modules
             - ./dist:/usr/src/app/dist
         restart: unless-stopped
         links:
@@ -85,5 +85,3 @@ services:
         container_name: ${MAILCATCHER_CONTAINER_NAME}
         ports:
             - ${MAILCATCHER_PORT}:1080
-volumes:
-    notused:
