@@ -2,7 +2,7 @@ import { Injectable, ConflictException, NotFoundException } from '@nestjs/common
 import { InjectModel } from '@nestjs/mongoose';
 import { Request } from 'express';
 import { Model, PaginateModel, PaginateResult } from 'mongoose';
-import { PROJECT_CONSTANT, USER_CONSTANT } from 'src/@core/constants/api-error-constants';
+import { MANAGE_PROJECT_CONSTANT, USER_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { getCompanyId } from 'src/@core/utils/common.utils';
 import { getSearchFilterWithRegexAll } from 'src/@core/utils/query-filter.utils';
 import { IUser } from 'src/components/flo-user/user/interfaces/user.interface';
@@ -17,7 +17,7 @@ export class ProjectService {
         const user = req['user']._id;
         const isProjectUnique = await this.isProjectUnique(newProject.name);
         if (!isProjectUnique) {
-            throw new ConflictException(PROJECT_CONSTANT.PROJECT_NAME_CONFLICT);
+            throw new ConflictException(MANAGE_PROJECT_CONSTANT.PROJECT_NAME_CONFLICT);
         }
         for (const userId of newProject.members) {
             const user = await this.userModel.findById(userId).select('_id');
@@ -46,8 +46,8 @@ export class ProjectService {
         const searchQuery = search && search === 'true' && searchValue ? getSearchFilterWithRegexAll(searchValue.toString(), ['name', 'details', 'domain', 'purpose']) : {};
         const options = {
             populate: [
-                { path: 'members', select: 'firstName lastName email -_id' },
-                { path: 'createdBy', select: 'firstName lastName email -_id' }
+                { path: 'members', select: 'firstName lastName email _id' },
+                { path: 'createdBy', select: 'firstName lastName email _id' }
             ],
             lean: true,
             limit: Number(limit),
@@ -63,16 +63,16 @@ export class ProjectService {
         if (project) {
             return project;
         }
-        throw new NotFoundException(PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
+        throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
     }
 
     async updateProject(id: string, updateProject: CreateProjectDto, req: Request): Promise<IProject> {
         const project = await this.getProjectById(id, req);
 
-        if (!project) throw new NotFoundException([PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND]);
+        if (!project) throw new NotFoundException([MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND]);
         const isProjectUnique = await this.isProjectUnique(updateProject.name);
         if (!isProjectUnique && project.name !== updateProject.name) {
-            throw new ConflictException(PROJECT_CONSTANT.PROJECT_NAME_CONFLICT);
+            throw new ConflictException(MANAGE_PROJECT_CONSTANT.PROJECT_NAME_CONFLICT);
         }
 
         return await this.projectModel.findOneAndUpdate({ _id: project._id }, updateProject, { new: true });
@@ -86,5 +86,16 @@ export class ProjectService {
     async enableProject(id: string, req: Request): Promise<IProject> {
         const companyId = getCompanyId(req);
         return await this.projectModel.findOneAndUpdate({ _id: id, companyId }, { status: true }, { new: true });
+    }
+
+    async addVersion(projectId: string, versionId: string): Promise<IProject> {
+        return await this.projectModel.findOneAndUpdate(
+            { _id: projectId, status: true },
+            {
+                $push: {
+                    projectVersions: versionId
+                }
+            }
+        );
     }
 }

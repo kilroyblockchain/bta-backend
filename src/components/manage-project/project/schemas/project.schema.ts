@@ -44,7 +44,13 @@ export const ProjectSchema = new mongoose.Schema(
         companyId: {
             type: mongoose.Types.ObjectId,
             ref: 'Organization'
-        }
+        },
+        projectVersions: [
+            {
+                type: mongoose.Types.ObjectId,
+                ref: 'project-version'
+            }
+        ]
     },
     {
         versionKey: false,

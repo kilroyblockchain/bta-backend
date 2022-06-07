@@ -22,6 +22,7 @@ import { transports } from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
 import { consoleTransportOptions, dailyRotateFileTransportOptions } from './@core/config/logger.config';
 import { ProjectModule } from './components/manage-project/project/project.module';
+import { ProjectVersionModule } from './components/manage-project/project-version/project-version.module';
 
 async function bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule, {
@@ -69,7 +70,7 @@ async function bootstrap(): Promise<void> {
 
     const options = new DocumentBuilder().setTitle('FLO API').setDescription('API description').setVersion('1.0').build();
     const document = SwaggerModule.createDocument(app, options, {
-        include: [UserModule, OrganizationModule, CountryModule, SubscriptionTypeModule, FeatureModule, OrganizationUnitModule, OrganizationStaffingModule, FilesModule, ChannelDetailModule, UserRejectInfoModule, ProjectModule]
+        include: [UserModule, OrganizationModule, CountryModule, SubscriptionTypeModule, FeatureModule, OrganizationUnitModule, OrganizationStaffingModule, FilesModule, ChannelDetailModule, UserRejectInfoModule, ProjectModule, ProjectVersionModule]
     });
     SwaggerModule.setup('api', app, document);
 

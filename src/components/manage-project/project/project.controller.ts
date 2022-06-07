@@ -6,7 +6,7 @@ import { AllProjectResponseDto, CreateProjectDto, ProjectResponseDto } from './d
 import { PermissionGuard, RolesGuard } from 'src/components/auth/guards';
 import { AuthGuard } from '@nestjs/passport';
 import { Feature, Permission, Roles } from 'src/components/auth/decorators';
-import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE, PROJECT_CONSTANT } from 'src/@core/constants';
+import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE, MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
 import { Request } from 'express';
 
 @ApiTags('Project')
@@ -29,14 +29,14 @@ export class ProjectController {
     @ApiOperation({ summary: 'Created New Project' })
     @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: PROJECT_CONSTANT.UNABLE_TO_CREATE_PROJECT })
-    @ApiResponse({ status: HttpStatus.CONFLICT, description: PROJECT_CONSTANT.PROJECT_NAME_CONFLICT })
-    @ApiResponse({ status: HttpStatus.CREATED, type: ProjectResponseDto, description: PROJECT_CONSTANT.NEW_PROJECT_CREATED })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_CREATE_PROJECT })
+    @ApiResponse({ status: HttpStatus.CONFLICT, description: MANAGE_PROJECT_CONSTANT.PROJECT_NAME_CONFLICT })
+    @ApiResponse({ status: HttpStatus.CREATED, type: ProjectResponseDto, description: MANAGE_PROJECT_CONSTANT.NEW_PROJECT_CREATED })
     async createProject(@Body() newProject: CreateProjectDto, @Req() req: Request): Promise<FLOResponse> {
         try {
-            return new FLOResponse(true, [PROJECT_CONSTANT.NEW_PROJECT_CREATED]).setSuccessData(await this.projectService.createNewProject(newProject, req)).setStatus(HttpStatus.CREATED);
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.NEW_PROJECT_CREATED]).setSuccessData(await this.projectService.createNewProject(newProject, req)).setStatus(HttpStatus.CREATED);
         } catch (err) {
-            throw new BadRequestException(PROJECT_CONSTANT.UNABLE_TO_CREATE_PROJECT, err);
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_CREATE_PROJECT, err);
         }
     }
 
@@ -54,13 +54,13 @@ export class ProjectController {
     @ApiOperation({ summary: 'Get all Projects' })
     @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
-    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
-    @ApiResponse({ status: HttpStatus.OK, type: AllProjectResponseDto, description: PROJECT_CONSTANT.ALL_PROJECT_RETRIEVED })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.OK, type: AllProjectResponseDto, description: MANAGE_PROJECT_CONSTANT.ALL_PROJECT_RETRIEVED })
     async findAllUser(@Req() req: Request): Promise<FLOResponse> {
         try {
-            return new FLOResponse(true, [PROJECT_CONSTANT.ALL_PROJECT_RETRIEVED]).setSuccessData(await this.projectService.getAllProject(req)).setStatus(HttpStatus.OK);
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.ALL_PROJECT_RETRIEVED]).setSuccessData(await this.projectService.getAllProject(req)).setStatus(HttpStatus.OK);
         } catch (err) {
-            throw new NotFoundException(PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND, err);
+            throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND, err);
         }
     }
 
@@ -78,14 +78,14 @@ export class ProjectController {
     @ApiOperation({ summary: 'Update Project' })
     @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
-    @ApiResponse({ status: HttpStatus.CONFLICT, description: PROJECT_CONSTANT.PROJECT_NAME_CONFLICT })
-    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
-    @ApiResponse({ status: HttpStatus.OK, type: ProjectResponseDto, description: PROJECT_CONSTANT.PROJECT_RECORD_UPDATED })
+    @ApiResponse({ status: HttpStatus.CONFLICT, description: MANAGE_PROJECT_CONSTANT.PROJECT_NAME_CONFLICT })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.OK, type: ProjectResponseDto, description: MANAGE_PROJECT_CONSTANT.PROJECT_RECORD_UPDATED })
     async updateProject(@Param('id') id: string, @Body() updateProject: CreateProjectDto, @Req() req: Request): Promise<FLOResponse> {
         try {
-            return new FLOResponse(true, [PROJECT_CONSTANT.PROJECT_RECORD_UPDATED]).setSuccessData(await this.projectService.updateProject(id, updateProject, req)).setStatus(HttpStatus.OK);
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.PROJECT_RECORD_UPDATED]).setSuccessData(await this.projectService.updateProject(id, updateProject, req)).setStatus(HttpStatus.OK);
         } catch (err) {
-            throw new BadRequestException(PROJECT_CONSTANT.UNABLE_TO_UPDATE_PROJECT, err);
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_UPDATE_PROJECT, err);
         }
     }
 
@@ -103,14 +103,14 @@ export class ProjectController {
     @ApiOperation({ summary: 'Delete/disable a Project', description: 'This is soft delete api which change status of project to false' })
     @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: PROJECT_CONSTANT.UNABLE_TO_DELETE_PROJECT })
-    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
-    @ApiResponse({ status: HttpStatus.OK, type: ProjectResponseDto, description: PROJECT_CONSTANT.PROJECT_DELETE_SUCCESS })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_DELETE_PROJECT })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.OK, type: ProjectResponseDto, description: MANAGE_PROJECT_CONSTANT.PROJECT_DELETE_SUCCESS })
     async deleteProject(@Param('id') id: string, @Req() req: Request): Promise<FLOResponse> {
         try {
-            return new FLOResponse(true, [PROJECT_CONSTANT.PROJECT_DELETE_SUCCESS]).setSuccessData(await this.projectService.deleteProject(id, req)).setStatus(HttpStatus.OK);
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.PROJECT_DELETE_SUCCESS]).setSuccessData(await this.projectService.deleteProject(id, req)).setStatus(HttpStatus.OK);
         } catch (err) {
-            throw new BadRequestException(PROJECT_CONSTANT.UNABLE_TO_DELETE_PROJECT, err);
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_DELETE_PROJECT, err);
         }
     }
 
@@ -128,14 +128,14 @@ export class ProjectController {
     @ApiOperation({ summary: 'Enable project' })
     @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
-    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: PROJECT_CONSTANT.UNABLE_TO_ENABLE_PROJECT })
-    @ApiResponse({ status: HttpStatus.OK, type: ProjectResponseDto, description: PROJECT_CONSTANT.PROJECT_ENABLED_SUCCESS })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_ENABLE_PROJECT })
+    @ApiResponse({ status: HttpStatus.OK, type: ProjectResponseDto, description: MANAGE_PROJECT_CONSTANT.PROJECT_ENABLED_SUCCESS })
     async enableProject(@Param('id') id: string, @Req() req: Request): Promise<FLOResponse> {
         try {
-            return new FLOResponse(true, [PROJECT_CONSTANT.PROJECT_ENABLED_SUCCESS]).setSuccessData(await this.projectService.enableProject(id, req)).setStatus(HttpStatus.OK);
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.PROJECT_ENABLED_SUCCESS]).setSuccessData(await this.projectService.enableProject(id, req)).setStatus(HttpStatus.OK);
         } catch (err) {
-            throw new BadRequestException(PROJECT_CONSTANT.UNABLE_TO_ENABLE_PROJECT, err);
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_ENABLE_PROJECT, err);
         }
     }
 }
