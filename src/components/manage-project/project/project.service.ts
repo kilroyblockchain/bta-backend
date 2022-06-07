@@ -59,7 +59,7 @@ export class ProjectService {
 
     async getProjectById(id: string, req: Request): Promise<IProject> {
         const companyId = getCompanyId(req);
-        const project = await this.projectModel.findOne({ _id: id, companyId });
+        const project = await this.projectModel.findOne({ _id: id /*  companyId */ });
         if (project) {
             return project;
         }
@@ -86,16 +86,5 @@ export class ProjectService {
     async enableProject(id: string, req: Request): Promise<IProject> {
         const companyId = getCompanyId(req);
         return await this.projectModel.findOneAndUpdate({ _id: id, companyId }, { status: true }, { new: true });
-    }
-
-    async addVersion(projectId: string, versionId: string): Promise<IProject> {
-        return await this.projectModel.findOneAndUpdate(
-            { _id: projectId, status: true },
-            {
-                $push: {
-                    projectVersions: versionId
-                }
-            }
-        );
     }
 }

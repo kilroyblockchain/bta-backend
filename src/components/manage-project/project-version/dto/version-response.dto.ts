@@ -98,7 +98,7 @@ export class VersionResponseDto {
         description: 'Status of version',
         format: 'boolean'
     })
-    VersionStatus: VersionStatus;
+    versionStatus: VersionStatus;
 
     @ApiProperty({
         example: '60e6fe33d27e2133c485513b',

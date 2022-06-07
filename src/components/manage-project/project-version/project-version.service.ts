@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
@@ -13,27 +13,44 @@ export class ProjectVersionService {
 
     async addNewVersion(req: Request, projectId: string, newVersion: AddVersionDto): Promise<IProjectVersion> {
         const user = req['user']._id;
-        const isVersionUnique = await this.isVersionUnique(newVersion.versionName);
-        if (!isVersionUnique) throw new ConflictException(MANAGE_PROJECT_CONSTANT.PROJECT_VERSION_CONFLICT);
 
         const project = await this.projectService.getProjectById(projectId, req);
         if (!project) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
+
+        const isVersionUnique = await this.isVersionUnique(newVersion.versionName, project._id);
+        if (!isVersionUnique) throw new ConflictException(MANAGE_PROJECT_CONSTANT.PROJECT_VERSION_CONFLICT);
 
         const version = new this.versionModel(newVersion);
         version.createdBy = user;
         version.projectId = project._id;
 
-        const addVersion = await this.projectService.addVersion(project._id, version._id);
-        if (!addVersion) throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_ADD_VERSION);
+        project.projectVersions.push(version._id);
 
+        await project.save();
         return await version.save();
     }
 
-    async isVersionUnique(name: string): Promise<boolean> {
-        const version = await this.versionModel.findOne({ versionName: { $regex: name, $options: 'i' } });
+    async isVersionUnique(name: string, projectId: string): Promise<boolean> {
+        const version = await this.versionModel.findOne({ versionName: { $regex: name, $options: 'i' }, projectId });
         if (version) {
             return false;
         }
         return true;
+    }
+
+    async getVersionById(id: string, projectId: string): Promise<IProjectVersion> {
+        return await this.versionModel.findOne({ _id: id, projectId });
+    }
+
+    async updateVersion(id: string, projectId: string, updateVersion: AddVersionDto): Promise<IProjectVersion> {
+        const version = await this.getVersionById(id, projectId);
+        if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+
+        const isVersionUnique = await this.isVersionUnique(updateVersion.versionName, projectId);
+        if (!isVersionUnique && version.versionName !== updateVersion.versionName) {
+            throw new ConflictException(MANAGE_PROJECT_CONSTANT.PROJECT_VERSION_CONFLICT);
+        }
+
+        return await this.versionModel.findOneAndUpdate({ _id: version._id }, updateVersion, { new: true });
     }
 }

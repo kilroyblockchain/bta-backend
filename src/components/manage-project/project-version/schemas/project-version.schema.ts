@@ -60,7 +60,7 @@ export const ProjectVersionSchema = new Schema(
             type: String,
             required: true
         },
-        VersionStatus: {
+        versionStatus: {
             type: String,
             enum: Object.values(VersionStatus),
             default: VersionStatus.PENDING
