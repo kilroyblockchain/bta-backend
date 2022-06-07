@@ -59,7 +59,7 @@ export class ProjectService {
 
     async getProjectById(id: string, req: Request): Promise<IProject> {
         const companyId = getCompanyId(req);
-        const project = await this.projectModel.findOne({ _id: id /*  companyId */ });
+        const project = await this.projectModel.findOne({ _id: id, companyId });
         if (project) {
             return project;
         }

@@ -22,7 +22,7 @@ export class ProjectVersionService {
 
         const version = new this.versionModel(newVersion);
         version.createdBy = user;
-        version.projectId = project._id;
+        version.project = project._id;
 
         project.projectVersions.push(version._id);
 
@@ -52,5 +52,17 @@ export class ProjectVersionService {
         }
 
         return await this.versionModel.findOneAndUpdate({ _id: version._id }, updateVersion, { new: true });
+    }
+
+    async getVersionInfo(id: string, projectId: string): Promise<IProjectVersion> {
+        const version = await this.getVersionById(id, projectId);
+        if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+
+        const versionInfo = await version.populate([
+            { path: 'projectId', select: 'name domain details _id' },
+            { path: 'createdBy', select: 'firstName lastName email _id' }
+        ]);
+
+        return versionInfo;
     }
 }

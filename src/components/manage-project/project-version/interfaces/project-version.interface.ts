@@ -23,5 +23,5 @@ export interface IProjectVersion extends Document {
     updatedAt: Date;
     createdAt: Date;
     createdBy: IUser;
-    projectId: string;
+    project: string;
 }
