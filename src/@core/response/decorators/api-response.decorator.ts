@@ -1,6 +1,6 @@
-import { applyDecorators, Type } from '@nestjs/common';
+import { applyDecorators, HttpStatus, Type } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
-import { AppResponse } from '../dto/api-response.dto';
+import { AppResponse, PaginatedDto } from '../dto/api-response.dto';
 
 /**
  * A decorator to document api created response model with out pagination
@@ -27,6 +27,9 @@ export const ApiCreatedAppResponseWithModel = <TModel extends Type<any>>(model: 
                                     : {
                                           $ref: getSchemaPath(model)
                                       })
+                            },
+                            statusCode: {
+                                example: HttpStatus.CREATED
                             }
                         }
                     }
@@ -84,24 +87,19 @@ export const ApiOkAppResponseWithPagination = <TModel extends Type<any>>(model: 
                     {
                         properties: {
                             data: {
-                                properties: {
-                                    page: {
-                                        type: 'number',
-                                        example: 1
+                                allOf: [
+                                    {
+                                        $ref: getSchemaPath(PaginatedDto)
                                     },
-                                    limit: {
-                                        type: 'number',
-                                        example: 10
-                                    },
-                                    total: {
-                                        type: 'number',
-                                        example: 1
-                                    },
-                                    docs: {
-                                        type: 'array',
-                                        items: { $ref: getSchemaPath(model) }
+                                    {
+                                        properties: {
+                                            docs: {
+                                                type: 'array',
+                                                items: { $ref: getSchemaPath(model) }
+                                            }
+                                        }
                                     }
-                                }
+                                ]
                             }
                         }
                     }
