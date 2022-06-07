@@ -65,4 +65,18 @@ export class ProjectVersionService {
 
         return versionInfo;
     }
+
+    async deleteVersion(id: string): Promise<IProjectVersion> {
+        const version = await this.versionModel.findOneAndUpdate({ _id: id }, { status: false }, { new: true });
+        if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+
+        return version;
+    }
+
+    async enableVersion(id: string): Promise<IProjectVersion> {
+        const version = await this.versionModel.findOneAndUpdate({ _id: id }, { status: true }, { new: true });
+        if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+
+        return version;
+    }
 }
