@@ -69,7 +69,7 @@ export class ProjectVersionController {
         }
     }
 
-    @Get('info/:id/:projectId')
+    @Get('info/:id')
     @HttpCode(HttpStatus.OK)
     @UseGuards(AuthGuard('jwt'), PermissionGuard)
     @Permission(ACCESS_TYPE.READ)
@@ -88,9 +88,9 @@ export class ProjectVersionController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_VERSION_INFO })
     @ApiResponse({ status: HttpStatus.OK, type: VersionInfoResponseDto, description: MANAGE_PROJECT_CONSTANT.GET_VERSION_INFO_SUCCESS })
-    async getVersionDetails(@Param('id') id: string, @Param('projectId') projectId: string): Promise<FLOResponse> {
+    async getVersionDetails(@Param('id') id: string): Promise<FLOResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GET_VERSION_INFO_SUCCESS]).setSuccessData(await this.versionService.getVersionInfo(id, projectId)).setStatus(HttpStatus.OK);
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GET_VERSION_INFO_SUCCESS]).setSuccessData(await this.versionService.getVersionInfo(id)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND, err);
         }

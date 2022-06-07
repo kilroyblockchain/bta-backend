@@ -38,12 +38,12 @@ export class ProjectVersionService {
         return true;
     }
 
-    async getVersionById(id: string, projectId: string): Promise<IProjectVersion> {
-        return await this.versionModel.findOne({ _id: id, projectId });
+    async getVersionById(id: string): Promise<IProjectVersion> {
+        return await this.versionModel.findOne({ _id: id });
     }
 
     async updateVersion(id: string, projectId: string, updateVersion: AddVersionDto): Promise<IProjectVersion> {
-        const version = await this.getVersionById(id, projectId);
+        const version = await this.getVersionById(id);
         if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
 
         const isVersionUnique = await this.isVersionUnique(updateVersion.versionName, projectId);
@@ -54,8 +54,8 @@ export class ProjectVersionService {
         return await this.versionModel.findOneAndUpdate({ _id: version._id }, updateVersion, { new: true });
     }
 
-    async getVersionInfo(id: string, projectId: string): Promise<IProjectVersion> {
-        const version = await this.getVersionById(id, projectId);
+    async getVersionInfo(id: string): Promise<IProjectVersion> {
+        const version = await this.getVersionById(id);
         if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
 
         const versionInfo = await version.populate([

@@ -15,7 +15,9 @@ export class ProjectService {
 
     async createNewProject(newProject: CreateProjectDto, req: Request): Promise<IProject> {
         const user = req['user']._id;
-        const isProjectUnique = await this.isProjectUnique(newProject.name);
+        const companyId = getCompanyId(req);
+
+        const isProjectUnique = await this.isProjectUnique(newProject.name, companyId);
         if (!isProjectUnique) {
             throw new ConflictException(MANAGE_PROJECT_CONSTANT.PROJECT_NAME_CONFLICT);
         }
@@ -28,12 +30,12 @@ export class ProjectService {
         const project = new this.projectModel(newProject);
         project.members = newProject.members;
         project.createdBy = user;
-        project.companyId = getCompanyId(req);
+        project.companyId = companyId;
         return await project.save();
     }
 
-    async isProjectUnique(name: string): Promise<boolean> {
-        const project = await this.projectModel.findOne({ name: { $regex: name, $options: 'i' } });
+    async isProjectUnique(name: string, companyId: string): Promise<boolean> {
+        const project = await this.projectModel.findOne({ name: { $regex: name, $options: 'i' }, companyId });
         if (project) {
             return false;
         }
@@ -46,8 +48,9 @@ export class ProjectService {
         const searchQuery = search && search === 'true' && searchValue ? getSearchFilterWithRegexAll(searchValue.toString(), ['name', 'details', 'domain', 'purpose']) : {};
         const options = {
             populate: [
-                { path: 'members', select: 'firstName lastName email _id' },
-                { path: 'createdBy', select: 'firstName lastName email _id' }
+                { path: 'members', select: 'firstName lastName email' },
+                { path: 'createdBy', select: 'firstName lastName email' },
+                { path: 'projectVersions', select: 'versionName versionStatus' }
             ],
             lean: true,
             limit: Number(limit),
@@ -68,9 +71,10 @@ export class ProjectService {
 
     async updateProject(id: string, updateProject: CreateProjectDto, req: Request): Promise<IProject> {
         const project = await this.getProjectById(id, req);
+        const companyId = getCompanyId(req);
 
         if (!project) throw new NotFoundException([MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND]);
-        const isProjectUnique = await this.isProjectUnique(updateProject.name);
+        const isProjectUnique = await this.isProjectUnique(updateProject.name, companyId);
         if (!isProjectUnique && project.name !== updateProject.name) {
             throw new ConflictException(MANAGE_PROJECT_CONSTANT.PROJECT_NAME_CONFLICT);
         }
