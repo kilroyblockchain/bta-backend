@@ -12,4 +12,5 @@ export interface IProject extends Document {
     createdAt: Date;
     createdBy: string;
     companyId: string;
+    projectVersions: string[];
 }
