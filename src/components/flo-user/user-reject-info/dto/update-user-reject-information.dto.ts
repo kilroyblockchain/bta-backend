@@ -4,7 +4,7 @@ import { IsOptional, IsString } from 'class-validator';
 export class UpdateUserRejectInformationDto {
     @ApiProperty({
         example: 'Subscription expired',
-        description: 'Id of rejected user'
+        description: 'Description'
     })
     @IsOptional()
     @IsString()

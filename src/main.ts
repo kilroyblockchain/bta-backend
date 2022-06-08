@@ -21,6 +21,7 @@ import { WinstonModule, WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { transports } from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
 import { consoleTransportOptions, dailyRotateFileTransportOptions } from './@core/config/logger.config';
+import { VerificationModule } from './components/flo-user/verification/verification.module';
 
 async function bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule, {
@@ -68,7 +69,7 @@ async function bootstrap(): Promise<void> {
 
     const options = new DocumentBuilder().setTitle('FLO API').setDescription('API description').setVersion('1.0').build();
     const document = SwaggerModule.createDocument(app, options, {
-        include: [UserModule, OrganizationModule, CountryModule, SubscriptionTypeModule, FeatureModule, OrganizationUnitModule, OrganizationStaffingModule, FilesModule, ChannelDetailModule, UserRejectInfoModule]
+        include: [UserModule, OrganizationModule, VerificationModule, CountryModule, SubscriptionTypeModule, FeatureModule, OrganizationUnitModule, OrganizationStaffingModule, FilesModule, ChannelDetailModule, UserRejectInfoModule]
     });
     SwaggerModule.setup('api', app, document);
 

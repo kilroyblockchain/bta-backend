@@ -7,7 +7,7 @@ export interface StaffingInterface extends Document {
     featureAndAccess?: [
         {
             featureId?: string | IFeature;
-            accessType?: [string];
+            accessType?: string[];
         }
     ];
     status?: boolean;

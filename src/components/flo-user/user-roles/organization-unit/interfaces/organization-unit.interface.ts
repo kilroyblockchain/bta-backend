@@ -4,6 +4,6 @@ export interface IOrganizationUnitInterface extends Document {
     unitName: string;
     unitDescription?: string;
     subscriptionType: string;
-    featureListId?: [string];
+    featureListId?: string[];
     status: boolean;
 }
