@@ -154,9 +154,10 @@ export class OrganizationStaffingService {
     async findNameFromArray(data: Array<string>): Promise<Array<OrganizationStaffResponse>> {
         const logger = new Logger(OrganizationStaffingService.name + '-findNameFromArray');
         try {
-            return await this.StaffModel.find({
+            const staffs = await this.StaffModel.find({
                 _id: { $in: data }
             }).select('staffingName');
+            return staffs.map((staff) => this.buildStaffingResponse(staff));
         } catch (err) {
             logger.error(err);
             throw err;
@@ -172,6 +173,8 @@ export class OrganizationStaffingService {
             staffingResponse.staffingName = staffDocument.staffingName;
             staffingResponse.featureAndAccess = staffDocument.featureAndAccess;
             staffingResponse.status = staffDocument.status;
+            staffingResponse.createdAt = staffDocument.createdAt;
+            staffingResponse.updatedAt = staffDocument.updatedAt;
             return staffingResponse;
         } else {
             logger.log('Organization staff document is undefined / null');

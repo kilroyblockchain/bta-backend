@@ -7,6 +7,7 @@ import { PaginateModel, Types } from 'mongoose';
 import { OrganizationStaffingService } from '../organization-staffing/organization-staffing.service';
 import { ORGANIZATION_UNIT_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { PaginatedDto } from 'src/@core/response/dto';
+import { StaffingInterface } from '../organization-staffing/interfaces/organization-staffing.interface';
 
 @Injectable()
 export class OrganizationUnitService {
@@ -94,7 +95,7 @@ export class OrganizationUnitService {
             const aggregate = [...aggregations, ...filter, ...groupBy, ...facets];
             const retrievedData = await this.UnitModel.aggregate(aggregate);
             const data = {
-                docs: retrievedData[0].data?.map((unit) => this.buildOrganizationUnitResponse(new this.UnitModel(unit))) ?? [],
+                docs: retrievedData[0].data?.map((unit) => this.buildOrganizationUnitResponse(new this.UnitModel(unit), unit?.staffing_records)) ?? [],
                 total: retrievedData[0]?.metadata[0]?.total ? retrievedData[0].metadata[0].total : 0,
                 limit: retrievedData[0]?.metadata[0]?.limit ? retrievedData[0].metadata[0].limit : 0,
                 page: retrievedData[0]?.metadata[0]?.page ? retrievedData[0].metadata[0].page : 0
@@ -189,7 +190,7 @@ export class OrganizationUnitService {
         }
     }
 
-    buildOrganizationUnitResponse(orgUnitDocument: IOrganizationUnitInterface): OrganizationUnitResponse {
+    buildOrganizationUnitResponse(orgUnitDocument: IOrganizationUnitInterface, staffingList?: StaffingInterface[]): OrganizationUnitResponse {
         const logger = new Logger(OrganizationUnitService.name + '-buildOrganizationUnitResponse');
         if (orgUnitDocument) {
             const orgUnitResponse = new OrganizationUnitResponse();
@@ -200,6 +201,9 @@ export class OrganizationUnitService {
             orgUnitResponse.subscriptionType = orgUnitDocument.subscriptionType;
             orgUnitResponse.featureListId = orgUnitDocument.featureListId;
             orgUnitResponse.status = orgUnitDocument.status;
+            orgUnitResponse.createdAt = new Date(orgUnitDocument.createdAt?.toString());
+            orgUnitResponse.updatedAt = new Date(orgUnitDocument.updatedAt?.toString());
+            orgUnitResponse.staffing_records = staffingList?.map((staff) => this.staffingService.buildStaffingResponse(staff)) ?? [];
             return orgUnitResponse;
         } else {
             logger.log('Organization unit is undefined / null');

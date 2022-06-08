@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { TimestampDto } from 'src/@core/response/dto';
 import { IFeature } from 'src/components/flo-user/features/interfaces/features.interface';
 
-export class OrganizationStaffResponse {
+export class OrganizationStaffResponse extends TimestampDto {
     @ApiProperty({
         example: 'Id',
         description: 'Id of document'

@@ -1,6 +1,28 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 
-export class CommonResponseDto {
+export class TimestampDto {
+    @ApiProperty({
+        example: new Date(),
+        description: 'Created Date'
+    })
+    createdAt: Date;
+
+    @ApiProperty({
+        example: new Date(),
+        description: 'Updated Date'
+    })
+    updatedAt: Date;
+}
+
+export class BlockchainVerifiedDto {
+    @ApiProperty({
+        example: true,
+        description: 'Blockchain Verification Status'
+    })
+    blockchainVerified: boolean;
+}
+
+export class BaseResponseDto {
     @ApiProperty({
         example: 'id',
         description: 'ID'
@@ -8,26 +30,12 @@ export class CommonResponseDto {
     id: string;
 
     @ApiProperty({
-        example: new Date(),
-        description: 'Created Date'
-    })
-    createdAt: boolean;
-
-    @ApiProperty({
-        example: new Date(),
-        description: 'Updated Date'
-    })
-    updatedAt: boolean;
-
-    @ApiProperty({
         example: true,
         description: 'Status'
     })
     status: boolean;
-
-    @ApiProperty({
-        example: true,
-        description: 'Blockchain Verification Status'
-    })
-    blockchainVerified: boolean;
 }
+
+export class BaseResponseWithTimestamp extends IntersectionType(BaseResponseDto, TimestampDto) {}
+
+export class CommonResponseDto extends BaseResponseWithTimestamp {}

@@ -1,8 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { TimestampDto } from 'src/@core/response/dto';
+import { OrganizationStaffResponse } from '../../organization-staffing/dto';
 
-export class OrganizationUnitResponse {
+export class OrganizationUnitResponse extends TimestampDto {
     @ApiProperty({
-        example: 'Id',
+        example: 'Unit Id',
         description: 'ID'
     })
     _id: string;
@@ -32,7 +34,7 @@ export class OrganizationUnitResponse {
     subscriptionType: string;
 
     @ApiProperty({
-        example: ['id1', 'id2'],
+        example: ['Feature Id'],
         description: 'List of feature id'
     })
     featureListId?: string[];
@@ -42,6 +44,25 @@ export class OrganizationUnitResponse {
         description: 'Document Status'
     })
     status: boolean;
+
+    @ApiProperty({
+        example: [
+            {
+                _id: 'Id',
+                organizationUnitId: 'Unit Id',
+                staffingName: 'ABC Staff',
+                featureAndAccess: [
+                    {
+                        featureId: 'Feature Id',
+                        accessType: ['R', 'W', 'U', 'D']
+                    }
+                ],
+                status: true
+            }
+        ],
+        description: 'List of Staff in this unit'
+    })
+    staffing_records?: OrganizationStaffResponse[];
 }
 
 export class DeletedOrganizationUnitResponse extends OrganizationUnitResponse {
