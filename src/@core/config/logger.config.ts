@@ -14,7 +14,7 @@ export const consoleTransportOptions: ConsoleTransportOptions = {
 export const dailyRotateFileTransportOptions: DailyRotateFile.DailyRotateFileTransportOptions = {
     filename: 'logs/application-%DATE%.log',
     datePattern: process.env.APP_LOG_DATE_PATTERN ?? 'YYYY-MM-DD',
-    zippedArchive: process.env.APP_LOG_ZIPPED_ARCHIVE ? Boolean(process.env.APP_LOG_ZIPPED_ARCHIVE) : false,
+    zippedArchive: process.env.APP_LOG_ZIPPED_ARCHIVE && process.env.APP_LOG_ZIPPED_ARCHIVE?.toLowerCase() === 'true',
     maxSize: process.env.APP_LOG_MAX_SIZE ?? '20m',
     maxFiles: process.env.APP_LOG_MAX_FILES ?? '14d',
     format: combine(format.timestamp(), format.ms(), myFormat)

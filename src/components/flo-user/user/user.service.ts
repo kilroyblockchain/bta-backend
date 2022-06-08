@@ -287,6 +287,16 @@ export class UserService {
                         bcUserDto.loggedInUserId = req['user']._id;
                         bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
                         await this.userBcService.storeUserBc(updatedUser, bcUserDto, BC_PAYLOAD.UPDATE_USER);
+                        for (const staffingId of updateUserDto.staffingId) {
+                            const data = await this.channelMappingService.checkChannelMappingByUserOrganizationAndStaffing(userId, bcUserDto.company.companyId as string, staffingId);
+                            if (!data) {
+                                const bcUserDto = new BcUserDto();
+                                bcUserDto.loggedInUserId = req['user']._id;
+                                bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
+                                bcUserDto.enrollmentId = userId;
+                                await this.caService.userRegistration(bcUserDto, staffingId);
+                            }
+                        }
                     }
                     const userData = await this.uModel
                         .findById(userId)
