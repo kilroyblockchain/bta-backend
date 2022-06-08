@@ -20,7 +20,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
                     from: '"nest-modules" <modules@nestjs.com>'
                 },
                 template: {
-                    dir: process.cwd() + '/src/components/utils/mail/templates/',
+                    dir: process.cwd() + '/src/@utils/mail/templates/',
                     adapter: new HandlebarsAdapter(),
                     options: {
                         strict: true
@@ -28,7 +28,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
                 },
                 options: {
                     partials: {
-                        dir: process.cwd() + '/src/components/utils/mail/templates/partials/',
+                        dir: process.cwd() + '/src/@utils/mail/templates/partials/',
                         options: {
                             strict: true
                         }

@@ -6,7 +6,7 @@ import { BC_ERROR_RESPONSE } from 'src/@core/constants/bc-constants/bc-error-res
 import { BcRequestDto } from 'src/@core/constants/dto/bc-request.dto';
 import { BcHistoryResponseDto } from 'src/components/blockchain/dto/bc-history-response.dto';
 import { CaService } from 'src/components/certificate-authority/ca-client.service';
-import { sha256Hash } from 'src/components/utils/helpers';
+import { sha256Hash } from 'src/@utils/helpers';
 import { OrganizationBcDto } from './dto/organization-bc.dto';
 import { IOrganizationBc } from './interfaces/organization.interface';
 
