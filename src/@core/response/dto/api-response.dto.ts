@@ -16,10 +16,14 @@ export class AppResponseDto<TData> {
 
     data: TData;
 
-    @ApiProperty()
+    @ApiProperty({
+        example: null
+    })
     error: Error;
 
-    @ApiProperty()
+    @ApiProperty({
+        example: HttpStatus.OK
+    })
     statusCode: HttpStatus;
 
     constructor(success: boolean, message: Array<string>) {
