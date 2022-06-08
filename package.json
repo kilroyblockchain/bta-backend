@@ -21,8 +21,8 @@
         "test:cov": "jest --coverage",
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
         "test:e2e": "jest --config ./test/jest-e2e.json",
-        "prettier:check": "prettier --config .prettierrc --loglevel 'warn' --check \"src/**/*.{ts,css,scss,html,json}\"",
-        "prettier:write": "prettier --config .prettierrc --loglevel 'warn' --write \"src/**/*.{ts,css,scss,html,json}\"",
+        "prettier:check": "prettier --config .prettierrc --loglevel warn --check \"src/**/*.{ts,css,scss,html,json}\"",
+        "prettier:write": "prettier --config .prettierrc --loglevel warn --write \"src/**/*.{ts,css,scss,html,json}\"",
         "prepare": "husky install"
     },
     "dependencies": {

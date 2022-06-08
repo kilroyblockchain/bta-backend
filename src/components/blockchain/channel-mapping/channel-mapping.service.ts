@@ -110,4 +110,27 @@ export class ChannelMappingService {
         channelMappingResponseDto.channelDetail = channelDetail;
         return channelMappingResponseDto;
     }
+
+    /**
+     * Check Channel Mapping Exists By user id, organization Id and staffing id
+     *
+     *
+     * @param {string} userId - Id of logged in user
+     * @param {string} organizationId - Id of default organization
+     * @param {string} staffingId - Id of staffing
+     * @returns {Promise<boolean>} - Returns Promise of boolean
+     *
+     *
+     **/
+    async checkChannelMappingByUserOrganizationAndStaffing(userId: string, organizationId: string, staffingId: string): Promise<boolean> {
+        const channelMapping: IChannelMapping = await this.ChannelMappingModel.findOne({
+            userId: userId,
+            organizationId: organizationId,
+            staffingId: staffingId
+        });
+        if (!channelMapping) {
+            return false;
+        }
+        return true;
+    }
 }

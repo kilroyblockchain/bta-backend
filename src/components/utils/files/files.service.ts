@@ -43,15 +43,18 @@ export class FileService {
 
     getLogFiles(): string[] {
         const logger = new Logger(FileService.name + '-getLogFiles');
-        let files: string[] = [];
+        let files: { fileName: string; logTimeStamp: Date }[] = [];
         try {
             files = (fs.readdirSync(join(process.cwd(), 'logs')) ?? []).reduce((logsDetailList, log) => {
                 if (log.includes('application-') && !log.includes('.gz')) {
-                    logsDetailList.push(log);
+                    logsDetailList.push({ fileName: log, logTimeStamp: this.getDateFromLogsDateString(log.substring(12).split('.')[0]) });
                 }
                 return logsDetailList;
             }, []);
-            return files;
+            files.sort((a, b) => {
+                return b.logTimeStamp.getTime() - a.logTimeStamp.getTime();
+            });
+            return files.map((file) => file.fileName);
         } catch (err) {
             logger.error(err);
             throw new NotFoundException('Logs file not found');
@@ -66,6 +69,45 @@ export class FileService {
         } catch (err) {
             logger.error(err);
             throw new BadRequestException('Logs file not found');
+        }
+    }
+
+    getDateFromLogsDateString(dateString: string): Date {
+        const logger = new Logger(FileService.name + '-getDateFromLogsDateString');
+        try {
+            const apiLogDatePattern = process.env.APP_LOG_DATE_PATTERN ?? 'YYYY-MM-DD';
+            const datePartsTitle = apiLogDatePattern.split('-');
+            const datePartsValue = dateString.split('-');
+            const formattedDateString = datePartsTitle
+                .map((datePart, i) => {
+                    return {
+                        datePartTitle: datePart,
+                        datePartValue: Number(datePartsValue[i])
+                    };
+                })
+                .reduce((formattedDateString, datePart) => {
+                    switch (datePart.datePartTitle) {
+                        case 'YYYY':
+                            formattedDateString += datePart.datePartValue;
+                            break;
+                        case 'MM':
+                            formattedDateString += `-${datePart.datePartValue}`;
+                            break;
+                        case 'DD':
+                            formattedDateString += `-${datePart.datePartValue}`;
+                            break;
+                        case 'HH':
+                            formattedDateString += ` ${datePart.datePartValue}:00:00`;
+                            break;
+                        default:
+                            break;
+                    }
+                    return formattedDateString;
+                }, '');
+            return new Date(formattedDateString);
+        } catch (err) {
+            logger.error(err);
+            throw err;
         }
     }
 }
