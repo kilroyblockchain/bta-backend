@@ -36,7 +36,7 @@ export class UserRejectInformationResponseDto {
     rejectedByUserDetail: UserDto;
 
     @ApiProperty({
-        example: 'Test Description for rejection',
+        example: 'Subscription expired',
         description: 'Description'
     })
     rejectionDescription?: string;
