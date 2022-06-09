@@ -1,6 +1,6 @@
-#FLO API
+#BASE API
 
-## Start Appplication
+## Start Application
 
 Make sure your local environment has mongoDB
 

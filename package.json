@@ -1,5 +1,5 @@
 {
-    "name": "flo-api",
+    "name": "base-api",
     "version": "0.0.1",
     "description": "",
     "author": "",
@@ -113,7 +113,7 @@
         "testEnvironment": "node"
     },
     "validate-branch-name": {
-        "pattern": "^(feature|bugfix|hotfix)/(FLO-).+$",
+        "pattern": "^(feature|bugfix|hotfix)/(KT-).+$",
         "errorMsg": "Branch name should have proper pattern"
     },
     "jira-prepare-commit-msg": {
