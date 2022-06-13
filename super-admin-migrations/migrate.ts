@@ -2,7 +2,7 @@ import * as migrateMongoose from 'migrate-mongoose';
 import * as mongoose from 'mongoose';
 import 'dotenv/config';
 import { join } from 'path';
-import { buildMongoURI, consoleLogWrapper } from 'flo-migrations/helper-func';
+import { buildMongoURI, consoleLogWrapper } from 'app-migrations/helper-func';
 
 const mongoURI = buildMongoURI(process.env.MONGO_URI, process.env.DATABASE_NAME, process.env.MONGO_HOST, process.env.MONGO_USERNAME, process.env.MONGO_PASSWORD);
 mongoose.connect(mongoURI);

@@ -1,4 +1,4 @@
-import { IUser } from 'src/components/flo-user/user/interfaces/user.interface';
+import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
 import { Document } from 'mongoose';
 
 export interface IRefreshToken extends Document {

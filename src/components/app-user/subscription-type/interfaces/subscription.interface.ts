@@ -1,4 +1,4 @@
-import { ICountry } from 'src/components/flo-user/country/interfaces/country.interface';
+import { ICountry } from 'src/components/app-user/country/interfaces/country.interface';
 import { Document } from 'mongoose';
 
 export interface ISubscription extends Document {

@@ -11,4 +11,4 @@ import { VerificationModule } from './verification/verification.module';
 @Module({
     imports: [UserModule, OrganizationModule, CountryModule, SubscriptionTypeModule, FeatureModule, UserRolesModule, VerificationModule, UserRejectInfoModule]
 })
-export class FLOUserModule {}
+export class AppUserModule {}

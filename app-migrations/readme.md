@@ -1,8 +1,8 @@
-# FLO Web
+# Application
 
-## Country-state data migration
+## Data migration
 
--   Migrate country and state data to mongodb after building nest app
+-   Migrate data to mongodb after building nest app
 
 ### Tech
 
@@ -11,8 +11,24 @@ It uses [migrate-mongoose](https://github.com/balmasi/migrate-mongoose) package
 ### Installation
 
 ```sh
-$ cd flo
+$ cd app
 $ npm install migrate-mongoose
+```
+
+### Create migration file
+
+You should create a config file default migrate.json or [other].json, refer migrate.json.sample
+
+#### For default
+
+```sh
+$ node_modules/.bin/migrate create sample-migrate
+```
+
+#### For custom
+
+```sh
+$ node_modules/.bin/migrate create sample-migrate --config custom-migration.json
 ```
 
 ### Migration Script
@@ -23,7 +39,7 @@ For compiling ts files
 $ npm run build
 ```
 
-For migrating country and state to mongodb
+For migrating admin user to mongodb
 
 ```sh
 $ npm run start:migrate
@@ -50,8 +66,8 @@ $ npm run debug
 ### Description
 
 -   First it will build .ts file into dist folder
--   It will run migrate.js file which is in country-migrate folder
--   migrate.js file migrate country and state into database
+-   It will run migrate.js file which is in ancestor-culture-migrations/admin-user-migrate folder
+-   migrate.js file migrate admin user into database
 -   After migration nest app is run in debug mode
 
 ### Migration Documentation

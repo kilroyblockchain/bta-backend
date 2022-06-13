@@ -1,4 +1,4 @@
-import { IUser } from 'src/components/flo-user/user/interfaces/user.interface';
+import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
 import { v4 } from 'uuid';
 import { InjectModel } from '@nestjs/mongoose';
 import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';

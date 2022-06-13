@@ -4,7 +4,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import 'dotenv/config';
-import { FLOUserModule } from './components/flo-user/flo-user.module';
+import { AppUserModule } from './components/app-user/app-user.module';
 import { UtilsModule } from './components/utils/utils.module';
 import { BlockchainModule } from './components/blockchain/blockchain.module';
 import { WinstonModule } from 'nest-winston';
@@ -28,7 +28,7 @@ import { consoleTransportOptions, dailyRotateFileTransportOptions } from './@cor
             transports: [new transports.Console(consoleTransportOptions), ...(process.env.NO_APP_LOG_T_FILE ? [] : [new DailyRotateFile(dailyRotateFileTransportOptions)])]
         }),
         ScheduleModule.forRoot(),
-        FLOUserModule,
+        AppUserModule,
         UtilsModule,
         BlockchainModule
     ]

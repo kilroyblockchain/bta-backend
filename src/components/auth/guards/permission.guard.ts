@@ -1,9 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable, ForbiddenException, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { FEATURE_IDENTIFIER } from 'src/@core/constants';
-import { ICompany, IUser } from 'src/components/flo-user/user/interfaces/user.interface';
-import { StaffingInterface } from 'src/components/flo-user/user-roles/organization-staffing/interfaces/organization-staffing.interface';
-import { IFeature } from 'src/components/flo-user/features/interfaces/features.interface';
+import { ICompany, IUser } from 'src/components/app-user/user/interfaces/user.interface';
+import { StaffingInterface } from 'src/components/app-user/user-roles/organization-staffing/interfaces/organization-staffing.interface';
+import { IFeature } from 'src/components/app-user/features/interfaces/features.interface';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {

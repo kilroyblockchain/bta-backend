@@ -1,5 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException, Logger } from '@nestjs/common';
-import { OrganizationService } from 'src/components/flo-user/organization/organization.service';
+import { OrganizationService } from 'src/components/app-user/organization/organization.service';
 
 @Injectable()
 export class SubscriptionGuard implements CanActivate {

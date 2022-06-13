@@ -1,4 +1,4 @@
-import { CountryService } from 'src/components/flo-user/country/country.service';
+import { CountryService } from 'src/components/app-user/country/country.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
