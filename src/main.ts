@@ -71,7 +71,7 @@ async function bootstrap(): Promise<void> {
 
     const options = new DocumentBuilder().setTitle('FLO API').setDescription('API description').setVersion('1.0').build();
     const document = SwaggerModule.createDocument(app, options, {
-        include: [UserModule, OrganizationModule, CountryModule, SubscriptionTypeModule, FeatureModule, OrganizationUnitModule, OrganizationStaffingModule, FilesModule, ChannelDetailModule, UserRejectInfoModule, ProjectModule, ProjectVersionModule,VerificationModule]
+        include: [UserModule, OrganizationModule, CountryModule, SubscriptionTypeModule, FeatureModule, OrganizationUnitModule, OrganizationStaffingModule, FilesModule, ChannelDetailModule, UserRejectInfoModule, ProjectModule, ProjectVersionModule, VerificationModule]
     });
     SwaggerModule.setup('api', app, document);
 
