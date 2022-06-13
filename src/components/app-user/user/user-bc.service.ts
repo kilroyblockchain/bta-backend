@@ -4,7 +4,7 @@ import { BC_CHAINCODE_FUNCTION } from 'src/@core/constants/bc-constants/bc-chain
 import { BC_ERROR_RESPONSE } from 'src/@core/constants/bc-constants/bc-error-response.constants';
 import { BcRequestDto } from 'src/@core/constants/dto/bc-request.dto';
 import { CaService } from 'src/components/certificate-authority/ca-client.service';
-import { sha256Hash } from 'src/components/utils/helpers';
+import { sha256Hash } from 'src/@utils/helpers';
 import { UserBcDto } from './dto/user-bc.dto';
 import { IUserBc } from './interfaces/user.interface';
 

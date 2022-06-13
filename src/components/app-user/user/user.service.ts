@@ -24,7 +24,7 @@ import { AddCompanyDto } from './dto/add-company.dto';
 import { SetDefaultCompanyDto } from './dto/set-default-company.dto';
 import { OrganizationService } from '../organization/organization.service';
 import { AuthService } from 'src/components/auth/auth.service';
-import { MailService } from 'src/components/utils/mail/mail.service';
+import { MailService } from 'src/@utils/mail/mail.service';
 import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 import { VerificationService } from '../verification/verification.service';
 import { OrganizationStaffingService } from '../user-roles/organization-staffing/organization-staffing.service';
@@ -47,7 +47,7 @@ import { COOKIE_KEYS } from 'src/@core/constants/cookie-key.constant';
 import { IUserActivityResponse, IRefreshToken } from 'src/components/auth/interfaces/refresh-token.interface';
 import { IVerifyEmail } from './interfaces/verified-email.interface';
 import { ChannelMappingDto } from 'src/components/blockchain/channel-mapping/dto/channel-mapping.dto';
-import { generateUniqueId } from 'src/components/utils/helpers';
+import { generateUniqueId } from 'src/@utils/helpers';
 import { ChannelMappingService } from 'src/components/blockchain/channel-mapping/channel-mapping.service';
 import { ChannelDetailService } from 'src/components/blockchain/channel-detail/channel-detail.service';
 

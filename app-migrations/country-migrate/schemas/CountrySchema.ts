@@ -1,4 +1,4 @@
-import { ICountry } from 'flo-migrations/country-migrate/interfaces/country.interface';
+import { ICountry } from 'app-migrations/country-migrate/interfaces/country.interface';
 import * as mongoose from 'mongoose';
 
 const Country = new mongoose.Schema({
