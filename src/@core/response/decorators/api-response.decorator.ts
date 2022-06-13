@@ -1,6 +1,6 @@
 import { applyDecorators, HttpStatus, Type } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
-import { AppResponse, PaginatedDto } from '../dto/api-response.dto';
+import { AppResponseDto, PaginatedDto } from '../dto/api-response.dto';
 
 /**
  * A decorator to document api created response model with out pagination
@@ -13,7 +13,7 @@ export const ApiCreatedAppResponseWithModel = <TModel extends Type<any>>(model: 
         ApiCreatedResponse({
             schema: {
                 allOf: [
-                    { $ref: getSchemaPath(AppResponse) },
+                    { $ref: getSchemaPath(AppResponseDto) },
                     {
                         properties: {
                             data: {
@@ -50,7 +50,7 @@ export const ApiOkAppResponseWithModel = <TModel extends Type<any>>(model: TMode
         ApiOkResponse({
             schema: {
                 allOf: [
-                    { $ref: getSchemaPath(AppResponse) },
+                    { $ref: getSchemaPath(AppResponseDto) },
                     {
                         properties: {
                             data: {
@@ -83,7 +83,7 @@ export const ApiOkAppResponseWithPagination = <TModel extends Type<any>>(model: 
         ApiOkResponse({
             schema: {
                 allOf: [
-                    { $ref: getSchemaPath(AppResponse) },
+                    { $ref: getSchemaPath(AppResponseDto) },
                     {
                         properties: {
                             data: {

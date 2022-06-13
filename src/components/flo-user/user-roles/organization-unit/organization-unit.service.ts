@@ -1,12 +1,13 @@
 import { Request } from 'express';
-import { CreateOrganizationUnitDto } from './dto/createorganization-unit.dto';
+import { CreateOrganizationUnitDto, OrganizationUnitResponse } from './dto';
 import { IOrganizationUnitInterface } from './interfaces/organization-unit.interface';
 import { InjectModel } from '@nestjs/mongoose';
-import { forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { PaginateModel, PaginateResult, Types } from 'mongoose';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { PaginateModel, Types } from 'mongoose';
 import { OrganizationStaffingService } from '../organization-staffing/organization-staffing.service';
-import { STATIC_ORGANIZATION_ID } from 'src/@core/constants/objectId.constant';
 import { ORGANIZATION_UNIT_CONSTANT } from 'src/@core/constants/api-error-constants';
+import { PaginatedDto } from 'src/@core/response/dto';
+import { StaffingInterface } from '../organization-staffing/interfaces/organization-staffing.interface';
 
 @Injectable()
 export class OrganizationUnitService {
@@ -17,18 +18,18 @@ export class OrganizationUnitService {
         private readonly staffingService: OrganizationStaffingService
     ) {}
 
-    async createNewOrganizationUnit(newUnit: CreateOrganizationUnitDto): Promise<IOrganizationUnitInterface> {
+    async createNewOrganizationUnit(newUnit: CreateOrganizationUnitDto): Promise<OrganizationUnitResponse> {
         const logger = new Logger(OrganizationUnitService.name + '-createNewOrganizationUnit');
         try {
             const orgUnit = new this.UnitModel(newUnit);
-            return await orgUnit.save();
+            return this.buildOrganizationUnitResponse(await orgUnit.save());
         } catch (err) {
             logger.error(err);
             throw err;
         }
     }
 
-    async getUnitsByCompanyId(companyId: string, options: Request): Promise<PaginateResult<IOrganizationUnitInterface>> {
+    async getUnitsByCompanyId(companyId: string, options: Request): Promise<PaginatedDto<OrganizationUnitResponse>> {
         const logger = new Logger(OrganizationUnitService.name + '-getUnitsByCompanyId');
         try {
             const page = options.query.page ? Number(options.query.page) : 1;
@@ -94,7 +95,7 @@ export class OrganizationUnitService {
             const aggregate = [...aggregations, ...filter, ...groupBy, ...facets];
             const retrievedData = await this.UnitModel.aggregate(aggregate);
             const data = {
-                docs: retrievedData[0].data,
+                docs: retrievedData[0].data?.map((unit) => this.buildOrganizationUnitResponse(new this.UnitModel(unit), unit?.staffing_records)) ?? [],
                 total: retrievedData[0]?.metadata[0]?.total ? retrievedData[0].metadata[0].total : 0,
                 limit: retrievedData[0]?.metadata[0]?.limit ? retrievedData[0].metadata[0].limit : 0,
                 page: retrievedData[0]?.metadata[0]?.page ? retrievedData[0].metadata[0].page : 0
@@ -106,7 +107,7 @@ export class OrganizationUnitService {
         }
     }
 
-    async getUnitIdArrayByCompanyId(companyId: string): Promise<Array<IOrganizationUnitInterface>> {
+    async getUnitIdArrayByCompanyId(companyId: string): Promise<Array<string>> {
         const logger = new Logger(OrganizationUnitService.name + '-getUnitIdArrayByCompanyId');
         try {
             const unitsIds = await this.UnitModel.find({
@@ -120,12 +121,12 @@ export class OrganizationUnitService {
         }
     }
 
-    async getOrganizationUnitById(id: string): Promise<IOrganizationUnitInterface> {
+    async getOrganizationUnitById(id: string): Promise<OrganizationUnitResponse> {
         const logger = new Logger(OrganizationUnitService.name + '-getOrganizationUnitById');
         try {
             const orgUnit = await this.UnitModel.findOne({ _id: id }).populate('featureListId').exec();
             if (orgUnit) {
-                return orgUnit;
+                return this.buildOrganizationUnitResponse(orgUnit);
             }
             throw new NotFoundException(ORGANIZATION_UNIT_CONSTANT.ORGANIZATION_UNIT_NOT_FOUND);
         } catch (err) {
@@ -134,17 +135,17 @@ export class OrganizationUnitService {
         }
     }
 
-    async updateOrganizationUnit(id: string, updateUnit: CreateOrganizationUnitDto): Promise<IOrganizationUnitInterface> {
+    async updateOrganizationUnit(id: string, updateUnit: CreateOrganizationUnitDto): Promise<OrganizationUnitResponse> {
         const logger = new Logger(OrganizationUnitService.name + '-updateOrganizationUnit');
         try {
-            const orgUnit = await this.getOrganizationUnitById(id);
+            const orgUnit = await this.UnitModel.findById(id);
             if (orgUnit) {
                 orgUnit.companyID = updateUnit.companyID;
                 orgUnit.unitName = updateUnit.unitName;
                 orgUnit.featureListId = updateUnit.featureListId;
                 orgUnit.unitDescription = updateUnit.unitDescription;
                 await this.staffingService.disableAllStaffingByOrganizationUnit(id, orgUnit.featureListId);
-                return await orgUnit.save();
+                return this.buildOrganizationUnitResponse(await orgUnit.save());
             }
             throw new NotFoundException(ORGANIZATION_UNIT_CONSTANT.ORGANIZATION_UNIT_NOT_FOUND);
         } catch (err) {
@@ -153,50 +154,60 @@ export class OrganizationUnitService {
         }
     }
 
-    async enableOrganizationUnit(unitId: string): Promise<IOrganizationUnitInterface> {
+    async enableOrganizationUnit(unitId: string): Promise<OrganizationUnitResponse> {
         const logger = new Logger(OrganizationUnitService.name + '-enableOrganizationUnit');
         try {
-            return await this.UnitModel.findByIdAndUpdate({ _id: unitId }, { status: true });
+            return this.buildOrganizationUnitResponse(await this.UnitModel.findByIdAndUpdate({ _id: unitId }, { status: true }));
         } catch (err) {
             logger.error(err);
             throw err;
         }
     }
 
-    async deleteOrganizationUnit(id: string): Promise<IOrganizationUnitInterface> {
+    async deleteOrganizationUnit(id: string): Promise<OrganizationUnitResponse> {
         const logger = new Logger(OrganizationUnitService.name + '-deleteOrganizationUnit');
         try {
-            return await this.UnitModel.findByIdAndUpdate({ _id: id }, { status: false });
+            return this.buildOrganizationUnitResponse(await this.UnitModel.findByIdAndUpdate({ _id: id }, { status: false }));
         } catch (err) {
             logger.error(err);
             throw err;
         }
     }
 
-    async getAllOrganizationUnits(req: Request, defaultSubscriptionType: string): Promise<IOrganizationUnitInterface[]> {
+    async getAllOrganizationUnits(req: Request, defaultSubscriptionType: string): Promise<OrganizationUnitResponse[]> {
         const logger = new Logger(OrganizationUnitService.name + '-getAllOrganizationUnits');
         try {
             const user = req['user'];
-            return await this.UnitModel.find({
+            const orgUnits = await this.UnitModel.find({
                 companyID: user.company.find((defCompany) => defCompany.default).companyId,
                 status: true,
                 subscriptionType: defaultSubscriptionType
             });
+            return orgUnits.map((orgUnit) => this.buildOrganizationUnitResponse(orgUnit));
         } catch (err) {
             logger.error(err);
             throw err;
         }
     }
 
-    async getTrainingOrganizationUnits(): Promise<IOrganizationUnitInterface> {
-        const logger = new Logger(OrganizationUnitService.name + '-getTrainingOrganizationUnits');
-        try {
-            return await this.UnitModel.findOne({
-                companyID: STATIC_ORGANIZATION_ID.toHexString()
-            });
-        } catch (err) {
-            logger.error(err);
-            throw err;
+    buildOrganizationUnitResponse(orgUnitDocument: IOrganizationUnitInterface, staffingList?: StaffingInterface[]): OrganizationUnitResponse {
+        const logger = new Logger(OrganizationUnitService.name + '-buildOrganizationUnitResponse');
+        if (orgUnitDocument) {
+            const orgUnitResponse = new OrganizationUnitResponse();
+            orgUnitResponse._id = orgUnitDocument._id;
+            orgUnitResponse.companyID = orgUnitDocument.companyID;
+            orgUnitResponse.unitName = orgUnitDocument.unitName;
+            orgUnitResponse.unitDescription = orgUnitDocument.unitDescription;
+            orgUnitResponse.subscriptionType = orgUnitDocument.subscriptionType;
+            orgUnitResponse.featureListId = orgUnitDocument.featureListId;
+            orgUnitResponse.status = orgUnitDocument.status;
+            orgUnitResponse.createdAt = new Date(orgUnitDocument.createdAt?.toString());
+            orgUnitResponse.updatedAt = new Date(orgUnitDocument.updatedAt?.toString());
+            orgUnitResponse.staffing_records = staffingList?.map((staff) => this.staffingService.buildStaffingResponse(staff)) ?? [];
+            return orgUnitResponse;
+        } else {
+            logger.log('Organization unit is undefined / null');
+            throw new BadRequestException('Organization unit is undefined / null');
         }
     }
 }

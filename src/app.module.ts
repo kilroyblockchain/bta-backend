@@ -26,6 +26,7 @@ import { ManageProjectModule } from './components/manage-project/manage-project.
             dest: './uploads'
         }),
         WinstonModule.forRoot({
+            level: process.env.ENVIRONMENT === 'local' ? 'debug' : 'info',
             transports: [new transports.Console(consoleTransportOptions), ...(process.env.NO_APP_LOG_T_FILE ? [] : [new DailyRotateFile(dailyRotateFileTransportOptions)])]
         }),
         ScheduleModule.forRoot(),

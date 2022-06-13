@@ -5,6 +5,7 @@ import { Injectable, BadRequestException, NotFoundException, Logger } from '@nes
 import { Model } from 'mongoose';
 import { IVerification } from './interfaces/verification.interface';
 import { VERIFICATION_CONSTANT } from 'src/@core/constants/api-error-constants';
+import { VerificationResponse } from './dto';
 
 @Injectable()
 export class VerificationService {
@@ -73,7 +74,7 @@ export class VerificationService {
         }
     }
 
-    async getDetailsByToken(token: string): Promise<IVerification> {
+    async getDetailsByToken(token: string): Promise<VerificationResponse> {
         const logger = new Logger(VerificationService.name + '-getDetailsByToken');
         try {
             const userDetails = await this.VerificationModel.findOne({
@@ -85,10 +86,30 @@ export class VerificationService {
             if (userDetails && userDetails.userAccept) {
                 throw new BadRequestException(VERIFICATION_CONSTANT.USER_ALREADY_ACCEPTED_THIS_REQUEST);
             }
-            return userDetails;
+            return this.buildVerificationResponse(userDetails);
         } catch (err) {
             logger.error(err);
             throw err;
+        }
+    }
+
+    buildVerificationResponse(verificationDetail: IVerification): VerificationResponse {
+        const logger = new Logger(VerificationService.name + '-buildVerificationResponse');
+        if (verificationDetail) {
+            const verificationResponse = new VerificationResponse();
+            verificationResponse._id = verificationDetail._id;
+            verificationResponse.email = verificationDetail.email;
+            verificationResponse.userName = verificationDetail.userName;
+            verificationResponse.userAcceptToken = verificationDetail.userAcceptToken;
+            verificationResponse.userAccept = verificationDetail.userAccept;
+            verificationResponse.timeStamp = verificationDetail.timeStamp;
+            verificationResponse.requestedBy = verificationDetail.requestedBy;
+            verificationResponse.subscriptionType = verificationDetail.subscriptionType;
+            verificationResponse.roles = verificationDetail.roles;
+            return verificationResponse;
+        } else {
+            logger.log('Verification detail not found');
+            throw new BadRequestException('Verification detail not found');
         }
     }
 }
