@@ -1,11 +1,12 @@
 import { Request } from 'express';
-import { CreateStaffingDto } from './dto/createorganization-staffing.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { IStaticUnitAndStaffing, StaffingInterface } from './interfaces/organization-staffing.interface';
-import { forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { PaginateModel, PaginateResult } from 'mongoose';
+import { StaffingInterface } from './interfaces/organization-staffing.interface';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { PaginateModel } from 'mongoose';
 import { OrganizationUnitService } from '../organization-unit/organization-unit.service';
 import { ORGANIZATION_STAFFING_CONSTANT } from 'src/@core/constants/api-error-constants';
+import { OrganizationStaffResponse, CreateStaffingDto } from './dto';
+import { PaginatedDto } from 'src/@core/response/dto';
 
 @Injectable()
 export class OrganizationStaffingService {
@@ -16,48 +17,32 @@ export class OrganizationStaffingService {
         private unitService: OrganizationUnitService
     ) {}
 
-    async createNewStaffing(newStaff: CreateStaffingDto): Promise<StaffingInterface> {
+    async createNewStaffing(newStaff: CreateStaffingDto): Promise<OrganizationStaffResponse> {
         const logger = new Logger(OrganizationStaffingService.name + '-createNewStaffing');
         try {
-            return await new this.StaffModel(newStaff).save();
+            const staff = await new this.StaffModel(newStaff).save();
+            return this.buildStaffingResponse(staff);
         } catch (err) {
             logger.error(err);
             throw err;
         }
     }
 
-    async getStaffingByOrganizationUnitId(unitId: string): Promise<StaffingInterface[]> {
+    async getStaffingByOrganizationUnitId(unitId: string): Promise<OrganizationStaffResponse[]> {
         const logger = new Logger(OrganizationStaffingService.name + '-getStaffingByOrganizationUnitId');
         try {
-            return await this.StaffModel.find({
+            const staffs = await this.StaffModel.find({
                 organizationUnitId: unitId,
                 status: true
             });
+            return staffs.map((staff) => this.buildStaffingResponse(staff));
         } catch (err) {
             logger.error(err);
             throw err;
         }
     }
 
-    async getStaticStaffingOfTraining(): Promise<IStaticUnitAndStaffing> {
-        const logger = new Logger(OrganizationStaffingService.name + '-getStaticStaffingOfTraining');
-        try {
-            const trainingUnit = await this.unitService.getTrainingOrganizationUnits();
-            const trainingStaffings = await this.StaffModel.find({
-                organizationUnitId: trainingUnit._id,
-                status: true
-            });
-            return {
-                unit: trainingUnit,
-                staffs: trainingStaffings
-            };
-        } catch (err) {
-            logger.error(err);
-            throw err;
-        }
-    }
-
-    async getStaffingById(id: string): Promise<StaffingInterface> {
+    async getStaffingById(id: string): Promise<OrganizationStaffResponse> {
         const logger = new Logger(OrganizationStaffingService.name + '-getStaffingById');
         try {
             const staff = await this.StaffModel.findOne({
@@ -65,7 +50,7 @@ export class OrganizationStaffingService {
                 status: true
             }).exec();
             if (staff) {
-                return staff;
+                return this.buildStaffingResponse(staff);
             }
             throw new NotFoundException(ORGANIZATION_STAFFING_CONSTANT.ORGANIZATION_STAFFING_NOT_FOUND);
         } catch (err) {
@@ -74,15 +59,16 @@ export class OrganizationStaffingService {
         }
     }
 
-    async updateOrganizationStaffing(id: string, updateStaff: CreateStaffingDto): Promise<StaffingInterface> {
+    async updateOrganizationStaffing(id: string, updateStaff: CreateStaffingDto): Promise<OrganizationStaffResponse> {
         const logger = new Logger(OrganizationStaffingService.name + '-updateOrganizationStaffing');
         try {
-            const staff = await this.getStaffingById(id);
+            const staff = await this.StaffModel.findOne({ _id: id, status: true });
             if (staff) {
                 staff.organizationUnitId = updateStaff.organizationUnitId;
                 staff.staffingName = updateStaff.staffingName;
                 staff.featureAndAccess = updateStaff.featureAndAccess;
-                return await staff.save();
+                const updatedStaff = await staff.save();
+                return this.buildStaffingResponse(updatedStaff);
             }
             throw new NotFoundException(ORGANIZATION_STAFFING_CONSTANT.ORGANIZATION_STAFFING_NOT_FOUND);
         } catch (err) {
@@ -91,17 +77,18 @@ export class OrganizationStaffingService {
         }
     }
 
-    async deleteOrganizationStaffing(id: string): Promise<StaffingInterface> {
+    async deleteOrganizationStaffing(id: string): Promise<OrganizationStaffResponse> {
         const logger = new Logger(OrganizationStaffingService.name + '-deleteOrganizationStaffing');
         try {
-            return await this.StaffModel.findByIdAndUpdate({ _id: id }, { status: false });
+            const deletedStaff = await this.StaffModel.findByIdAndUpdate({ _id: id }, { status: false });
+            return this.buildStaffingResponse(deletedStaff);
         } catch (err) {
             logger.error(err);
             throw err;
         }
     }
 
-    async getAllOrganizationStaffing(req: Request): Promise<PaginateResult<StaffingInterface>> {
+    async getAllOrganizationStaffing(req: Request): Promise<PaginatedDto<OrganizationStaffResponse>> {
         const logger = new Logger(OrganizationStaffingService.name + '-getAllOrganizationStaffing');
         try {
             const limit = req.query.limit ? Number(req.query.limit) : 10;
@@ -121,7 +108,13 @@ export class OrganizationStaffingService {
                 limit: limit,
                 page: page
             };
-            return await this.StaffModel.paginate(query, options);
+            const paginatedDocument = await this.StaffModel.paginate(query, options);
+            const paginatedResponse = new PaginatedDto<OrganizationStaffResponse>();
+            paginatedResponse.page = paginatedDocument.page;
+            paginatedResponse.limit = paginatedDocument.limit;
+            paginatedResponse.total = paginatedDocument.total;
+            paginatedResponse.docs = paginatedDocument.docs?.map((doc) => this.buildStaffingResponse(doc));
+            return paginatedResponse;
         } catch (err) {
             logger.error(err);
             throw err;
@@ -147,25 +140,45 @@ export class OrganizationStaffingService {
         }
     }
 
-    async enableOrganizationStaffing(staffingId: string): Promise<StaffingInterface> {
+    async enableOrganizationStaffing(staffingId: string): Promise<OrganizationStaffResponse> {
         const logger = new Logger(OrganizationStaffingService.name + '-enableOrganizationStaffing');
         try {
-            return await this.StaffModel.findByIdAndUpdate({ _id: staffingId }, { status: true });
+            const enabledStaff = await this.StaffModel.findByIdAndUpdate({ _id: staffingId }, { status: true });
+            return this.buildStaffingResponse(enabledStaff);
         } catch (err) {
             logger.error(err);
             throw err;
         }
     }
 
-    async findNameFromArray(data: Array<string>): Promise<Array<StaffingInterface>> {
+    async findNameFromArray(data: Array<string>): Promise<Array<OrganizationStaffResponse>> {
         const logger = new Logger(OrganizationStaffingService.name + '-findNameFromArray');
         try {
-            return await this.StaffModel.find({
+            const staffs = await this.StaffModel.find({
                 _id: { $in: data }
             }).select('staffingName');
+            return staffs.map((staff) => this.buildStaffingResponse(staff));
         } catch (err) {
             logger.error(err);
             throw err;
+        }
+    }
+
+    buildStaffingResponse(staffDocument: StaffingInterface): OrganizationStaffResponse {
+        const logger = new Logger(OrganizationStaffingService.name + '-buildStaffingResponse');
+        if (staffDocument) {
+            const staffingResponse = new OrganizationStaffResponse();
+            staffingResponse._id = staffDocument._id;
+            staffingResponse.organizationUnitId = staffDocument.organizationUnitId;
+            staffingResponse.staffingName = staffDocument.staffingName;
+            staffingResponse.featureAndAccess = staffDocument.featureAndAccess;
+            staffingResponse.status = staffDocument.status;
+            staffingResponse.createdAt = staffDocument.createdAt;
+            staffingResponse.updatedAt = staffDocument.updatedAt;
+            return staffingResponse;
+        } else {
+            logger.log('Organization staff document is undefined / null');
+            throw new BadRequestException('Organization staff document is undefined / null');
         }
     }
 }

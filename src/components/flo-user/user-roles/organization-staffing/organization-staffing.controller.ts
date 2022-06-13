@@ -1,20 +1,22 @@
 import { Request } from 'express';
-import { CreateStaffingDto } from './dto/createorganization-staffing.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { OrganizationStaffingService } from './organization-staffing.service';
-import { ApiBearerAuth, ApiTags, ApiHeader, ApiOperation, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiHeader, ApiOperation, ApiExtraModels } from '@nestjs/swagger';
 import { Controller, UseGuards, Post, HttpCode, HttpStatus, Body, Get, Param, Put, Delete, Req, BadRequestException, NotFoundException } from '@nestjs/common';
 import { RolesGuard } from 'src/components/auth/guards/roles.guard';
 import { Roles, Permission, Feature } from 'src/components/auth/decorators';
-import { Response } from 'src/@core/response';
+import { AppResponseDto, PaginatedDto } from 'src/@core/response/dto';
 import { PermissionGuard } from 'src/components/auth/guards/permission.guard';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
 import { SubscriptionGuard } from 'src/components/auth/guards/subscription.guard';
 import { ORGANIZATION_STAFFING_CONSTANT } from 'src/@core/constants/api-error-constants';
+import { OrganizationStaffResponse, CreateStaffingDto, DeletedOrganizationStaffResponse } from './dto';
+import { ApiCreatedAppResponseWithModel, ApiOkAppResponseWithModel, ApiOkAppResponseWithPagination } from 'src/@core/response/decorators/api-response.decorator';
 
 @ApiTags('Organization Staffing')
 @UseGuards(RolesGuard)
 @Controller('organization-staffing')
+@ApiExtraModels(AppResponseDto, PaginatedDto, OrganizationStaffResponse, DeletedOrganizationStaffResponse)
 export class OrganizationStaffingController {
     constructor(private readonly staffingService: OrganizationStaffingService) {}
 
@@ -30,13 +32,11 @@ export class OrganizationStaffingController {
         description: 'The token we need for auth.'
     })
     @ApiOperation({ summary: 'Create New Organization Staffing' })
-    @ApiCreatedResponse({
-        description: 'Organization Staffing has been successfully added.'
-    })
-    async createNewStaffing(@Body() newStaff: CreateStaffingDto): Promise<Response> {
+    @ApiCreatedAppResponseWithModel(OrganizationStaffResponse)
+    async createNewStaffing(@Body() newStaff: CreateStaffingDto): Promise<AppResponseDto<OrganizationStaffResponse>> {
         try {
             const staff = await this.staffingService.createNewStaffing(newStaff);
-            return new Response(true, [ORGANIZATION_STAFFING_CONSTANT.NEW_STAFFING_CREATED]).setSuccessData(staff).setStatus(HttpStatus.CREATED);
+            return new AppResponseDto<OrganizationStaffResponse>(true, [ORGANIZATION_STAFFING_CONSTANT.NEW_STAFFING_CREATED]).setSuccessData(staff).setStatus(HttpStatus.CREATED);
         } catch (err) {
             throw new BadRequestException(ORGANIZATION_STAFFING_CONSTANT.STAFFING_NOT_CREATED, err);
         }
@@ -54,12 +54,10 @@ export class OrganizationStaffingController {
         description: 'The token we need for auth.'
     })
     @ApiOperation({ summary: 'Get Staffing By Organization Unit Id' })
-    @ApiOkResponse({
-        description: 'All Staffing Retireved Successfully.'
-    })
-    async getStaffingByOrganizationUnitId(@Param('unitId') unitId: string): Promise<Response> {
+    @ApiOkAppResponseWithModel(OrganizationStaffResponse, true)
+    async getStaffingByOrganizationUnitId(@Param('unitId') unitId: string): Promise<AppResponseDto<OrganizationStaffResponse[]>> {
         try {
-            return new Response(true, [ORGANIZATION_STAFFING_CONSTANT.ORGANIZATION_UNIT_STAFFING_RETRIEVED]).setSuccessData(await this.staffingService.getStaffingByOrganizationUnitId(unitId)).setStatus(HttpStatus.OK);
+            return new AppResponseDto<OrganizationStaffResponse[]>(true, [ORGANIZATION_STAFFING_CONSTANT.ORGANIZATION_UNIT_STAFFING_RETRIEVED]).setSuccessData(await this.staffingService.getStaffingByOrganizationUnitId(unitId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new NotFoundException(ORGANIZATION_STAFFING_CONSTANT.STAFFING_RECORD_NOT_FOUND, err);
         }
@@ -76,13 +74,11 @@ export class OrganizationStaffingController {
         name: 'Bearer',
         description: 'The token we need for auth.'
     })
-    @ApiOperation({ summary: 'Get All Organization Staffing' })
-    @ApiOkResponse({
-        description: 'All Organization Staffing Retireved Successfully.'
-    })
-    async getAllOrganizationStaffing(@Req() req: Request): Promise<Response> {
+    @ApiOperation({ summary: 'Get All Organization Staffing with pagination meta data' })
+    @ApiOkAppResponseWithPagination(OrganizationStaffResponse)
+    async getAllOrganizationStaffing(@Req() req: Request): Promise<AppResponseDto<PaginatedDto<OrganizationStaffResponse>>> {
         try {
-            return new Response(true, [ORGANIZATION_STAFFING_CONSTANT.ALL_STAFFING_RETRIEVED]).setSuccessData(await this.staffingService.getAllOrganizationStaffing(req)).setStatus(HttpStatus.OK);
+            return new AppResponseDto<PaginatedDto<OrganizationStaffResponse>>(true, [ORGANIZATION_STAFFING_CONSTANT.ALL_STAFFING_RETRIEVED]).setSuccessData(await this.staffingService.getAllOrganizationStaffing(req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new NotFoundException(ORGANIZATION_STAFFING_CONSTANT.STAFFING_RECORD_NOT_FOUND, err);
         }
@@ -100,12 +96,10 @@ export class OrganizationStaffingController {
         description: 'The token we need for auth.'
     })
     @ApiOperation({ summary: 'Get Organization Staffing By Id' })
-    @ApiOkResponse({
-        description: 'Organization Staffing Found.'
-    })
-    async getStaffingById(@Param('id') id: string): Promise<Response> {
+    @ApiOkAppResponseWithModel(OrganizationStaffResponse)
+    async getStaffingById(@Param('id') id: string): Promise<AppResponseDto<OrganizationStaffResponse>> {
         try {
-            return new Response(true, [ORGANIZATION_STAFFING_CONSTANT.STAFFING_RETRIEVED]).setSuccessData(await this.staffingService.getStaffingById(id)).setStatus(HttpStatus.OK);
+            return new AppResponseDto<OrganizationStaffResponse>(true, [ORGANIZATION_STAFFING_CONSTANT.STAFFING_RETRIEVED]).setSuccessData(await this.staffingService.getStaffingById(id)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new NotFoundException(ORGANIZATION_STAFFING_CONSTANT.STAFFING_RECORD_NOT_FOUND, err);
         }
@@ -123,12 +117,10 @@ export class OrganizationStaffingController {
         description: 'The token we need for auth.'
     })
     @ApiOperation({ summary: 'Update Organization Staffing' })
-    @ApiOkResponse({
-        description: 'Organization Unit has been successfully updated.'
-    })
-    async updateOrganizationStaffing(@Body() updateStaff: CreateStaffingDto, @Param('id') id: string): Promise<Response> {
+    @ApiOkAppResponseWithModel(OrganizationStaffResponse)
+    async updateOrganizationStaffing(@Body() updateStaff: CreateStaffingDto, @Param('id') id: string): Promise<AppResponseDto<OrganizationStaffResponse>> {
         try {
-            return new Response(true, [ORGANIZATION_STAFFING_CONSTANT.STAFFING_RECORD_UPDATED]).setSuccessData(await this.staffingService.updateOrganizationStaffing(id, updateStaff)).setStatus(HttpStatus.OK);
+            return new AppResponseDto<OrganizationStaffResponse>(true, [ORGANIZATION_STAFFING_CONSTANT.STAFFING_RECORD_UPDATED]).setSuccessData(await this.staffingService.updateOrganizationStaffing(id, updateStaff)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(ORGANIZATION_STAFFING_CONSTANT.UNABLE_TO_UPDATE_STAFFING, err);
         }
@@ -146,12 +138,10 @@ export class OrganizationStaffingController {
         description: 'The token we need for auth.'
     })
     @ApiOperation({ summary: 'Delete Organization Staffing' })
-    @ApiOkResponse({
-        description: 'Organization Staff Deleted'
-    })
-    async deleteOrganizationStaffing(@Param('id') id: string): Promise<Response> {
+    @ApiOkAppResponseWithModel(DeletedOrganizationStaffResponse)
+    async deleteOrganizationStaffing(@Param('id') id: string): Promise<AppResponseDto<OrganizationStaffResponse>> {
         try {
-            return new Response(true, [ORGANIZATION_STAFFING_CONSTANT.STAFFING_RECORD_DELETED]).setSuccessData(await this.staffingService.deleteOrganizationStaffing(id)).setStatus(HttpStatus.OK);
+            return new AppResponseDto<OrganizationStaffResponse>(true, [ORGANIZATION_STAFFING_CONSTANT.STAFFING_RECORD_DELETED]).setSuccessData(await this.staffingService.deleteOrganizationStaffing(id)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(ORGANIZATION_STAFFING_CONSTANT.UNABLE_TO_DELETE_STAFFING, err);
         }
@@ -169,12 +159,10 @@ export class OrganizationStaffingController {
         description: 'The token we need for auth.'
     })
     @ApiOperation({ summary: 'Enable Organization staffing' })
-    @ApiOkResponse({
-        description: 'Organization staffing Enabled'
-    })
-    async enableOrganizationUnit(@Param('id') staffingId: string): Promise<Response> {
+    @ApiOkAppResponseWithModel(OrganizationStaffResponse)
+    async enableOrganizationUnit(@Param('id') staffingId: string): Promise<AppResponseDto<OrganizationStaffResponse>> {
         try {
-            return new Response(true, [ORGANIZATION_STAFFING_CONSTANT.ORGANIZATION_STAFFING_ENABLED]).setSuccessData(await this.staffingService.enableOrganizationStaffing(staffingId)).setStatus(HttpStatus.OK);
+            return new AppResponseDto<OrganizationStaffResponse>(true, [ORGANIZATION_STAFFING_CONSTANT.ORGANIZATION_STAFFING_ENABLED]).setSuccessData(await this.staffingService.enableOrganizationStaffing(staffingId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(ORGANIZATION_STAFFING_CONSTANT.UNABLE_TO_ENABLE_STAFFING, err);
         }
