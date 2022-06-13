@@ -12,7 +12,7 @@
         "start": "nest start",
         "start:dev": "nest start --watch",
         "start:debug": "nest start --debug --watch",
-        "start:migrate": "node dist/flo-migrations/migrate.js",
+        "start:migrate": "node dist/app-migrations/migrate.js",
         "start:migrate:prefill": "node dist/super-admin-migrations/migrate.js",
         "start:prod": "nest build && npm run start:migrate &&  node dist/src/main",
         "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",

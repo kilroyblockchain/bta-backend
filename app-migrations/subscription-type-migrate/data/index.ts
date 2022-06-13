@@ -1,4 +1,4 @@
-import { OTHER, STAFF, SUPER_ADMIN } from 'flo-migrations/subscription-type-migrate/constants';
+import { OTHER, STAFF, SUPER_ADMIN } from 'app-migrations/subscription-type-migrate/constants';
 import { Types } from 'mongoose';
 
 export enum SubscriptionTypeID {

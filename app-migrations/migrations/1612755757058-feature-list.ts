@@ -1,8 +1,8 @@
-import FeatureModel from 'flo-migrations/feature-migrate/schemas/feature.schema';
-import { generalFeatures, superAdminFeatures } from 'flo-migrations/feature-migrate/data';
-import { featureProduction } from 'flo-migrations/feature-migrate/data/index.prod';
-import { consoleLogWrapper, dropCollectionIfExist } from 'flo-migrations/helper-func';
-import { mongooseConnection } from 'flo-migrations/migrate';
+import FeatureModel from 'app-migrations/feature-migrate/schemas/feature.schema';
+import { generalFeatures, superAdminFeatures } from 'app-migrations/feature-migrate/data';
+import { featureProduction } from 'app-migrations/feature-migrate/data/index.prod';
+import { consoleLogWrapper, dropCollectionIfExist } from 'app-migrations/helper-func';
+import { mongooseConnection } from 'app-migrations/migrate';
 
 async function up(): Promise<void> {
     try {

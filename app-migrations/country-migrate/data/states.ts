@@ -1,4 +1,4 @@
-import { IStateJSON } from 'flo-migrations/country-migrate/interfaces/state-json.interface';
+import { IStateJSON } from 'app-migrations/country-migrate/interfaces/state-json.interface';
 
 export const statesJSON: { states: IStateJSON[] } = {
     states: [
