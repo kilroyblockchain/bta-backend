@@ -58,7 +58,7 @@ async function bootstrap(): Promise<void> {
         max: Number(process.env.SIGNUP_LIMIT), // start blocking after 5 requests
         message: {
             statusCode: 400,
-            message: ['Too many request for accounts (creation or retrival) from this IP, please try again after half an hour'],
+            message: ['Too many request for accounts (creation or retrieval) from this IP, please try again after half an hour'],
             error: 'Bad Request'
         }
     });
