@@ -4,8 +4,8 @@ import { statesJSON } from '../country-migrate/data/states';
 import { IStateJSON } from '../country-migrate/interfaces/state-json.interface';
 import { ICountry } from '../country-migrate/interfaces/country.interface';
 import { IState } from '../country-migrate/interfaces/state.interface';
-import { consoleLogWrapper, dropCollectionIfExist } from 'flo-migrations/helper-func';
-import { mongooseConnection } from 'flo-migrations/migrate';
+import { consoleLogWrapper, dropCollectionIfExist } from 'app-migrations/helper-func';
+import { mongooseConnection } from 'app-migrations/migrate';
 
 const { countries } = countryJSON;
 const { states } = statesJSON;

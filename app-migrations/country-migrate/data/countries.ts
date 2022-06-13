@@ -1,4 +1,4 @@
-import { ICountryJSON } from 'flo-migrations/country-migrate/interfaces/country-json.interface';
+import { ICountryJSON } from 'app-migrations/country-migrate/interfaces/country-json.interface';
 
 export const countryJSON: { countries: ICountryJSON[] } = {
     countries: [

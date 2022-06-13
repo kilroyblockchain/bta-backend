@@ -1,4 +1,4 @@
-import { SubscriptionTypeID } from 'flo-migrations/subscription-type-migrate/data';
+import { SubscriptionTypeID } from 'app-migrations/subscription-type-migrate/data';
 import { Types } from 'mongoose';
 import { ACCESS_TYPE } from 'src/@core/constants';
 import { FEATURE_IDENTIFIER } from 'src/@core/constants';
