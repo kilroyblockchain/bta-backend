@@ -1,11 +1,11 @@
-import { UserRejectInfoModule } from './components/flo-user/user-reject-info/user-reject-info.module';
+import { UserRejectInfoModule } from './components/app-user/user-reject-info/user-reject-info.module';
 import { ChannelDetailModule } from 'src/components/blockchain/channel-detail/channel-detail.module';
 import { FilesModule } from './components/utils/files/files.module';
-import { OrganizationStaffingModule } from './components/flo-user/user-roles/organization-staffing/organization-staffing.module';
-import { OrganizationUnitModule } from './components/flo-user/user-roles/organization-unit/organization-unit.module';
-import { FeatureModule } from './components/flo-user/features/features.module';
-import { SubscriptionTypeModule } from './components/flo-user/subscription-type/subscription-type.module';
-import { CountryModule } from './components/flo-user/country/country.module';
+import { OrganizationStaffingModule } from './components/app-user/user-roles/organization-staffing/organization-staffing.module';
+import { OrganizationUnitModule } from './components/app-user/user-roles/organization-unit/organization-unit.module';
+import { FeatureModule } from './components/app-user/features/features.module';
+import { SubscriptionTypeModule } from './components/app-user/subscription-type/subscription-type.module';
+import { CountryModule } from './components/app-user/country/country.module';
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -15,13 +15,13 @@ import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import * as cookieParser from 'cookie-parser';
-import { UserModule } from './components/flo-user/user/user.module';
-import { OrganizationModule } from './components/flo-user/organization/organization.module';
+import { UserModule } from './components/app-user/user/user.module';
+import { OrganizationModule } from './components/app-user/organization/organization.module';
 import { WinstonModule, WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { transports } from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
 import { consoleTransportOptions, dailyRotateFileTransportOptions } from './@core/config/logger.config';
-import { VerificationModule } from './components/flo-user/verification/verification.module';
+import { VerificationModule } from './components/app-user/verification/verification.module';
 
 async function bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule, {

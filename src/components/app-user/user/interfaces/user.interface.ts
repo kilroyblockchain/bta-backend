@@ -1,6 +1,6 @@
 import { Document } from 'mongoose';
-import { IOrganization } from 'src/components/flo-user/organization/interfaces/organization.interface';
-import { StaffingInterface } from 'src/components/flo-user/user-roles/organization-staffing/interfaces/organization-staffing.interface';
+import { IOrganization } from 'src/components/app-user/organization/interfaces/organization.interface';
+import { StaffingInterface } from 'src/components/app-user/user-roles/organization-staffing/interfaces/organization-staffing.interface';
 
 export interface IUser extends Document {
     _id: string;

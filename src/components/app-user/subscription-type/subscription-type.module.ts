@@ -1,4 +1,4 @@
-import { CountryModule } from 'src/components/flo-user/country/country.module';
+import { CountryModule } from 'src/components/app-user/country/country.module';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SubscriptionSchema } from './schemas/subscription.schema';

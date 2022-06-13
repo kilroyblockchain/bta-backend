@@ -9,8 +9,8 @@ import { BcConnectionService } from '../blockchain/bc-connection/bc-connection.s
 import { BcConnectionDto } from '../blockchain/bc-connection/dto/bc-connection.dto';
 import { BcQueryResponseDto } from '../blockchain/dto/bc-query-response.dto';
 import { BcHistoryResponseDto } from '../blockchain/dto/bc-history-response.dto';
-import { ICompany } from '../flo-user/user/interfaces/user.interface';
-import { StaffingInterface } from '../flo-user/user-roles/organization-staffing/interfaces/organization-staffing.interface';
+import { ICompany } from '../app-user/user/interfaces/user.interface';
+import { StaffingInterface } from '../app-user/user-roles/organization-staffing/interfaces/organization-staffing.interface';
 import { ChannelMappingResponseDto } from '../blockchain/channel-mapping/dto/channel-mapping-response.dto';
 
 @Injectable()
