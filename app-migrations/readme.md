@@ -39,7 +39,7 @@ For compiling ts files
 $ npm run build
 ```
 
-For migrating admin user to mongodb
+For migrating defined migrations
 
 ```sh
 $ npm run start:migrate
