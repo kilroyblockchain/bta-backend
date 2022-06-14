@@ -11,7 +11,6 @@ export class UserEvent {
 
     @OnEvent(USER_REGISTERED, { async: true })
     handleUserRegistered(payload: GettingStartedEmailDto): void {
-        console.log('User registered');
         this.userEventService.sendMail(MailTypes.GETTING_STARTED, payload);
     }
 
