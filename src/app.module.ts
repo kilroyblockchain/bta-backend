@@ -5,12 +5,14 @@ import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import 'dotenv/config';
 import { AppUserModule } from './components/app-user/app-user.module';
-import { UtilsModule } from './components/utils/utils.module';
 import { BlockchainModule } from './components/blockchain/blockchain.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { WinstonModule } from 'nest-winston';
 import { transports } from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
+import 'dotenv/config';
 import { consoleTransportOptions, dailyRotateFileTransportOptions } from './@core/config/logger.config';
+import { UtilsModule } from './@utils/utils.module';
 
 @Module({
     imports: [
@@ -27,6 +29,7 @@ import { consoleTransportOptions, dailyRotateFileTransportOptions } from './@cor
             level: process.env.ENVIRONMENT === 'local' ? 'debug' : 'info',
             transports: [new transports.Console(consoleTransportOptions), ...(process.env.NO_APP_LOG_T_FILE ? [] : [new DailyRotateFile(dailyRotateFileTransportOptions)])]
         }),
+        EventEmitterModule.forRoot(),
         ScheduleModule.forRoot(),
         AppUserModule,
         UtilsModule,

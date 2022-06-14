@@ -4,7 +4,7 @@ import { Module } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { AuthModule } from 'src/components/auth/auth.module';
-import { MailModule } from 'src/components/utils/mail/mail.module';
+import { MailModule } from 'src/@utils/mail/mail.module';
 import { CountryModule } from '../country/country.module';
 import { OrganizationModule } from '../organization/organization.module';
 import { SubscriptionTypeModule } from '../subscription-type/subscription-type.module';

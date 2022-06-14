@@ -6,7 +6,6 @@ import { Request, Response } from 'express';
 import { v4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
 import { addHours } from 'date-fns';
-import config from 'src/@core/config/keys';
 import { ACCESS_TYPE, EMAIL_CONSTANTS, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
 import { COMMON_ERROR, USER_CONSTANT, VERIFICATION_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { SubscriptionTypeDto } from './dto/add-subscription.dto';
@@ -24,11 +23,10 @@ import { AddCompanyDto } from './dto/add-company.dto';
 import { SetDefaultCompanyDto } from './dto/set-default-company.dto';
 import { OrganizationService } from '../organization/organization.service';
 import { AuthService } from 'src/components/auth/auth.service';
-import { MailService } from 'src/components/utils/mail/mail.service';
 import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 import { VerificationService } from '../verification/verification.service';
 import { OrganizationStaffingService } from '../user-roles/organization-staffing/organization-staffing.service';
-import { ICompany, IUser, ILoginCount, IReturnResponse, IUserResponse, IUserWithBlockchain, ICompanyAdmin, IJWTUserData, IUserData } from './interfaces/user.interface';
+import { ICompany, IUser, ILoginCount, IUserResponse, IUserWithBlockchain, ICompanyAdmin, IJWTUserData, IUserData } from './interfaces/user.interface';
 import { ICompanyDto, IOrganization } from '../organization/interfaces/organization.interface';
 import { UserBcService } from './user-bc.service';
 import { BC_STATUS } from 'src/@core/constants/bc-status.enum';
@@ -47,9 +45,27 @@ import { COOKIE_KEYS } from 'src/@core/constants/cookie-key.constant';
 import { IUserActivityResponse, IRefreshToken } from 'src/components/auth/interfaces/refresh-token.interface';
 import { IVerifyEmail } from './interfaces/verified-email.interface';
 import { ChannelMappingDto } from 'src/components/blockchain/channel-mapping/dto/channel-mapping.dto';
-import { generateUniqueId } from 'src/components/utils/helpers';
+import { generateUniqueId } from 'src/@utils/helpers';
 import { ChannelMappingService } from 'src/components/blockchain/channel-mapping/channel-mapping.service';
 import { ChannelDetailService } from 'src/components/blockchain/channel-detail/channel-detail.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { FORGET_PASSWORD, ORGANIZATION_REJECTED, SUBSCRIPTION_UPDATED, USER_ACCEPTED, USER_DISABLED, USER_ENABLED, USER_REGISTERED } from 'src/@utils/events/constants/events.constants';
+import {
+    ForgetPasswordBodyContextDto,
+    ForgetPasswordEmailDto,
+    GettingStartedBodyContextDto,
+    GettingStartedEmailDto,
+    OrganizationRejectedBodyContextDto,
+    OrganizationRejectedEmailDto,
+    SubscriptionUpdatedBodyContextDto,
+    SubscriptionUpdatedEmailDto,
+    UserAcceptedBodyContextDto,
+    UserAcceptedEmailDto,
+    UserDisabledBodyContextDto,
+    UserDisabledEmailDto,
+    UserEnabledBodyContextDto,
+    UserEnabledEmailDto
+} from 'src/@utils/events/dto';
 
 @Injectable()
 export class UserService {
@@ -64,7 +80,6 @@ export class UserService {
         private readonly RefreshTokenModel: PaginateModel<IRefreshToken>,
         private readonly organizationService: OrganizationService,
         private readonly authService: AuthService,
-        private readonly mailService: MailService,
         private readonly subsTypeService: SubscriptionTypeService,
         private readonly userBcService: UserBcService,
         private readonly verificationService: VerificationService,
@@ -72,7 +87,8 @@ export class UserService {
         private readonly caService: CaService,
         private readonly userRejectInfoService: UserRejectInfoService,
         private readonly channelMappingService: ChannelMappingService,
-        private readonly channelDetailService: ChannelDetailService
+        private readonly channelDetailService: ChannelDetailService,
+        private eventEmitter: EventEmitter2
     ) {}
 
     async register(req: Request, logoName: string, registerUserDto: RegisterUserDto): Promise<IUserWithBlockchain> {
@@ -176,13 +192,20 @@ export class UserService {
                 await this.caService.userRegistrationListStaffing(newUserDto.staffingId, bcUserDto);
             }
             const subscriptionTypeFull = await this.subsTypeService.getFullSubscription(userDto.subscriptionType);
-            await this.mailService.sendMail(user.email, EMAIL_CONSTANTS.FLO, EMAIL_CONSTANTS.TITLE_WELCOME, config.MAIL_TYPES.SUBSCRIBER_EMAIL, {
-                user: user,
-                subscriptionType: subscriptionTypeFull,
-                email: user.email,
-                password: randomPassword,
-                clientAppURL: process.env.CLIENT_APP_URL
-            });
+            this.eventEmitter.emit(
+                USER_REGISTERED,
+                new GettingStartedEmailDto({
+                    to: user.email,
+                    subject: EMAIL_CONSTANTS.USER_CREATED,
+                    title: EMAIL_CONSTANTS.TITLE_WELCOME,
+                    partialContext: new GettingStartedBodyContextDto({
+                        subscriptionType: subscriptionTypeFull,
+                        email: user.email,
+                        password: randomPassword,
+                        clientAppURL: process.env.CLIENT_APP_URL
+                    })
+                })
+            );
             if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
                 const bcUserDto = new BcUserDto();
                 bcUserDto.loggedInUserId = req['user']._id;
@@ -370,7 +393,7 @@ export class UserService {
         }
     }
 
-    async verifyEmailByAdmin(verifyEmailDto: VerifyEmailDto, req: Request): Promise<IReturnResponse> {
+    async verifyEmailByAdmin(verifyEmailDto: VerifyEmailDto, req: Request): Promise<void> {
         const logger = new Logger(UserService.name + '-verifyEmailByAdmin');
         try {
             if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
@@ -395,7 +418,6 @@ export class UserService {
             await this.setUserAsVerified(user, verifyEmailDto.companyRowId);
             await this.organizationService.allowOrganization(verifyEmailDto.companyId);
             await this.organizationService.updateOrganizationStatus(verifyEmailDto.companyId, verifyEmailDto.subscriptionType, true);
-            let mailResponse: { success: boolean; message: string };
             // save new password for user
             try {
                 user.autoPassword = autoPassword;
@@ -406,7 +428,7 @@ export class UserService {
             const userSaved = await this.UserModel.findById(verifyEmailDto.userId).exec();
 
             const defaultCompany: ICompany = user.company.find((defaultComp) => defaultComp.default);
-            const subcriptionTypeFull = await this.subsTypeService.getFullSubscription(defaultCompany.subscriptionType);
+            const subscriptionTypeFull = await this.subsTypeService.getFullSubscription(defaultCompany.subscriptionType);
             if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
                 const userDetail = await this.uModel
                     .findById(user._id)
@@ -426,34 +448,27 @@ export class UserService {
                 bcUserDto.enrollmentSecret = randomPassword;
                 await this.caService.userRegistration(bcUserDto, userSaved.company[0].staffingId[0] as string, organization.companyId.toString(), channelId);
             }
-            await this.mailService
-                .sendMail(user.email, EMAIL_CONSTANTS.FLO, EMAIL_CONSTANTS.TITLE_WELCOME, config.MAIL_TYPES.SUBSCRIBER_EMAIL, {
-                    user: user,
-                    subscriptionType: subcriptionTypeFull,
-                    email: user.email,
-                    password: randomPassword,
-                    clientAppURL: process.env.CLIENT_APP_URL
+            this.eventEmitter.emit(
+                USER_REGISTERED,
+                new GettingStartedEmailDto({
+                    to: user.email,
+                    subject: EMAIL_CONSTANTS.ORGANIZATION_VERIFIED,
+                    title: EMAIL_CONSTANTS.TITLE_WELCOME,
+                    partialContext: new GettingStartedBodyContextDto({
+                        subscriptionType: subscriptionTypeFull,
+                        email: user.email,
+                        password: randomPassword,
+                        clientAppURL: process.env.CLIENT_APP_URL
+                    })
                 })
-                .then((res) => {
-                    mailResponse = res;
-                });
-            if (!mailResponse.success) {
-                return {
-                    success: mailResponse.success,
-                    message: mailResponse.message
-                };
-            }
-            return {
-                success: mailResponse.success,
-                message: 'Subscription mail sent to ' + user.firstName
-            };
+            );
         } catch (err) {
             logger.error(err);
             throw err;
         }
     }
 
-    async verifyUserByOrganizationAdmin(verifyEmailDto: VerifyEmailDto, req: Request, staffingId?: string): Promise<IReturnResponse> {
+    async verifyUserByOrganizationAdmin(verifyEmailDto: VerifyEmailDto, req: Request, staffingId?: string): Promise<void> {
         const logger = new Logger(UserService.name + '-verifyUserByOrganizationAdmin');
         try {
             if (this.isAdmin(req['user'])) {
@@ -477,7 +492,6 @@ export class UserService {
                     user.password = randomPassword;
                 }
                 await this.setUserAsVerified(user, verifyEmailDto.companyRowId);
-                let mailResponse: { success: boolean; message: string };
                 // save new password for user
                 try {
                     user.autoPassword = autoPassword;
@@ -486,7 +500,7 @@ export class UserService {
                     throw new Error(USER_CONSTANT.PASSWORD_FAILED_TO_SAVE);
                 }
                 const defaultCompany: ICompany = user.company.find((defaultComp) => defaultComp.default);
-                const subcriptionTypeFull = await this.subsTypeService.getFullSubscription(defaultCompany.subscriptionType);
+                const subscriptionTypeFull = await this.subsTypeService.getFullSubscription(defaultCompany.subscriptionType);
                 if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
                     const userDetail = await this.UserModel.findById(verifyEmailDto.userId).exec();
                     const bcUserDto = new BcUserDto();
@@ -496,27 +510,20 @@ export class UserService {
                     bcUserDto.enrollmentSecret = randomPassword;
                     await Promise.all([this.userBcService.storeUserBc(userDetail, bcUserDto, BC_PAYLOAD.CREATE_USER), this.caService.userRegistration(bcUserDto, staffingId)]);
                 }
-                await this.mailService
-                    .sendMail(user.email, EMAIL_CONSTANTS.FLO, EMAIL_CONSTANTS.TITLE_WELCOME, config.MAIL_TYPES.SUBSCRIBER_EMAIL, {
-                        user: user,
-                        subscriptionType: subcriptionTypeFull,
-                        email: user.email,
-                        password: randomPassword,
-                        clientAppURL: process.env.CLIENT_APP_URL
+                this.eventEmitter.emit(
+                    USER_REGISTERED,
+                    new GettingStartedEmailDto({
+                        to: user.email,
+                        subject: EMAIL_CONSTANTS.USER_VERIFIED,
+                        title: EMAIL_CONSTANTS.TITLE_WELCOME,
+                        partialContext: new GettingStartedBodyContextDto({
+                            subscriptionType: subscriptionTypeFull,
+                            email: user.email,
+                            password: randomPassword,
+                            clientAppURL: process.env.CLIENT_APP_URL
+                        })
                     })
-                    .then((res) => {
-                        mailResponse = res;
-                    });
-                if (!mailResponse.success) {
-                    return {
-                        success: mailResponse.success,
-                        message: mailResponse.message
-                    };
-                }
-                return {
-                    success: mailResponse.success,
-                    message: 'Subscription mail sent to ' + user.firstName
-                };
+                );
             }
             throw new BadRequestException(USER_CONSTANT.UNABLE_TO_VERIFY_USER);
         } catch (err) {
@@ -525,7 +532,7 @@ export class UserService {
         }
     }
 
-    async enableUserByOrganizationAdmin(verifyEmailDto: VerifyEmailDto, req: Request): Promise<{ success: boolean; message: string }> {
+    async enableUserByOrganizationAdmin(verifyEmailDto: VerifyEmailDto, req: Request): Promise<void> {
         const logger = new Logger(UserService.name + '-enableUserByOrganizationAdmin');
         try {
             const defaultCompany = this.authService.getDefaultCompany(req);
@@ -562,7 +569,7 @@ export class UserService {
                 });
                 await user.save();
             }
-            let mailResponse: { success: boolean; message: string };
+            // let mailResponse: { success: boolean; message: string };
             try {
                 const userSaved = await user.save();
                 if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
@@ -574,33 +581,22 @@ export class UserService {
             } catch (error) {
                 throw new Error(USER_CONSTANT.FAILED_TO_ENABLE_USER);
             }
-            let subcriptionTypeFull;
-            if (verifyEmailDto.subscriptionType && verifyEmailDto.subscriptionType === 'Vaccine Record') {
-                subcriptionTypeFull = verifyEmailDto.subscriptionType;
-            } else {
-                subcriptionTypeFull = await this.subsTypeService.getFullSubscription(verifyEmailDto.isRegisteredUser ? verifyEmailDto.subscriptionType : defaultCompany.subscriptionType);
-            }
-            await this.mailService
-                .sendMail(user.email, EMAIL_CONSTANTS.FLO, EMAIL_CONSTANTS.TITLE_WELCOME, config.MAIL_TYPES.USER_ENABLE_EMAIL, {
-                    user: user,
-                    subscriptionType: subcriptionTypeFull,
-                    email: user.email,
-                    clientAppURL: process.env.CLIENT_APP_URL,
-                    type: subcriptionTypeFull === 'Vaccine Record' ? 'vaccine record' : 'account'
+
+            const subscriptionTypeFull = await this.subsTypeService.getFullSubscription(verifyEmailDto.isRegisteredUser ? verifyEmailDto.subscriptionType : defaultCompany.subscriptionType);
+            this.eventEmitter.emit(
+                USER_ENABLED,
+                new UserEnabledEmailDto({
+                    to: user.email,
+                    title: EMAIL_CONSTANTS.TITLE_WELCOME,
+                    subject: EMAIL_CONSTANTS.TITLE_WELCOME,
+                    partialContext: new UserEnabledBodyContextDto({
+                        subscriptionType: subscriptionTypeFull,
+                        email: user.email,
+                        clientAppURL: process.env.CLIENT_APP_URL,
+                        type: 'account'
+                    })
                 })
-                .then((res) => {
-                    mailResponse = res;
-                });
-            if (!mailResponse.success) {
-                return {
-                    success: mailResponse.success,
-                    message: mailResponse.message
-                };
-            }
-            return {
-                success: mailResponse.success,
-                message: USER_CONSTANT.USER_ENABLED
-            };
+            );
         } catch (err) {
             logger.error(err);
             throw err;
@@ -1084,7 +1080,7 @@ export class UserService {
         }
     }
 
-    async disableUserCompany(verifyEmailDto: VerifyEmailDto): Promise<{ success: boolean; user: IUser; message: string }> {
+    async disableUserCompany(verifyEmailDto: VerifyEmailDto): Promise<void> {
         const logger = new Logger(UserService.name + '-disableUserCompany');
         try {
             let userData;
@@ -1120,17 +1116,19 @@ export class UserService {
             }
 
             const subscriptionTypeFull = await this.subsTypeService.getFullSubscription(verifyEmailDto.subscriptionType);
-            await this.mailService.sendMail(userData.email, EMAIL_CONSTANTS.FLO, EMAIL_CONSTANTS.TITLE_ACCOUNT_DISABLED, config.MAIL_TYPES.USER_DISABLE_EMAIL, {
-                user: userData,
-                subscriptionType: subscriptionTypeFull,
-                email: userData.email,
-                type: 'account'
-            });
-            return {
-                success: true,
-                user,
-                message: USER_CONSTANT.USER_DISABLED
-            };
+            this.eventEmitter.emit(
+                USER_DISABLED,
+                new UserDisabledEmailDto({
+                    to: userData.email,
+                    title: EMAIL_CONSTANTS.TITLE_ACCOUNT_DISABLED,
+                    subject: EMAIL_CONSTANTS.TITLE_ACCOUNT_DISABLED,
+                    partialContext: new UserDisabledBodyContextDto({
+                        subscriptionType: subscriptionTypeFull,
+                        email: userData.email,
+                        type: 'account'
+                    })
+                })
+            );
         } catch (err) {
             logger.error(err);
             throw err;
@@ -1565,7 +1563,7 @@ export class UserService {
         }
     }
 
-    async forgetPassword(req: Request, forgetPasswordDto: ForgetPasswordDto): Promise<{ success: boolean; message: string }> {
+    async forgetPassword(req: Request, forgetPasswordDto: ForgetPasswordDto): Promise<void> {
         const logger = new Logger(UserService.name + '-forgetPassword');
         try {
             if (process.env.RE_CAPTCHA_STATUS !== CAPTCHA_STATUS.DISABLED) {
@@ -1573,33 +1571,36 @@ export class UserService {
                 if (!captchaValidation) throw new BadRequestException(USER_CONSTANT.PLEASE_VERIFY_THAT_YOU_ARE_A_HUMAN);
             }
             let user;
-            const response = {
-                success: true,
-                message: 'Email has been sent, kindly follow the instruction'
-            };
             try {
                 user = await this.findUserByEmail(forgetPasswordDto.email);
-            } catch (error) {
-                return response;
+            } catch (err) {
+                logger.error(err);
             }
             const token = await this.authService.createResetToken(user._id);
             const forgetLink = `${process.env.CLIENT_APP_URL}/#/auth/reset-password/${token}`;
             try {
                 await user
                     .updateOne({ resetLink: token })
-                    .then(async () => {
-                        await this.mailService.sendMail(user.email, 'Forgot Password', 'Reset Password Link', config.MAIL_TYPES.FORGET_PASSWORD_EMAIL, {
-                            userFirstName: user.firstName,
-                            forgetPasswordLink: forgetLink
-                        });
+                    .then(() => {
+                        this.eventEmitter.emit(
+                            FORGET_PASSWORD,
+                            new ForgetPasswordEmailDto({
+                                to: user.email,
+                                title: EMAIL_CONSTANTS.FORGET_PASSWORD,
+                                subject: EMAIL_CONSTANTS.RESET_PASSWORD_LINK,
+                                partialContext: new ForgetPasswordBodyContextDto({
+                                    userFirstName: user.firstName,
+                                    forgetPasswordLink: forgetLink
+                                })
+                            })
+                        );
                     })
                     .catch(() => {
                         throw new BadRequestException(USER_CONSTANT.RESET_PASSWORD_LINK_ERROR);
                     });
-            } catch (error) {
-                return response;
+            } catch (err) {
+                logger.error(err);
             }
-            return response;
         } catch (err) {
             logger.error(err);
             throw err;
@@ -1887,13 +1888,21 @@ export class UserService {
                             useFindAndModify: false
                         }
                     ).select('-password');
-                    await this.mailService.sendMail(user.email, 'Subscription updated', 'Updated Subscription Type', config.MAIL_TYPES.SUBSCRIPTION_UPDATED, {
-                        email: user.email,
-                        currentCompany: (await this.organizationService.findOrganizationById(currentCompany[0].companyId as string)).companyName,
-                        currentSubscription: updatedResponse.company.filter((com) => com.companyId.toString() === currentCompany[0].companyId.toString()).map((company) => fullSubscriptionType[company.subscriptionType]) as Array<string>,
-                        newSubscription: newSubscription.map((subscription) => fullSubscriptionType[subscription]) as Array<string>,
-                        removedSubscription: removedSubscription.map((subscription) => fullSubscriptionType[subscription]) as Array<string>
-                    });
+                    this.eventEmitter.emit(
+                        SUBSCRIPTION_UPDATED,
+                        new SubscriptionUpdatedEmailDto({
+                            to: user.email,
+                            title: EMAIL_CONSTANTS.SUBSCRIPTION_UPDATED,
+                            subject: EMAIL_CONSTANTS.SUBSCRIPTION_UPDATED,
+                            partialContext: new SubscriptionUpdatedBodyContextDto({
+                                email: user.email,
+                                currentCompany: (await this.organizationService.findOrganizationById(currentCompany[0].companyId as string)).companyName,
+                                currentSubscription: (updatedResponse.company.filter((com) => com.companyId.toString() === currentCompany[0].companyId.toString()).map((company) => fullSubscriptionType[company.subscriptionType]) as string[]) ?? [],
+                                newSubscription: newSubscription.map((subscription) => fullSubscriptionType[subscription]) as Array<string>,
+                                removedSubscription: removedSubscription.map((subscription) => fullSubscriptionType[subscription]) as Array<string>
+                            })
+                        })
+                    );
                     if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
                         const user = await this.UserModel.findById(subscriptionTypeDto.userId);
                         const bcUserDto = new BcUserDto();
@@ -1972,15 +1981,22 @@ export class UserService {
                     userAcceptToken: token.userAcceptToken
                 });
             }
-            await this.mailService.sendMail(user.email, EMAIL_CONSTANTS.FLO, EMAIL_CONSTANTS.TITLE_WELCOME, config.MAIL_TYPES.USER_ACCEPT_EMAIL, {
-                user: user,
-                email: user.email,
-                requestedBy: companyName,
-                userName: user.firstName,
-                roles: staffing.join(),
-                subscriptionType: await this.subsTypeService.getFullSubscription(addCompanyDto.subscription ? addCompanyDto.subscription : loginUserDefaultCompany.subscriptionType),
-                activationLink: process.env.CLIENT_APP_URL + `/#/user-accept/${token.userAcceptToken}`
-            });
+            this.eventEmitter.emit(
+                USER_ACCEPTED,
+                new UserAcceptedEmailDto({
+                    to: user.email,
+                    title: EMAIL_CONSTANTS.TITLE_WELCOME,
+                    subject: EMAIL_CONSTANTS.TITLE_WELCOME,
+                    partialContext: new UserAcceptedBodyContextDto({
+                        email: user.email,
+                        requestedBy: companyName,
+                        userName: user.firstName,
+                        roles: staffing.join(),
+                        subscriptionType: await this.subsTypeService.getFullSubscription(addCompanyDto.subscription ? addCompanyDto.subscription : loginUserDefaultCompany.subscriptionType),
+                        activationLink: process.env.CLIENT_APP_URL + `/#/user-accept/${token.userAcceptToken}`
+                    })
+                })
+            );
             const userSaved = await (await user.save()).populate('country state');
             if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
                 const bcUserDto = new BcUserDto();
@@ -2025,7 +2041,7 @@ export class UserService {
         }
     }
 
-    async deleteUserByOrganizationAdmin(userId: string, req: Request, staffingId?: string): Promise<IReturnResponse> {
+    async deleteUserByOrganizationAdmin(userId: string, req: Request, staffingId?: string): Promise<void> {
         const logger = new Logger(UserService.name + '-deleteUserByOrganizationAdmin');
         try {
             const company = this.authService.getDefaultCompany(req);
@@ -2042,7 +2058,7 @@ export class UserService {
                 throw new BadRequestException(USER_CONSTANT.USER_NOT_FOUND);
             }
             const userData = await this.UserModel.findById(userId).select('email');
-            const subcriptionTypeFull = await this.subsTypeService.getFullSubscription(company.subscriptionType);
+            const subscriptionTypeFull = await this.subsTypeService.getFullSubscription(company.subscriptionType);
             if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
                 const user = await this.uModel.findById(userId);
                 const company = user.company;
@@ -2056,23 +2072,26 @@ export class UserService {
                     await this.caService.revokeUserCert(new BcUserDto(userData._id), staffingId);
                 }
             }
-            await this.mailService.sendMail(userData.email, EMAIL_CONSTANTS.FLO, EMAIL_CONSTANTS.TITLE_ACCOUNT_DISABLED, config.MAIL_TYPES.USER_DISABLE_EMAIL, {
-                user: userData,
-                subscriptionType: subcriptionTypeFull,
-                email: userData.email,
-                type: 'account'
-            });
-            return {
-                success: true,
-                message: USER_CONSTANT.USER_DISABLED
-            };
+            this.eventEmitter.emit(
+                USER_DISABLED,
+                new UserDisabledEmailDto({
+                    to: userData.email,
+                    title: EMAIL_CONSTANTS.TITLE_ACCOUNT_DISABLED,
+                    subject: EMAIL_CONSTANTS.TITLE_ACCOUNT_DISABLED,
+                    partialContext: new UserDisabledBodyContextDto({
+                        subscriptionType: subscriptionTypeFull,
+                        email: userData.email,
+                        type: 'account'
+                    })
+                })
+            );
         } catch (err) {
             logger.error(err);
             throw err;
         }
     }
 
-    async disableUserByOrganizationAdmin(verifyEmailDto: VerifyEmailDto, req: Request): Promise<IReturnResponse> {
+    async disableUserByOrganizationAdmin(verifyEmailDto: VerifyEmailDto, req: Request): Promise<void> {
         const logger = new Logger(UserService.name + '-disableUserByOrganizationAdmin');
         try {
             const company = this.authService.getDefaultCompany(req);
@@ -2098,7 +2117,7 @@ export class UserService {
             await user.save();
 
             const userData = await this.UserModel.findById(verifyEmailDto.userId).select('email');
-            const subcriptionTypeFull = await this.subsTypeService.getFullSubscription(verifyEmailDto.subscriptionType);
+            const subscriptionTypeFull = await this.subsTypeService.getFullSubscription(verifyEmailDto.subscriptionType);
             if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
                 const bcUserDto = new BcUserDto();
                 bcUserDto.loggedInUserId = req['user']._id;
@@ -2106,16 +2125,19 @@ export class UserService {
                 const user = await this.uModel.findById(verifyEmailDto.userId);
                 await Promise.all([this.userBcService.storeUserBc(user, bcUserDto, BC_PAYLOAD.DISABLE_USER), this.caService.revokeUserCert(new BcUserDto(verifyEmailDto.userId), null)]);
             }
-            await this.mailService.sendMail(userData.email, EMAIL_CONSTANTS.FLO, EMAIL_CONSTANTS.TITLE_ACCOUNT_DISABLED, config.MAIL_TYPES.USER_DISABLE_EMAIL, {
-                user: userData,
-                subscriptionType: subcriptionTypeFull,
-                email: userData.email,
-                type: 'account'
-            });
-            return {
-                success: true,
-                message: USER_CONSTANT.USER_DISABLED
-            };
+            this.eventEmitter.emit(
+                USER_DISABLED,
+                new UserDisabledEmailDto({
+                    to: userData.email,
+                    title: EMAIL_CONSTANTS.TITLE_ACCOUNT_DISABLED,
+                    subject: EMAIL_CONSTANTS.TITLE_ACCOUNT_DISABLED,
+                    partialContext: new UserDisabledBodyContextDto({
+                        subscriptionType: subscriptionTypeFull,
+                        email: userData.email,
+                        type: 'account'
+                    })
+                })
+            );
         } catch (err) {
             logger.error(err);
             throw err;
@@ -2194,11 +2216,19 @@ export class UserService {
                     { new: true }
                 ).populate({ path: 'company.companyId', select: 'companyName' });
                 rejectedOrganization = await this.organizationService.rejectOrganization(rejectedUser.company.find((companyRow) => companyRow.isAdmin).companyId as string);
-                this.mailService.sendMail(rejectedUser.email, 'Your organization has been rejected.', 'Organization rejected', config.MAIL_TYPES.ORGANIZATION_REJECTED, {
-                    email: rejectedUser.email,
-                    organization: rejectedOrganization.companyName,
-                    description: rejectUserDto.description ?? '-'
-                });
+                this.eventEmitter.emit(
+                    ORGANIZATION_REJECTED,
+                    new OrganizationRejectedEmailDto({
+                        to: rejectedUser.email,
+                        title: EMAIL_CONSTANTS.ORGANIZATION_REJECTED,
+                        subject: EMAIL_CONSTANTS.YOUR_ORGANIZATION_HAS_BEEN_REJECTED,
+                        partialContext: new OrganizationRejectedBodyContextDto({
+                            email: rejectedUser.email,
+                            organization: rejectedOrganization.companyName,
+                            description: rejectUserDto.description ?? '-'
+                        })
+                    })
+                );
             } catch (err) {
                 throw new BadRequestException(USER_CONSTANT.FAILED_TO_REJECT);
             }
@@ -2239,11 +2269,19 @@ export class UserService {
                 const forgetLink = `${process.env.CLIENT_APP_URL}/#/auth/reset-password/${token}`;
                 await user
                     .updateOne({ resetLink: token })
-                    .then(async () => {
-                        await this.mailService.sendMail(user.email, 'Reset Password', 'Reset Password Link', config.MAIL_TYPES.FORGET_PASSWORD_EMAIL, {
-                            userFirstName: user.firstName,
-                            forgetPasswordLink: forgetLink
-                        });
+                    .then(() => {
+                        this.eventEmitter.emit(
+                            FORGET_PASSWORD,
+                            new ForgetPasswordEmailDto({
+                                to: user.email,
+                                title: EMAIL_CONSTANTS.RESET_PASSWORD,
+                                subject: EMAIL_CONSTANTS.RESET_PASSWORD_LINK,
+                                partialContext: new ForgetPasswordBodyContextDto({
+                                    userFirstName: user.firstName,
+                                    forgetPasswordLink: forgetLink
+                                })
+                            })
+                        );
                     })
                     .catch(() => {
                         throw new BadRequestException(USER_CONSTANT.RESET_PASSWORD_LINK_ERROR);

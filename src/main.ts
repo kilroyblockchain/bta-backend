@@ -1,11 +1,3 @@
-import { UserRejectInfoModule } from './components/app-user/user-reject-info/user-reject-info.module';
-import { ChannelDetailModule } from 'src/components/blockchain/channel-detail/channel-detail.module';
-import { FilesModule } from './components/utils/files/files.module';
-import { OrganizationStaffingModule } from './components/app-user/user-roles/organization-staffing/organization-staffing.module';
-import { OrganizationUnitModule } from './components/app-user/user-roles/organization-unit/organization-unit.module';
-import { FeatureModule } from './components/app-user/features/features.module';
-import { SubscriptionTypeModule } from './components/app-user/subscription-type/subscription-type.module';
-import { CountryModule } from './components/app-user/country/country.module';
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -22,6 +14,14 @@ import { transports } from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
 import { consoleTransportOptions, dailyRotateFileTransportOptions } from './@core/config/logger.config';
 import { VerificationModule } from './components/app-user/verification/verification.module';
+import { UserRejectInfoModule } from './components/app-user/user-reject-info/user-reject-info.module';
+import { ChannelDetailModule } from 'src/components/blockchain/channel-detail/channel-detail.module';
+import { FilesModule } from './@utils/files/files.module';
+import { OrganizationStaffingModule } from './components/app-user/user-roles/organization-staffing/organization-staffing.module';
+import { OrganizationUnitModule } from './components/app-user/user-roles/organization-unit/organization-unit.module';
+import { FeatureModule } from './components/app-user/features/features.module';
+import { SubscriptionTypeModule } from './components/app-user/subscription-type/subscription-type.module';
+import { CountryModule } from './components/app-user/country/country.module';
 
 async function bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule, {
@@ -58,7 +58,7 @@ async function bootstrap(): Promise<void> {
         max: Number(process.env.SIGNUP_LIMIT), // start blocking after 5 requests
         message: {
             statusCode: 400,
-            message: ['Too many request for accounts (creation or retrival) from this IP, please try again after half an hour'],
+            message: ['Too many request for accounts (creation or retrieval) from this IP, please try again after half an hour'],
             error: 'Bad Request'
         }
     });

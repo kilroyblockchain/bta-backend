@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, IsArray, IsOptional } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, IsArray, IsOptional, MinLength, MaxLength } from 'class-validator';
 
 export class NewUserDto {
     @ApiProperty({
@@ -8,6 +8,8 @@ export class NewUserDto {
     })
     @IsNotEmpty()
     @IsString()
+    @MinLength(2, { message: 'First name should contain at least 2 word' })
+    @MaxLength(40, { message: 'First name should contain max 40 word' })
     readonly firstName: string;
 
     @ApiProperty({
@@ -16,6 +18,8 @@ export class NewUserDto {
     })
     @IsNotEmpty()
     @IsString()
+    @MinLength(2, { message: 'Last name should contain at least 2 word' })
+    @MaxLength(40, { message: 'Last name should contain max 40 word' })
     readonly lastName: string;
 
     @ApiProperty({

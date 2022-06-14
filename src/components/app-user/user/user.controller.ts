@@ -214,8 +214,8 @@ export class UserController {
     @HttpCode(HttpStatus.OK)
     @ApiOkResponse({})
     async disableUserCompany(@Body() verifyEmailDto: VerifyEmailDto): Promise<FLOResponse> {
-        const disabledUser = await this.userService.disableUserCompany(verifyEmailDto);
-        return new FLOResponse(true, [USER_CONSTANT.USER_DISABLED]).setSuccessData(disabledUser).setStatus(HttpStatus.OK);
+        await this.userService.disableUserCompany(verifyEmailDto);
+        return new FLOResponse(true, [USER_CONSTANT.USER_DISABLED]).setStatus(HttpStatus.OK);
     }
 
     @Get('all')
@@ -241,8 +241,8 @@ export class UserController {
     @ApiOperation({ summary: 'Forget Password' })
     @ApiOkResponse({})
     async forgetPassword(@Body() forgetPasswordDto: ForgetPasswordDto, @Req() req: Request): Promise<FLOResponse> {
-        const { success, message } = await this.userService.forgetPassword(req, forgetPasswordDto);
-        return new FLOResponse(true, [USER_CONSTANT.FORGET_PASSWORD_LINK_SENT]).setSuccessData({ success, message }).setStatus(HttpStatus.OK);
+        await this.userService.forgetPassword(req, forgetPasswordDto);
+        return new FLOResponse(true, [USER_CONSTANT.FORGET_PASSWORD_LINK_SENT]).setStatus(HttpStatus.OK);
     }
 
     @Put('change-password/:userId')
@@ -259,8 +259,8 @@ export class UserController {
     @HttpCode(HttpStatus.OK)
     @ApiOkResponse({})
     async changeOrganizationUserPassword(@Param('userId') userId: string, @GetUser() user: IUser, @Body() changePasswordDto: ChangePasswordDto): Promise<FLOResponse> {
-        const data = await this.userService.changeOrganizationUserPassword(user, userId, changePasswordDto);
-        return new FLOResponse(true, [USER_CONSTANT.PASSWORD_CHANGED_SUCCESSFULLY]).setSuccessData(data).setStatus(HttpStatus.OK);
+        await this.userService.changeOrganizationUserPassword(user, userId, changePasswordDto);
+        return new FLOResponse(true, [USER_CONSTANT.PASSWORD_CHANGED_SUCCESSFULLY]).setStatus(HttpStatus.OK);
     }
 
     @Put('reset-password')
@@ -302,8 +302,8 @@ export class UserController {
     })
     @ApiOkResponse({})
     async verifyUserByAdmin(@Body() verifyEmailDto: VerifyEmailDto, @Req() req: Request): Promise<FLOResponse> {
-        const verifyResponse = await this.userService.verifyEmailByAdmin(verifyEmailDto, req);
-        return new FLOResponse(true, [USER_CONSTANT.USER_VERIFIED]).setSuccessData(verifyResponse).setStatus(HttpStatus.OK);
+        await this.userService.verifyEmailByAdmin(verifyEmailDto, req);
+        return new FLOResponse(true, [USER_CONSTANT.USER_VERIFIED]).setStatus(HttpStatus.OK);
     }
 
     @Put('add-subscription')
@@ -423,8 +423,8 @@ export class UserController {
     })
     @ApiOkResponse({})
     async verifyOrganizationUserByAdmin(@Body() verifyEmailDto: VerifyEmailDto, @Req() req: Request): Promise<FLOResponse> {
-        const verifiedUser = await this.userService.verifyUserByOrganizationAdmin(verifyEmailDto, req);
-        return new Response(true, [USER_CONSTANT.USER_VERIFIED]).setSuccessData(verifiedUser).setStatus(HttpStatus.OK);
+        await this.userService.verifyUserByOrganizationAdmin(verifyEmailDto, req);
+        return new Response(true, [USER_CONSTANT.USER_VERIFIED]).setStatus(HttpStatus.OK);
     }
 
     @Put('organization-user/enable')
@@ -441,8 +441,8 @@ export class UserController {
     })
     @ApiOkResponse({})
     async enableOrganizationUserByAdmin(@Body() verifyEmailDto: VerifyEmailDto, @Req() req: Request): Promise<FLOResponse> {
-        const enabledUser = await this.userService.enableUserByOrganizationAdmin(verifyEmailDto, req);
-        return new Response(true, [USER_CONSTANT.USER_ENABLED]).setSuccessData(enabledUser).setStatus(HttpStatus.OK);
+        await this.userService.enableUserByOrganizationAdmin(verifyEmailDto, req);
+        return new Response(true, [USER_CONSTANT.USER_ENABLED]).setStatus(HttpStatus.OK);
     }
 
     @Delete('organization-user/:userId')
@@ -459,8 +459,8 @@ export class UserController {
     })
     @ApiOkResponse({})
     async deleteOrganizationUserByAdmin(@Param('userId') userId: string, @Req() req: Request): Promise<FLOResponse> {
-        const deletedUser = await this.userService.deleteUserByOrganizationAdmin(userId, req);
-        return new Response(true, [USER_CONSTANT.USER_DELETED]).setSuccessData(deletedUser).setStatus(HttpStatus.OK);
+        await this.userService.deleteUserByOrganizationAdmin(userId, req);
+        return new Response(true, [USER_CONSTANT.USER_DELETED]).setStatus(HttpStatus.OK);
     }
 
     @Delete('organization-user/:staffingId/:userId')
@@ -515,8 +515,8 @@ export class UserController {
     })
     @ApiOkResponse({})
     async disableOrganizationUserByAdmin(@Body() disableUserDto: VerifyEmailDto, @Req() req: Request): Promise<FLOResponse> {
-        const disabledUser = await this.userService.disableUserByOrganizationAdmin(disableUserDto, req);
-        return new Response(true, [USER_CONSTANT.USER_DISABLED]).setSuccessData(disabledUser).setStatus(HttpStatus.OK);
+        await this.userService.disableUserByOrganizationAdmin(disableUserDto, req);
+        return new Response(true, [USER_CONSTANT.USER_DISABLED]).setStatus(HttpStatus.OK);
     }
 
     @Get('email')

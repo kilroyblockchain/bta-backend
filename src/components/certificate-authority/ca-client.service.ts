@@ -4,7 +4,7 @@ import { BcUserDto } from 'src/@core/common/bc-user.dto';
 import 'dotenv/config';
 import { ChannelMappingService } from '../blockchain/channel-mapping/channel-mapping.service';
 import { ChannelMappingDto } from '../blockchain/channel-mapping/dto/channel-mapping.dto';
-import { generateUniqueId } from '../utils/helpers';
+import { generateUniqueId } from 'src/@utils/helpers';
 import { BcConnectionService } from '../blockchain/bc-connection/bc-connection.service';
 import { BcConnectionDto } from '../blockchain/bc-connection/dto/bc-connection.dto';
 import { BcQueryResponseDto } from '../blockchain/dto/bc-query-response.dto';
