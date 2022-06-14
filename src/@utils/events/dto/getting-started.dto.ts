@@ -16,10 +16,7 @@ export class GettingStartedBodyContextDto {
 
 export class GettingStartedEmailDto extends BaseEmailDto<GettingStartedBodyContextDto> {
     constructor({ to, title, subject, partialContext }) {
-        super();
-        this.to = to;
-        this.title = title;
-        this.subject = subject;
+        super({ to, title, subject });
         this.partialContext = partialContext;
     }
 }

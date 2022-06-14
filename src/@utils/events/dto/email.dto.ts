@@ -3,4 +3,10 @@ export class BaseEmailDto<T> {
     subject: string;
     title: string;
     partialContext: T;
+
+    constructor({ to, title, subject }) {
+        this.to = to;
+        this.title = title;
+        this.subject = subject;
+    }
 }
