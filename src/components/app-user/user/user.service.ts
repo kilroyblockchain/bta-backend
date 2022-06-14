@@ -51,8 +51,8 @@ import { generateUniqueId } from 'src/@utils/helpers';
 import { ChannelMappingService } from 'src/components/blockchain/channel-mapping/channel-mapping.service';
 import { ChannelDetailService } from 'src/components/blockchain/channel-detail/channel-detail.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { FORGET_PASSWORD, USER_REGISTERED } from 'src/@utils/events/constants/events.constants';
-import { ForgetPasswordBodyContextDto, ForgetPasswordEmailDto, GettingStartedBodyContextDto, GettingStartedEmailDto } from 'src/@utils/events/dto';
+import { FORGET_PASSWORD, SUBSCRIPTION_UPDATED, USER_REGISTERED } from 'src/@utils/events/constants/events.constants';
+import { ForgetPasswordBodyContextDto, ForgetPasswordEmailDto, GettingStartedBodyContextDto, GettingStartedEmailDto, SubscriptionUpdatedBodyContextDto, SubscriptionUpdatedEmailDto } from 'src/@utils/events/dto';
 
 @Injectable()
 export class UserService {
@@ -1891,13 +1891,21 @@ export class UserService {
                             useFindAndModify: false
                         }
                     ).select('-password');
-                    await this.mailService.sendMail(user.email, 'Subscription updated', 'Updated Subscription Type', config.MAIL_TYPES.SUBSCRIPTION_UPDATED, {
-                        email: user.email,
-                        currentCompany: (await this.organizationService.findOrganizationById(currentCompany[0].companyId as string)).companyName,
-                        currentSubscription: updatedResponse.company.filter((com) => com.companyId.toString() === currentCompany[0].companyId.toString()).map((company) => fullSubscriptionType[company.subscriptionType]) as Array<string>,
-                        newSubscription: newSubscription.map((subscription) => fullSubscriptionType[subscription]) as Array<string>,
-                        removedSubscription: removedSubscription.map((subscription) => fullSubscriptionType[subscription]) as Array<string>
-                    });
+                    this.eventEmitter.emit(
+                        SUBSCRIPTION_UPDATED,
+                        new SubscriptionUpdatedEmailDto({
+                            to: user.email,
+                            title: EMAIL_CONSTANTS.SUBSCRIPTION_UPDATED,
+                            subject: EMAIL_CONSTANTS.SUBSCRIPTION_UPDATED,
+                            partialContext: new SubscriptionUpdatedBodyContextDto({
+                                email: user.email,
+                                currentCompany: (await this.organizationService.findOrganizationById(currentCompany[0].companyId as string)).companyName,
+                                currentSubscription: (updatedResponse.company.filter((com) => com.companyId.toString() === currentCompany[0].companyId.toString()).map((company) => fullSubscriptionType[company.subscriptionType]) as string[]) ?? [],
+                                newSubscription: newSubscription.map((subscription) => fullSubscriptionType[subscription]) as Array<string>,
+                                removedSubscription: removedSubscription.map((subscription) => fullSubscriptionType[subscription]) as Array<string>
+                            })
+                        })
+                    );
                     if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
                         const user = await this.UserModel.findById(subscriptionTypeDto.userId);
                         const bcUserDto = new BcUserDto();

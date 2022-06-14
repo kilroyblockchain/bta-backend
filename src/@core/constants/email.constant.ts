@@ -10,5 +10,6 @@ export const EMAIL_CONSTANTS = {
     FLO: 'FLo',
     FORGET_PASSWORD: 'Forget password',
     RESET_PASSWORD: 'Reset password',
-    RESET_PASSWORD_LINK: 'Reset password link'
+    RESET_PASSWORD_LINK: 'Reset password link',
+    SUBSCRIPTION_UPDATED: 'Subscription type updated'
 };
