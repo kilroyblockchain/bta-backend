@@ -1,10 +1,11 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { forwardRef, Global, Module } from '@nestjs/common';
 import { MailModule } from 'src/@utils/mail/mail.module';
-import { ForgotPasswordEvent } from './handlers/forgot.password.event';
-import { UserRegisteredEvent } from './handlers/user.registered.event';
+import { UserEvent } from './handlers/user.event';
+import { UserEventService } from './services/user-event.service';
 
+@Global()
 @Module({
     imports: [forwardRef(() => MailModule)],
-    providers: [UserRegisteredEvent, ForgotPasswordEvent]
+    providers: [UserEvent, UserEventService]
 })
 export class EventsModule {}

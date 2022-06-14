@@ -1,8 +1,8 @@
 <div class="content">
     <div class="welcome">
-        <h2>Welcome to FLO</h2>
-        <p>Your {{type}} has been enabled.</p>
-        <a href="{{clientAppURL}}/auth/login">Log In</a>
+        <h2>Welcome to {{appName}}</h2>
+        <p>We are excited for you to get started. First, you need to log in using the following credentials:</p>
+        <a href="{{clientAppURL}}/#/auth/login">Log In</a>
     </div>
     <div class="credential-group">
         <div class="input-field">
@@ -12,6 +12,10 @@
         <div class="input-field">
             <label for="email">Email</label>
             <span id="email">{{email}}</span>
+        </div>
+        <div class="input-field">
+            <label for="password">Password</label>
+            <span id="password">{{password}}</span>
         </div>
     </div>
 </div>
