@@ -51,8 +51,8 @@ import { generateUniqueId } from 'src/@utils/helpers';
 import { ChannelMappingService } from 'src/components/blockchain/channel-mapping/channel-mapping.service';
 import { ChannelDetailService } from 'src/components/blockchain/channel-detail/channel-detail.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { USER_REGISTERED } from 'src/@utils/events/constants/events.constants';
-import { GettingStartedBodyContextDto, GettingStartedEmailDto } from 'src/@utils/events/dto';
+import { FORGET_PASSWORD, USER_REGISTERED } from 'src/@utils/events/constants/events.constants';
+import { ForgetPasswordBodyContextDto, ForgetPasswordEmailDto, GettingStartedBodyContextDto, GettingStartedEmailDto } from 'src/@utils/events/dto';
 
 @Injectable()
 export class UserService {
@@ -1583,11 +1583,19 @@ export class UserService {
             try {
                 await user
                     .updateOne({ resetLink: token })
-                    .then(async () => {
-                        await this.mailService.sendMail(user.email, 'Forgot Password', 'Reset Password Link', config.MAIL_TYPES.FORGET_PASSWORD_EMAIL, {
-                            userFirstName: user.firstName,
-                            forgetPasswordLink: forgetLink
-                        });
+                    .then(() => {
+                        this.eventEmitter.emit(
+                            FORGET_PASSWORD,
+                            new ForgetPasswordEmailDto({
+                                to: user.email,
+                                title: EMAIL_CONSTANTS.FORGET_PASSWORD,
+                                subject: EMAIL_CONSTANTS.RESET_PASSWORD_LINK,
+                                partialContext: new ForgetPasswordBodyContextDto({
+                                    userFirstName: user.firstName,
+                                    forgetPasswordLink: forgetLink
+                                })
+                            })
+                        );
                     })
                     .catch(() => {
                         throw new BadRequestException(USER_CONSTANT.RESET_PASSWORD_LINK_ERROR);
@@ -2235,11 +2243,19 @@ export class UserService {
                 const forgetLink = `${process.env.CLIENT_APP_URL}/#/auth/reset-password/${token}`;
                 await user
                     .updateOne({ resetLink: token })
-                    .then(async () => {
-                        await this.mailService.sendMail(user.email, 'Reset Password', 'Reset Password Link', config.MAIL_TYPES.FORGET_PASSWORD_EMAIL, {
-                            userFirstName: user.firstName,
-                            forgetPasswordLink: forgetLink
-                        });
+                    .then(() => {
+                        this.eventEmitter.emit(
+                            FORGET_PASSWORD,
+                            new ForgetPasswordEmailDto({
+                                to: user.email,
+                                title: EMAIL_CONSTANTS.RESET_PASSWORD,
+                                subject: EMAIL_CONSTANTS.RESET_PASSWORD_LINK,
+                                partialContext: new ForgetPasswordBodyContextDto({
+                                    userFirstName: user.firstName,
+                                    forgetPasswordLink: forgetLink
+                                })
+                            })
+                        );
                     })
                     .catch(() => {
                         throw new BadRequestException(USER_CONSTANT.RESET_PASSWORD_LINK_ERROR);
