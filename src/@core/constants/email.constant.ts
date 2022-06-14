@@ -11,5 +11,7 @@ export const EMAIL_CONSTANTS = {
     FORGET_PASSWORD: 'Forget password',
     RESET_PASSWORD: 'Reset password',
     RESET_PASSWORD_LINK: 'Reset password link',
-    SUBSCRIPTION_UPDATED: 'Subscription type updated'
+    SUBSCRIPTION_UPDATED: 'Subscription type updated',
+    ORGANIZATION_REJECTED: 'Organization rejected',
+    YOUR_ORGANIZATION_HAS_BEEN_REJECTED: 'Your organization has been rejected'
 };
