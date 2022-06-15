@@ -143,7 +143,7 @@ export class UserService {
                 default: true,
                 verified,
                 isDeleted,
-                isAdmin: registerUserDto.subscriptionType === 'vaccination-appointment' ? false : isAdmin
+                isAdmin
             };
         } catch (err) {
             logger.error(err);
@@ -1446,7 +1446,7 @@ export class UserService {
                         ...user,
                         company: {
                             ...userCompany['_doc'],
-                            companyId: userCompany.subscriptionType !== 'vaccinated-user' ? defaultCompany : ''
+                            companyId: defaultCompany
                         },
                         blockchainVerified: bcVerified
                     };
@@ -1850,7 +1850,7 @@ export class UserService {
                 await this.organizationService.addSubscription(subscriptionTypeDto.companyId, subscriptionTypeDto.subscriptionType);
                 const currentCompany = user.company.filter((company) => company.companyId.toString() === subscriptionTypeDto.companyId);
                 newSubscription = subscriptionTypeDto.subscriptionType.filter((subType) => !currentCompany.some((com) => com.subscriptionType === subType));
-                const removedSubscriptionData = currentCompany.filter((com) => !subscriptionTypeDto.subscriptionType.includes(com.subscriptionType) && com.subscriptionType !== 'vaccinated-user' && com.subscriptionType !== 'super-admin');
+                const removedSubscriptionData = currentCompany.filter((com) => !subscriptionTypeDto.subscriptionType.includes(com.subscriptionType) && com.subscriptionType !== 'super-admin');
                 removedSubscription = removedSubscriptionData.map((company) => company.subscriptionType);
                 if (newSubscription.length || removedSubscription.length) {
                     await this.UserModel.updateOne(

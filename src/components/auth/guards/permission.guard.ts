@@ -16,7 +16,7 @@ export class PermissionGuard implements CanActivate {
             const feature = this.reflector.get<string[]>('feature', context.getHandler());
             const request = context.switchToHttp().getRequest();
             const user: IUser = request.user;
-            if (user && typeof user !== 'boolean' && user.company.find((defCompany) => defCompany.default && (defCompany.subscriptionType === 'training' || defCompany.subscriptionType === 'vaccinated-user'))) {
+            if (user && typeof user !== 'boolean' && user.company.find((defCompany) => defCompany.default)) {
                 if (feature?.includes(FEATURE_IDENTIFIER.PERSONAL_DETAIL)) return true;
             }
             if (user && typeof user !== 'boolean' && user.company.find((defCompany) => defCompany.default && defCompany.isAdmin)) {
