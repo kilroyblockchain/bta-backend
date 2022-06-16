@@ -1,0 +1,41 @@
+import { Schema } from 'mongoose';
+import * as mongoosePaginate from 'mongoose-paginate';
+import * as mongoose from 'mongoose';
+
+mongoose.set('strictPopulate', false);
+
+export const MonitoringReportSchema = new Schema(
+    {
+        subject: {
+            type: String,
+            minlength: 2,
+            maxlength: 40,
+            required: true
+        },
+        description: {
+            type: String,
+            minlength: 2,
+            maxlength: 255
+        },
+        documents: [
+            {
+                docURL: { type: String },
+                docName: { type: String }
+            }
+        ],
+        version: {
+            type: mongoose.Types.ObjectId,
+            ref: 'project-version'
+        },
+        createdBy: {
+            type: mongoose.Types.ObjectId,
+            ref: 'User'
+        }
+    },
+    {
+        versionKey: false,
+        timestamps: true
+    }
+);
+
+MonitoringReportSchema.plugin(mongoosePaginate);
