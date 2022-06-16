@@ -11,7 +11,7 @@ import { Request } from 'express';
 export class MonitoringReportService {
     constructor(@InjectModel('version-monitoring-report') private readonly monitoringModel: PaginateModel<IMonitoringReport>, private readonly versionService: ProjectVersionService) {}
 
-    async addMonitoringReport(req: Request, versionId: string, files, newReport: AddReportDto): Promise<IMonitoringReport> {
+    async addMonitoringReport(req: Request, versionId: string, files: Array<Express.Multer.File>, newReport: AddReportDto): Promise<IMonitoringReport> {
         const version = await this.versionService.getVersionById(versionId);
         if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
         const report = new this.monitoringModel(newReport);

@@ -20,7 +20,7 @@ export class MonitoringReportController {
 
     @Post(':id')
     @HttpCode(HttpStatus.CREATED)
-    @UseGuards(AuthGuard('jwt'), PermissionGuard)
+    @UseGuards(PermissionGuard)
     @Permission(ACCESS_TYPE.WRITE)
     @Feature(FEATURE_IDENTIFIER.MANAGE_PROJECT)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -46,7 +46,7 @@ export class MonitoringReportController {
             fileFilter: docsFileFilter
         })
     )
-    async addMonitoringReport(@Req() req: Request, @Body() newReport: AddReportDto, @UploadedFiles() files, @Param('id') id: string): Promise<FLOResponse> {
+    async addMonitoringReport(@Req() req: Request, @Body() newReport: AddReportDto, @UploadedFiles() files: Array<Express.Multer.File>, @Param('id') id: string): Promise<FLOResponse> {
         try {
             return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.MONITORING_REPORT_ADDED_SUCCESS]).setSuccessData(await this.monitoringService.addMonitoringReport(req, id, files, newReport)).setStatus(HttpStatus.CREATED);
         } catch (err) {
@@ -56,7 +56,7 @@ export class MonitoringReportController {
 
     @Get(':id')
     @HttpCode(HttpStatus.OK)
-    @UseGuards(AuthGuard('jwt'), PermissionGuard)
+    @UseGuards(PermissionGuard)
     @Permission(ACCESS_TYPE.READ)
     @Feature(FEATURE_IDENTIFIER.MANAGE_PROJECT)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)

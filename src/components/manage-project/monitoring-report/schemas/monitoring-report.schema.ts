@@ -2,8 +2,6 @@ import { Schema } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import * as mongoose from 'mongoose';
 
-mongoose.set('strictPopulate', false);
-
 export const MonitoringReportSchema = new Schema(
     {
         subject: {

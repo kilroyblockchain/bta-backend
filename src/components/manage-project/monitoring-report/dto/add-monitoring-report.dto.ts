@@ -31,5 +31,5 @@ export class AddReportDto {
         maxItems: 5,
         description: 'This is document of monitoring reports'
     })
-    docs: string[];
+    docs: Array<Express.Multer.File>;
 }
