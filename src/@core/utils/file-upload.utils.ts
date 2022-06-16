@@ -1,7 +1,6 @@
 import { extname } from 'path';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import * as fs from 'fs';
-import { Request } from 'express';
 
 export const imageFileFilter = (req, file, callback): void => {
     if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
