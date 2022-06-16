@@ -8,6 +8,7 @@ import { ProjectVersionSchema } from './schemas/project-version.schema';
 @Module({
     imports: [MongooseModule.forFeature([{ name: 'project-version', schema: ProjectVersionSchema }]), ProjectModule],
     controllers: [ProjectVersionController],
-    providers: [ProjectVersionService]
+    providers: [ProjectVersionService],
+    exports: [ProjectVersionService]
 })
 export class ProjectVersionModule {}
