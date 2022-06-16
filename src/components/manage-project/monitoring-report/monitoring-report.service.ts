@@ -18,7 +18,7 @@ export class MonitoringReportService {
 
         files.forEach((file) => {
             const documents = {
-                docURL: `/version-reports/${file.filename}`,
+                docURL: `version-reports/${file.filename}`,
                 docName: file.filename
             };
             report.documents.push(documents);
