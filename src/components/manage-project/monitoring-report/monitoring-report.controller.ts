@@ -9,7 +9,6 @@ import { Response as FLOResponse } from 'src/@core/response';
 import { Request } from 'express';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, MANAGE_PROJECT_CONSTANT, ROLE } from 'src/@core/constants';
 import { PermissionGuard, RolesGuard } from 'src/components/auth/guards';
-import { AuthGuard } from '@nestjs/passport';
 import { Feature, Permission, Roles } from 'src/components/auth/decorators';
 
 @ApiTags('Version Monitoring')
