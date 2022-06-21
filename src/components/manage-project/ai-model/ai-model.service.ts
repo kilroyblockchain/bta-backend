@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProjectVersionService } from 'src/components/manage-project/project-version/project-version.service';
 import { PaginateModel, PaginateResult } from 'mongoose';
-import { IAiModel } from './Interfaces/ai-model.interface';
+import { IAiModel, IAiModelExp } from './Interfaces/ai-model.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { HttpService } from '@nestjs/axios';
 import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
@@ -45,5 +45,15 @@ export class AiModelService {
         }
 
         return aiModel;
+    }
+
+    async getExperimentDetails(id: string): Promise<IAiModelExp> {
+        const experiment = await this.aiModel.findOne({ _id: id }).populate('version', 'logFilePath');
+        if (!experiment) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND);
+
+        const logFileURL = `${experiment.version['logFilePath']}/log_${experiment.expNo}.json`;
+        const { data } = await firstValueFrom(this.httpService.get(logFileURL));
+
+        return data;
     }
 }

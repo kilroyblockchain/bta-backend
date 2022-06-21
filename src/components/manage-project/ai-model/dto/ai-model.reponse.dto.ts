@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IExp } from '../Interfaces/ai-model.interface';
 
-export class AllVersionAiModelExp {
+export class VersionLogAllExpResponseDto {
     @ApiProperty({
         example: '62b1798d6778381f09a82d29',
         description: "Id of the Ai Model's experiment",
@@ -47,4 +48,47 @@ export class AllVersionAiModelExp {
         description: 'Experiment updated date datetime'
     })
     updatedAt: Date;
+}
+
+export class LogExperimentDetailsResponseDto {
+    @ApiProperty({
+        example: {
+            exp_no: 'exp_0',
+            datetime: '06/10/2022, 07:42:17',
+            hyperparameters: {
+                data_dir: '.',
+                learning_rate: '0.0002',
+                hidden_size: 64
+            },
+            epochs: {
+                '0': {
+                    val_loss: 0.2821283638,
+                    train_loss: 0.6317886114,
+                    train_acc: 0.8187817931,
+                    train_f1_score: 0.8188226819000001,
+                    train_precision: 0.8188226819000001,
+                    train_recall: 0.8188226819000001,
+                    val_accuracy: 0.9153481126
+                },
+                '1': {
+                    val_loss: 0.2175901383,
+                    train_loss: 0.2988961935,
+                    train_acc: 0.9107999802000001,
+                    train_f1_score: 0.9107739925,
+                    train_precision: 0.9107739925,
+                    train_recall: 0.9107739925,
+                    val_accuracy: 0.9331487417000001
+                }
+            },
+            test_metrics: {
+                test_accuracy: 0.9466000199000001,
+                test_f1_score: 0.9465565085000001,
+                test_loss: 0.1765899956,
+                test_precision: 0.9465565085000001,
+                test_recall: 0.9465565085000001
+            }
+        },
+        description: 'These data retrieved form version log file Path'
+    })
+    exp: IExp;
 }
