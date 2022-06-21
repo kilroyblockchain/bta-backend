@@ -56,4 +56,11 @@ export class AiModelService {
 
         return data;
     }
+
+    async getExperimentInfo(id: string): Promise<IAiModel> {
+        const experimentInfo = await this.aiModel.findOne({ _id: id }).populate('version').populate('project', 'name');
+        if (!experimentInfo) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND);
+
+        return experimentInfo;
+    }
 }

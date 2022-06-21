@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IProjectVersion } from '../../project-version/interfaces/project-version.interface';
+import { IProject } from '../../project/interfaces/project.interface';
 import { IExp } from '../Interfaces/ai-model.interface';
 
 export class VersionLogAllExpResponseDto {
@@ -91,4 +93,65 @@ export class LogExperimentDetailsResponseDto {
         description: 'These data retrieved form version log file Path'
     })
     exp: IExp;
+}
+
+export class LogExperimentInfoResponseDto {
+    @ApiProperty({
+        example: '62b1798d6778381f09a82d29',
+        description: "Id of the Ai Model's experiment",
+        format: 'string'
+    })
+    _id: string;
+
+    @ApiProperty({
+        example: 'exp_0',
+        description: 'Name of experiment',
+        format: 'string'
+    })
+    expNo: string;
+
+    @ApiProperty({
+        example: {
+            _id: '62acf90c5a5a33f87a16866d',
+            versionName: 'v1',
+            logFilePath: 'https://objectstorage.us-phoenix-1.oraclecloud.com/p/m7FALI7al-Sl00Q6ytFqgKq2iG6O-uC2Nnl0NviFj_5A7yzFRz394FRWdn1iCcvC/n/axutkjfnpof3/b/ds-1/o/TSD/v1/logs',
+            logFileVersion: '2.1',
+            versionModel: 'http://ml.oracle.com/model/',
+            noteBookVersion: '1.7',
+            testDataSets: 'http://ml.oracle.com/testdataset/',
+            trainDataSets: 'http://ml.oracle.com/traindataaset/',
+            artifacts: 'http://ml.oracle.com/artificats/',
+            codeRepo: 'http://git.com/michael/project-name/',
+            codeVersion: '1.2.1',
+            comment: 'Test12344',
+            versionStatus: 'PENDING',
+            status: true,
+            createdBy: '62a1c241d7463e3052f5e8cd',
+            project: '62acf8345a5a33f87a168632',
+            createdAt: '2022-06-17T21:58:36.473Z',
+            updatedAt: '2022-06-17T21:58:36.473Z'
+        },
+        description: 'Log experiment version details',
+        format: 'object'
+    })
+    version: IProjectVersion;
+
+    @ApiProperty({
+        example: { _id: '62acfb388238a142968b43cb', name: 'new project' },
+        description: 'Log experiment project details',
+        format: 'object'
+    })
+    project: IProject;
+
+    @ApiProperty({
+        example: new Date(),
+        description: 'Experiment created date'
+    })
+    createdAt: Date;
+
+    @ApiProperty({
+        example: new Date(),
+        description: 'Experiment updated date'
+    })
+    updatedAt: Date;
 }
