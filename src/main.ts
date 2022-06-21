@@ -25,6 +25,7 @@ import { ProjectModule } from './components/manage-project/project/project.modul
 import { ProjectVersionModule } from './components/manage-project/project-version/project-version.module';
 import { VerificationModule } from './components/flo-user/verification/verification.module';
 import { MonitoringReportModule } from './components/manage-project/monitoring-report/monitoring-report.module';
+import { AiModelModule } from './components/manage-project/ai-model/ai-model.module';
 
 async function bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule, {
@@ -72,7 +73,23 @@ async function bootstrap(): Promise<void> {
 
     const options = new DocumentBuilder().setTitle('FLO API').setDescription('API description').setVersion('1.0').build();
     const document = SwaggerModule.createDocument(app, options, {
-        include: [UserModule, OrganizationModule, CountryModule, SubscriptionTypeModule, FeatureModule, OrganizationUnitModule, OrganizationStaffingModule, FilesModule, ChannelDetailModule, UserRejectInfoModule, ProjectModule, ProjectVersionModule, VerificationModule, MonitoringReportModule]
+        include: [
+            UserModule,
+            OrganizationModule,
+            CountryModule,
+            SubscriptionTypeModule,
+            FeatureModule,
+            OrganizationUnitModule,
+            OrganizationStaffingModule,
+            FilesModule,
+            ChannelDetailModule,
+            UserRejectInfoModule,
+            ProjectModule,
+            ProjectVersionModule,
+            VerificationModule,
+            MonitoringReportModule,
+            AiModelModule
+        ]
     });
     SwaggerModule.setup('api', app, document);
 
