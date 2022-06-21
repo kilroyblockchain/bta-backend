@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
+import { AiModelModule } from './ai-model/ai-model.module';
 import { MonitoringReportModule } from './monitoring-report/monitoring-report.module';
 import { ProjectVersionModule } from './project-version/project-version.module';
 import { ProjectModule } from './project/project.module';
 
 @Module({
-    imports: [ProjectModule, ProjectVersionModule, MonitoringReportModule]
+    imports: [ProjectModule, ProjectVersionModule, MonitoringReportModule, AiModelModule]
 })
 export class ManageProjectModule {}
