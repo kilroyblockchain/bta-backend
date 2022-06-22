@@ -667,7 +667,7 @@ export class UserService {
             await this.passwordsAreMatch(user);
 
             await user.populate({
-                path: 'company.staffingId',
+                path: 'company.companyId company.staffingId',
                 populate: { path: 'featureAndAccess.featureId', model: 'feature' }
             });
             let defaultCompany: ICompany = user.company.find((company) => company.default && company.verified && !company.isDeleted);
