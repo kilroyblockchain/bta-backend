@@ -1,22 +1,25 @@
+import 'dotenv/config';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
-import 'dotenv/config';
-import { AppUserModule } from './components/app-user/app-user.module';
-import { BlockchainModule } from './components/blockchain/blockchain.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { WinstonModule } from 'nest-winston';
 import { transports } from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
-import 'dotenv/config';
 import { consoleTransportOptions, dailyRotateFileTransportOptions } from './@core/config/logger.config';
 import { UtilsModule } from './@utils/utils.module';
+import { envValidationSchema } from './app-env-validation';
+import { AppUserModule } from './components/app-user/app-user.module';
+import { BlockchainModule } from './components/blockchain/blockchain.module';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
+        ConfigModule.forRoot({
+            isGlobal: true,
+            ...(process.env.ENVIRONMENT !== 'local' ? { validationSchema: envValidationSchema } : {})
+        }),
         MongooseModule.forRoot(process.env.MONGO_URI, {
             user: process.env.MONGO_USERNAME,
             pass: process.env.MONGO_PASSWORD,
