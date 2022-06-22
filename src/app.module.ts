@@ -10,6 +10,8 @@ import { transports } from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
 import { consoleTransportOptions, dailyRotateFileTransportOptions } from './@core/config/logger.config';
 import { UtilsModule } from './@utils/utils.module';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { HttpExceptionFilter, LoggingInterceptor } from './@core/interceptors';
 import { envValidationSchema } from './app-env-validation';
 import { AppUserModule } from './components/app-user/app-user.module';
 import { BlockchainModule } from './components/blockchain/blockchain.module';
@@ -37,6 +39,16 @@ import { BlockchainModule } from './components/blockchain/blockchain.module';
         AppUserModule,
         UtilsModule,
         BlockchainModule
+    ],
+    providers: [
+        {
+            provide: APP_FILTER,
+            useClass: HttpExceptionFilter
+        },
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: LoggingInterceptor
+        }
     ]
 })
 export class AppModule {}
