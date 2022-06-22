@@ -52,6 +52,7 @@
         "fast-safe-stringify": "^2.1.1",
         "handlebars": "^4.7.7",
         "helmet": "^5.0.2",
+        "joi": "^17.6.0",
         "migrate-mongoose": "^4.0.0",
         "mongoose": "^6.2.4",
         "mongoose-paginate": "^5.0.3",
