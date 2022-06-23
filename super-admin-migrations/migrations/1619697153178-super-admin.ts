@@ -1,9 +1,9 @@
-import { consoleLogWrapper } from 'flo-migrations/helper-func';
+import { consoleLogWrapper } from 'app-migrations/helper-func';
 import * as mongoose from 'mongoose';
-import { IOrganization } from 'src/components/flo-user/organization/interfaces/organization.interface';
-import { OrganizationSchema } from 'src/components/flo-user/organization/schemas/organization.schema';
-import { IUser } from 'src/components/flo-user/user/interfaces/user.interface';
-import { UserSchema } from 'src/components/flo-user/user/schemas/user.schema';
+import { IOrganization } from 'src/components/app-user/organization/interfaces/organization.interface';
+import { OrganizationSchema } from 'src/components/app-user/organization/schemas/organization.schema';
+import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
+import { UserSchema } from 'src/components/app-user/user/schemas/user.schema';
 import { admin, adminCompany } from 'super-admin-migrations/data/defaultUser';
 
 /**

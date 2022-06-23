@@ -1,5 +1,5 @@
 import { Document } from 'mongoose';
-import { IUser } from 'src/components/flo-user/user/interfaces/user.interface';
+import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
 import { VersionStatus } from '../enum/version-status.enum';
 
 export interface IProjectVersion extends Document {

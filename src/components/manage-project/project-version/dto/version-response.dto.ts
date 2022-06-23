@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IUser } from 'src/components/flo-user/user/interfaces/user.interface';
+import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
 import { IProject } from 'src/components/manage-project/project/interfaces/project.interface';
 import { VersionStatus } from '../enum/version-status.enum';
 

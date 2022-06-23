@@ -79,7 +79,6 @@ Thumbs.db
 .env
 .env.test
 
-package-lock.json
 uploads/*
 !uploads/*.md
 psvolumes/*

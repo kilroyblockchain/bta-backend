@@ -1,10 +1,10 @@
-import { VerificationService } from './verification.service';
 import { ApiTags, ApiOperation, ApiExtraModels } from '@nestjs/swagger';
 import { Controller, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
 import { AppResponseDto } from 'src/@core/response/dto';
 import { VERIFICATION_CONSTANT } from 'src/@core/constants/api-error-constants';
-import { VerificationResponse } from './dto';
 import { ApiOkAppResponseWithModel } from 'src/@core/response/decorators/api-response.decorator';
+import { VerificationService } from 'src/components/app-user/verification/verification.service';
+import { VerificationResponse } from 'src/components/app-user/verification/dto';
 @ApiTags('Verification')
 @Controller('verification')
 @ApiExtraModels(AppResponseDto, VerificationResponse)
