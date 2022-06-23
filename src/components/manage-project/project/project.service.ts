@@ -5,7 +5,7 @@ import { Model, PaginateModel, PaginateResult } from 'mongoose';
 import { MANAGE_PROJECT_CONSTANT, USER_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { getCompanyId } from 'src/@core/utils/common.utils';
 import { getSearchFilterWithRegexAll } from 'src/@core/utils/query-filter.utils';
-import { IUser } from 'src/components/flo-user/user/interfaces/user.interface';
+import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
 import { CreateProjectDto } from './dto';
 import { IProject } from './interfaces/project.interface';
 

@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext, Logger } from '@nestjs/common';
-import { IUser } from 'src/components/flo-user/user/interfaces/user.interface';
+import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
 
 interface IGetUserAuthInfo extends Express.Request {
     user: IUser;

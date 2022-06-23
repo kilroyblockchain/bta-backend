@@ -1,4 +1,4 @@
-import { ICompany } from 'src/components/flo-user/user/interfaces/user.interface';
+import { ICompany } from 'src/components/app-user/user/interfaces/user.interface';
 
 export class BcUserDto {
     enrollmentId: string;

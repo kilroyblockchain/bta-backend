@@ -1,10 +1,10 @@
-import { IBasicUserInfo, ICompany } from '../flo-user/user/interfaces/user.interface';
+import { IBasicUserInfo, ICompany } from '../app-user/user/interfaces/user.interface';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { Injectable, UnauthorizedException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { sign, verify } from 'jsonwebtoken';
-import { IUser } from 'src/components/flo-user/user/interfaces/user.interface';
+import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
 import { IRefreshToken } from './interfaces/refresh-token.interface';
 import { v4 } from 'uuid';
 import { Request, Response } from 'express';
@@ -13,8 +13,8 @@ import * as Cryptr from 'cryptr';
 import { COOKIE_KEYS } from 'src/@core/constants/cookie-key.constant';
 import { USER_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { HttpService } from '@nestjs/axios';
-import { StaffingInterface } from '../flo-user/user-roles/organization-staffing/interfaces/organization-staffing.interface';
-import { IFeature } from '../flo-user/features/interfaces/features.interface';
+import { StaffingInterface } from '../app-user/user-roles/organization-staffing/interfaces/organization-staffing.interface';
+import { IFeature } from '../app-user/features/interfaces/features.interface';
 
 @Injectable()
 export class AuthService {

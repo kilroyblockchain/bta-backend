@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IUser } from 'src/components/flo-user/user/interfaces/user.interface';
+import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
 import { IReportDocs } from '../interfaces/monitoring-report.interface';
 
 export class MonitoringReportResponseDto {
