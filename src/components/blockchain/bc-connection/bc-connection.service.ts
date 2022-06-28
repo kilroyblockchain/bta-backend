@@ -3,6 +3,8 @@ import { BcRequestDto } from 'src/@core/constants/dto/bc-request.dto';
 import axios, { AxiosError } from 'axios';
 import { BC_CONNECTION_API } from 'src/@core/constants/bc-constants/bc-connection.api.constant';
 import { BcConnectionDto } from './dto/bc-connection.dto';
+import { CreateBcNodeInfoDto } from '../bc-node-info/dto/create-bc-node-info.dto';
+import { BcUserAuthenticationDto } from '../dto/bc-user-authentication.dto';
 
 const BC_CONNECTION_HOST = process.env.BC_CONNECTION_HOST;
 const AUTHORIZATION_TOKEN = process.env.AUTHORIZATION_TOKEN;
@@ -122,6 +124,28 @@ export class BcConnectionService {
                 headers: {
                     authorization: 'Basic ' + AUTHORIZATION_TOKEN
                 }
+            });
+            return new BcConnectionDto(response.data);
+        } catch (error) {
+            logger.error(error);
+            const err = error as AxiosError;
+            logger.error(err.response ? JSON.stringify(err.response.data) : err);
+            throw err;
+        }
+    }
+
+    async checkBcNodeConnection(bcNodeInfo: CreateBcNodeInfoDto, bcUserAuthenticationDto: BcUserAuthenticationDto): Promise<BcConnectionDto> {
+        const logger = new Logger('CheckBcNodeConnection');
+        try {
+            const response = await axios.get(bcNodeInfo.nodeUrl + BC_CONNECTION_API.CHECK_BC_NODE_CONNECTION, {
+                headers: {
+                    authorization: 'Basic ' + bcNodeInfo.authorizationToken,
+                    key: bcUserAuthenticationDto.key,
+                    salt: bcUserAuthenticationDto.salt,
+                    channel_name: 'default',
+                    org_name: bcNodeInfo.orgName
+                },
+                timeout: 2000
             });
             return new BcConnectionDto(response.data);
         } catch (error) {
