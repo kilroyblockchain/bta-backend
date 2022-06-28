@@ -19,8 +19,8 @@ export class ProjectController {
     @HttpCode(HttpStatus.CREATED)
     @UseGuards(AuthGuard('jwt'), PermissionGuard)
     @Permission(ACCESS_TYPE.WRITE)
-    @Feature(FEATURE_IDENTIFIER.MANAGE_PROJECT)
-    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
+    @Feature(FEATURE_IDENTIFIER.PROJECT)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
     @ApiBearerAuth()
     @ApiHeader({
         name: 'Bearer',
@@ -44,8 +44,8 @@ export class ProjectController {
     @HttpCode(HttpStatus.OK)
     @UseGuards(AuthGuard('jwt'), PermissionGuard)
     @Permission(ACCESS_TYPE.READ)
-    @Feature(FEATURE_IDENTIFIER.MANAGE_PROJECT)
-    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
+    @Feature(FEATURE_IDENTIFIER.PROJECT)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
     @ApiBearerAuth()
     @ApiHeader({
         name: 'Bearer',
@@ -68,8 +68,8 @@ export class ProjectController {
     @HttpCode(HttpStatus.OK)
     @UseGuards(AuthGuard('jwt'), PermissionGuard)
     @Permission(ACCESS_TYPE.UPDATE)
-    @Feature(FEATURE_IDENTIFIER.MANAGE_PROJECT)
-    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
+    @Feature(FEATURE_IDENTIFIER.PROJECT)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
     @ApiBearerAuth()
     @ApiHeader({
         name: 'Bearer',
@@ -93,8 +93,8 @@ export class ProjectController {
     @HttpCode(HttpStatus.OK)
     @UseGuards(AuthGuard('jwt'), PermissionGuard)
     @Permission(ACCESS_TYPE.DELETE)
-    @Feature(FEATURE_IDENTIFIER.MANAGE_PROJECT)
-    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
+    @Feature(FEATURE_IDENTIFIER.PROJECT)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
     @ApiBearerAuth()
     @ApiHeader({
         name: 'Bearer',
@@ -118,8 +118,8 @@ export class ProjectController {
     @HttpCode(HttpStatus.OK)
     @UseGuards(AuthGuard('jwt'), PermissionGuard)
     @Permission(ACCESS_TYPE.DELETE)
-    @Feature(FEATURE_IDENTIFIER.MANAGE_PROJECT)
-    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
+    @Feature(FEATURE_IDENTIFIER.PROJECT)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
     @ApiBearerAuth()
     @ApiHeader({
         name: 'Bearer',

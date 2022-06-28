@@ -1,12 +1,12 @@
 import FeatureModel from 'app-migrations/feature-migrate/schemas/feature.schema';
-import { generalFeatures, superAdminFeatures } from 'app-migrations/feature-migrate/data';
+import { btaFeatures, generalFeatures, superAdminFeatures } from 'app-migrations/feature-migrate/data';
 import { featureProduction } from 'app-migrations/feature-migrate/data/index.prod';
 import { consoleLogWrapper, dropCollectionIfExist } from 'app-migrations/helper-func';
 import { mongooseConnection } from 'app-migrations/migrate';
 
 async function up(): Promise<void> {
     try {
-        const featuresLocal = [...superAdminFeatures, ...generalFeatures];
+        const featuresLocal = [...superAdminFeatures, ...generalFeatures, ...btaFeatures];
         const features = process.env.ENVIRONMENT === 'prod' ? featureProduction : featuresLocal;
         const collectionName = 'features';
         await dropCollectionIfExist((await mongooseConnection).connection, collectionName);
