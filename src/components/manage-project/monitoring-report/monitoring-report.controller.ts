@@ -21,8 +21,8 @@ export class MonitoringReportController {
     @HttpCode(HttpStatus.CREATED)
     @UseGuards(PermissionGuard)
     @Permission(ACCESS_TYPE.WRITE)
-    @Feature(FEATURE_IDENTIFIER.MANAGE_PROJECT)
-    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
+    @Feature(FEATURE_IDENTIFIER.MODEL_MONITORING)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
     @ApiBearerAuth()
     @ApiHeader({
         name: 'Bearer',
@@ -57,8 +57,8 @@ export class MonitoringReportController {
     @HttpCode(HttpStatus.OK)
     @UseGuards(PermissionGuard)
     @Permission(ACCESS_TYPE.READ)
-    @Feature(FEATURE_IDENTIFIER.MANAGE_PROJECT)
-    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
+    @Feature(FEATURE_IDENTIFIER.MODEL_MONITORING)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
     @ApiBearerAuth()
     @ApiHeader({
         name: 'Bearer',
