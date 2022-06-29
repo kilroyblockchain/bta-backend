@@ -5,12 +5,10 @@ import { IOrganizationUnitInterface } from 'src/components/app-user/user-roles/o
 export interface StaffingInterface extends Document, IDocumentTimestamp {
     organizationUnitId: string;
     staffingName: string;
-    featureAndAccess?: [
-        {
-            featureId?: string | IFeature;
-            accessType?: string[];
-        }
-    ];
+    featureAndAccess?: {
+        featureId?: string | IFeature;
+        accessType?: string[];
+    }[];
     status?: boolean;
 }
 

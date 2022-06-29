@@ -30,12 +30,10 @@ export class OrganizationStaffResponse extends TimestampDto {
         ],
         description: 'Feature and access detail'
     })
-    featureAndAccess?: [
-        {
-            featureId?: string | IFeature;
-            accessType?: string[];
-        }
-    ];
+    featureAndAccess?: {
+        featureId?: string | IFeature;
+        accessType?: string[];
+    }[];
 
     @ApiProperty({
         example: true,

@@ -2,6 +2,9 @@ import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateOrganizationUnitDto {
+    constructor(createOrganizationUnit: CreateOrganizationUnitDto) {
+        Object.assign(this, createOrganizationUnit);
+    }
     @ApiProperty({
         example: '6021191f51c4b2219c95ffb1',
         description: 'company of Unit',
@@ -42,5 +45,5 @@ export class CreateOrganizationUnitDto {
         example: ['6021191f51c4b2219c95ffb1']
     })
     @IsOptional()
-    readonly featureListId: [string];
+    readonly featureListId: string[];
 }

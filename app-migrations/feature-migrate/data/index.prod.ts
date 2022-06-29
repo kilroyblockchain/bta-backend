@@ -1,3 +1,3 @@
-import { generalFeatures, superAdminFeatures } from '.';
+import { btaFeatures, generalFeatures, superAdminFeatures } from '.';
 
-export const featureProduction = [...superAdminFeatures, ...generalFeatures];
+export const featureProduction = [...superAdminFeatures, ...generalFeatures, ...btaFeatures];

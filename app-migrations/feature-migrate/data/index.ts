@@ -94,13 +94,62 @@ export const generalFeatures = [
         subscriptionId: [new Types.ObjectId(SubscriptionTypeID.SUPER_ADMIN), new Types.ObjectId(SubscriptionTypeID.OTHER), new Types.ObjectId(SubscriptionTypeID.STAFF)],
         featureIdentifier: FEATURE_IDENTIFIER.CHANGE_USER_PASSWORD,
         feature: 'Change user password'
-    },
-    /* 10 */
+    }
+];
+
+/**
+ * Allocate 602102d7dfbf432c8c4f3000 - 602102d7dfbf432c8c4f4000
+ * bta features
+ *
+ */
+
+export const btaFeatures = [
+    /* 1 */
     {
-        _id: new Types.ObjectId('602102d7dfbf432c8c4f0010'),
-        accessType: [ACCESS_TYPE.READ, ACCESS_TYPE.WRITE, ACCESS_TYPE.UPDATE, ACCESS_TYPE.DELETE],
-        subscriptionId: [new Types.ObjectId(SubscriptionTypeID.SUPER_ADMIN), new Types.ObjectId(SubscriptionTypeID.OTHER), new Types.ObjectId(SubscriptionTypeID.STAFF)],
-        featureIdentifier: FEATURE_IDENTIFIER.MANAGE_PROJECT,
-        feature: 'Manage Project'
+        _id: new Types.ObjectId('602102d7dfbf432c8c4f3000'),
+        accessType: [ACCESS_TYPE.READ, ACCESS_TYPE.WRITE, ACCESS_TYPE.UPDATE],
+        subscriptionId: [new Types.ObjectId(SubscriptionTypeID.STAFF)],
+        featureIdentifier: FEATURE_IDENTIFIER.PROJECT,
+        feature: 'Project'
+    },
+    /* 2 */
+    {
+        _id: new Types.ObjectId('602102d7dfbf432c8c4f3001'),
+        accessType: [ACCESS_TYPE.WRITE],
+        subscriptionId: [new Types.ObjectId(SubscriptionTypeID.STAFF)],
+        featureIdentifier: FEATURE_IDENTIFIER.PROJECT_PURPOSE,
+        feature: 'Project Purpose'
+    },
+    /* 3 */
+    {
+        _id: new Types.ObjectId('602102d7dfbf432c8c4f3002'),
+        accessType: [ACCESS_TYPE.READ, ACCESS_TYPE.WRITE],
+        subscriptionId: [new Types.ObjectId(SubscriptionTypeID.STAFF)],
+        featureIdentifier: FEATURE_IDENTIFIER.MODEL_VERSION,
+        feature: 'Model Version'
+    },
+    /* 4 */
+    {
+        _id: new Types.ObjectId('602102d7dfbf432c8c4f3003'),
+        accessType: [ACCESS_TYPE.READ, ACCESS_TYPE.WRITE],
+        subscriptionId: [new Types.ObjectId(SubscriptionTypeID.STAFF)],
+        featureIdentifier: FEATURE_IDENTIFIER.MODEL_REVIEWS,
+        feature: 'Model Reviews'
+    },
+    /* 5 */
+    {
+        _id: new Types.ObjectId('602102d7dfbf432c8c4f3004'),
+        accessType: [ACCESS_TYPE.READ, ACCESS_TYPE.WRITE],
+        subscriptionId: [new Types.ObjectId(SubscriptionTypeID.STAFF)],
+        featureIdentifier: FEATURE_IDENTIFIER.MODEL_MONITORING,
+        feature: 'Model Monitoring'
+    },
+    /* 6 */
+    {
+        _id: new Types.ObjectId('602102d7dfbf432c8c4f3005'),
+        accessType: [ACCESS_TYPE.READ],
+        subscriptionId: [new Types.ObjectId(SubscriptionTypeID.STAFF)],
+        featureIdentifier: FEATURE_IDENTIFIER.PROJECT_DETAILS,
+        feature: 'Project Detail'
     }
 ];

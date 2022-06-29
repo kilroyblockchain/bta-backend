@@ -18,9 +18,9 @@ export class AiModelController {
     @Get('all/:id')
     @HttpCode(HttpStatus.OK)
     @UseGuards(PermissionGuard)
-    @Permission(ACCESS_TYPE.WRITE)
-    @Feature(FEATURE_IDENTIFIER.MANAGE_PROJECT)
-    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
     @ApiBearerAuth()
     @ApiHeader({
         name: 'Bearer',
@@ -44,9 +44,9 @@ export class AiModelController {
     @Get('expDetails/:id')
     @HttpCode(HttpStatus.OK)
     @UseGuards(PermissionGuard)
-    @Permission(ACCESS_TYPE.WRITE)
-    @Feature(FEATURE_IDENTIFIER.MANAGE_PROJECT)
-    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
     @ApiBearerAuth()
     @ApiHeader({
         name: 'Bearer',
@@ -70,9 +70,9 @@ export class AiModelController {
     @Get('expInfo/:id')
     @HttpCode(HttpStatus.OK)
     @UseGuards(PermissionGuard)
-    @Permission(ACCESS_TYPE.WRITE)
-    @Feature(FEATURE_IDENTIFIER.MANAGE_PROJECT)
-    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
     @ApiBearerAuth()
     @ApiHeader({
         name: 'Bearer',
