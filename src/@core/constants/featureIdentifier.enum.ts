@@ -17,5 +17,6 @@ export enum FEATURE_IDENTIFIER {
     PROJECT_PURPOSE = 'project-purpose',
     MODEL_VERSION = 'model-version',
     MODEL_REVIEWS = 'model-reviews',
-    MODEL_MONITORING = 'model-monitoring'
+    MODEL_MONITORING = 'model-monitoring',
+    BC_NODE_INFO = 'bc-node-info'
 }
