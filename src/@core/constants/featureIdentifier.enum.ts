@@ -12,5 +12,6 @@ export enum FEATURE_IDENTIFIER {
     OC_GROUP = 'oracle-group',
     OC_USER = 'oracle-user',
     APPLICATION_LOGS = 'application-logs',
-    MANAGE_PROJECT = 'manage-project'
+    MANAGE_PROJECT = 'manage-project',
+    BC_NODE_INFO = 'bc-node-info'
 }
