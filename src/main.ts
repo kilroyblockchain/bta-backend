@@ -26,6 +26,7 @@ import { OrganizationUnitModule } from './components/app-user/user-roles/organiz
 import { FeatureModule } from './components/app-user/features/features.module';
 import { SubscriptionTypeModule } from './components/app-user/subscription-type/subscription-type.module';
 import { CountryModule } from './components/app-user/country/country.module';
+import { ModelReviewModule } from './components/manage-project/model-reviews/model-review.module';
 
 async function bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule, {
@@ -88,7 +89,8 @@ async function bootstrap(): Promise<void> {
             ProjectVersionModule,
             VerificationModule,
             MonitoringReportModule,
-            AiModelModule
+            AiModelModule,
+            ModelReviewModule
         ]
     });
     SwaggerModule.setup('api', app, document);
