@@ -47,11 +47,7 @@ export class ProjectService {
         const { page = 1, limit = 10, status = true, search, searchValue } = req.query;
         const searchQuery = search && search === 'true' && searchValue ? getSearchFilterWithRegexAll(searchValue.toString(), ['name', 'details', 'domain', 'purpose']) : {};
         const options = {
-            populate: [
-                { path: 'members', select: 'firstName lastName email' },
-                { path: 'createdBy', select: 'firstName lastName email' },
-                { path: 'projectVersions', select: 'versionName versionStatus' }
-            ],
+            populate: [{ path: 'members', select: 'firstName lastName email address phone' }, { path: 'createdBy', select: 'firstName lastName email' }, { path: 'projectVersions' }],
             lean: true,
             limit: Number(limit),
             page: Number(page),

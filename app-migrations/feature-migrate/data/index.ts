@@ -143,13 +143,5 @@ export const btaFeatures = [
         subscriptionId: [new Types.ObjectId(SubscriptionTypeID.STAFF)],
         featureIdentifier: FEATURE_IDENTIFIER.MODEL_MONITORING,
         feature: 'Model Monitoring'
-    },
-    /* 6 */
-    {
-        _id: new Types.ObjectId('602102d7dfbf432c8c4f3005'),
-        accessType: [ACCESS_TYPE.READ],
-        subscriptionId: [new Types.ObjectId(SubscriptionTypeID.STAFF)],
-        featureIdentifier: FEATURE_IDENTIFIER.PROJECT_DETAILS,
-        feature: 'Project Detail'
     }
 ];

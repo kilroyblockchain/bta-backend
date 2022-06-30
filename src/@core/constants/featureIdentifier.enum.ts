@@ -13,7 +13,6 @@ export enum FEATURE_IDENTIFIER {
     OC_USER = 'oracle-user',
     APPLICATION_LOGS = 'application-logs',
     PROJECT = 'project',
-    PROJECT_DETAILS = 'project-details',
     PROJECT_PURPOSE = 'project-purpose',
     MODEL_VERSION = 'model-version',
     MODEL_REVIEWS = 'model-reviews',

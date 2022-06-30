@@ -49,7 +49,7 @@ import { generateUniqueId } from 'src/@utils/helpers';
 import { ChannelMappingService } from 'src/components/blockchain/channel-mapping/channel-mapping.service';
 import { ChannelDetailService } from 'src/components/blockchain/channel-detail/channel-detail.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ORGANIZATION_CREATED, FORGET_PASSWORD, ORGANIZATION_REJECTED, SUBSCRIPTION_UPDATED, USER_ACCEPTED, USER_DISABLED, USER_ENABLED, USER_REGISTERED } from 'src/@utils/events/constants/events.constants';
+import { FORGET_PASSWORD, ORGANIZATION_REJECTED, SUBSCRIPTION_UPDATED, USER_ACCEPTED, USER_DISABLED, USER_ENABLED, USER_REGISTERED } from 'src/@utils/events/constants/events.constants';
 import {
     ForgetPasswordBodyContextDto,
     ForgetPasswordEmailDto,
@@ -125,10 +125,6 @@ export class UserService {
             user.company = [this.initUserCompany(organizationData, registerUserDto, true, false, true)];
             user.password = randomPassword;
             await user.save();
-
-            this.eventEmitter.emit(ORGANIZATION_CREATED, {
-                companyId: organizationData._id
-            });
 
             return this.buildRegistrationInfo(user);
         } catch (err) {
