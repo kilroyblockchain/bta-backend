@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
 import { ProjectService } from '../project/project.service';
 import { IProjectVersion } from './interfaces/project-version.interface';
-import { AddVersionDto } from './dto';
+import { AddReviewModelDto, AddVersionDto } from './dto';
 import { Request } from 'express';
 
 @Injectable()
@@ -59,7 +59,7 @@ export class ProjectVersionService {
         if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
 
         const versionInfo = await version.populate([
-            { path: 'projectId', select: 'name domain details _id' },
+            { path: 'project', select: 'name domain details _id' },
             { path: 'createdBy', select: 'firstName lastName email _id' }
         ]);
 
@@ -78,5 +78,18 @@ export class ProjectVersionService {
         if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
 
         return version;
+    }
+
+    async addReviewModel(req: Request, projectId: string, newVersion: AddReviewModelDto): Promise<IProjectVersion> {
+        const user = req['user']._id;
+
+        const project = await this.projectService.getProjectById(projectId, req);
+        if (!project) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
+
+        const version = new this.versionModel(newVersion);
+        version.createdBy = user;
+        version.project = project._id;
+
+        return await version.save();
     }
 }

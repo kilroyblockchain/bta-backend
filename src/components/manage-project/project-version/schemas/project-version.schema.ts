@@ -38,15 +38,13 @@ export const ProjectVersionSchema = new Schema(
             type: String
         },
         trainDataSets: {
-            type: String,
-            required: true
+            type: String
         },
         trainDatasetBCHash: {
             type: String
         },
         artifacts: {
-            type: String,
-            required: true
+            type: String
         },
         codeVersion: {
             type: String,
