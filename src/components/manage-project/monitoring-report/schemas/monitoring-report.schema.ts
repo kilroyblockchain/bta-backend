@@ -34,7 +34,7 @@ export const MonitoringReportSchema = new Schema(
         },
         status: {
             type: mongoose.Types.ObjectId,
-            ref: 'monitoring-status'
+            ref: 'monitoring-statuses'
         },
         otherStatus: {
             type: String

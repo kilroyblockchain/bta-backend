@@ -4,12 +4,13 @@ import { ApiBearerAuth, ApiConsumes, ApiHeader, ApiOperation, ApiParam, ApiRespo
 import { MonitoringReportService } from './monitoring-report.service';
 import { diskStorage } from 'multer';
 import { createMonitoringDocDestinationFolder, docsFileFilter, editFileName } from 'src/@core/utils/file-upload.utils';
-import { AddReportDto, MonitoringReportResponseDto, VersionAllReportsDto } from './dto';
+import { AddReportDto, MonitoringReportResponseDto, MonitoringStatusResponseDto, VersionAllReportsDto } from './dto';
 import { Response as FLOResponse } from 'src/@core/response';
 import { Request } from 'express';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, MANAGE_PROJECT_CONSTANT, ROLE } from 'src/@core/constants';
 import { PermissionGuard, RolesGuard } from 'src/components/auth/guards';
 import { Feature, Permission, Roles } from 'src/components/auth/decorators';
+import { COMMON_ERROR } from 'src/@core/constants/api-error-constants';
 
 @ApiTags('Version Monitoring')
 @UseGuards(RolesGuard)
@@ -75,6 +76,30 @@ export class MonitoringReportController {
             return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.ALL_VERSION_REPORTS_RETRIEVED]).setSuccessData(await this.monitoringService.getVersionReports(req, id)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_VERSION_REPORTS, err);
+        }
+    }
+
+    @Get('status')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.WRITE)
+    @Feature(FEATURE_IDENTIFIER.MODEL_MONITORING)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Get version monitoring reports status' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_MONITORING_STATUES })
+    @ApiResponse({ status: HttpStatus.OK, type: MonitoringStatusResponseDto, isArray: true, description: MANAGE_PROJECT_CONSTANT.ALL_MONITORING_STATUS_RETRIEVED })
+    async getMonitoringStatus(): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.ALL_MONITORING_STATUS_RETRIEVED]).setSuccessData(await this.monitoringService.getMonitoringStatus()).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_MONITORING_STATUES, err);
         }
     }
 }

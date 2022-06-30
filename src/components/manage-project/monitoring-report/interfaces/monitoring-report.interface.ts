@@ -19,3 +19,8 @@ export interface IReportDocs {
     docURL: string;
     docName: string;
 }
+
+export interface IMonitoringStatus extends Document {
+    _id: string;
+    name: string;
+}

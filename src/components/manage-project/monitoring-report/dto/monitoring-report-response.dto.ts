@@ -159,3 +159,31 @@ export class VersionAllReportsDto {
     })
     updatedAt: Date;
 }
+
+export class MonitoringStatusResponseDto {
+    @ApiProperty({
+        example: '62be02c496fa72cc27af1002',
+        description: 'Id of the monitoring status',
+        format: 'string'
+    })
+    _id: string;
+
+    @ApiProperty({
+        example: 'App crashed',
+        description: 'Status name',
+        format: 'string'
+    })
+    name: string;
+
+    @ApiProperty({
+        example: new Date(),
+        description: 'Monitoring status added created date'
+    })
+    createdAt: Date;
+
+    @ApiProperty({
+        example: new Date(),
+        description: 'Monitoring status updated date'
+    })
+    updatedAt: Date;
+}

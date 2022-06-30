@@ -7,7 +7,7 @@ import { mongooseConnection } from 'app-migrations/migrate';
 async function up(): Promise<void> {
     try {
         const statuses = process.env.ENVIRONMENT === 'prod' ? monitoringStatusProduction : monitoringStatus;
-        const collectionName = 'monitoring-status';
+        const collectionName = 'monitoring-statuses';
         await dropCollectionIfExist((await mongooseConnection).connection, collectionName);
         for (const status of statuses) {
             const newStatus = new MonitoringStatusModel(status);

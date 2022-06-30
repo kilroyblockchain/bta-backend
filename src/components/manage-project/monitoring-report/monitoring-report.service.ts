@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { PaginateModel, PaginateResult } from 'mongoose';
-import { IMonitoringReport } from './interfaces/monitoring-report.interface';
+import { Model, PaginateModel, PaginateResult } from 'mongoose';
+import { IMonitoringReport, IMonitoringStatus } from './interfaces/monitoring-report.interface';
 import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
 import { ProjectVersionService } from 'src/components/manage-project/project-version/project-version.service';
 import { AddReportDto } from './dto';
@@ -10,7 +10,12 @@ import { UserService } from 'src/components/app-user/user/user.service';
 
 @Injectable()
 export class MonitoringReportService {
-    constructor(@InjectModel('version-monitoring-report') private readonly monitoringModel: PaginateModel<IMonitoringReport>, private readonly versionService: ProjectVersionService, private readonly userService: UserService) {}
+    constructor(
+        @InjectModel('version-monitoring-report') private readonly monitoringModel: PaginateModel<IMonitoringReport>,
+        @InjectModel('monitoring-status') private readonly monitoringStatusModel: Model<IMonitoringStatus>,
+        private readonly versionService: ProjectVersionService,
+        private readonly userService: UserService
+    ) {}
 
     async addMonitoringReport(req: Request, versionId: string, files: Array<Express.Multer.File>, newReport: AddReportDto): Promise<IMonitoringReport> {
         const version = await this.versionService.getVersionById(versionId);
@@ -42,7 +47,7 @@ export class MonitoringReportService {
         const options = {
             populate: [
                 { path: 'createdBy', select: 'firstName lastName' },
-                { path: 'status', select: 'name' }
+                { path: 'statuses', select: 'name' }
             ],
             lean: true,
             limit: Number(limit),
@@ -50,5 +55,9 @@ export class MonitoringReportService {
             sort: { createdAt: -1 }
         };
         return await this.monitoringModel.paginate({ version: versionId }, options);
+    }
+
+    async getMonitoringStatus(): Promise<Array<IMonitoringStatus>> {
+        return await this.monitoringStatusModel.find({});
     }
 }

@@ -13,7 +13,8 @@ const MonitoringStatusSchema = new mongoose.Schema(
         }
     },
     {
-        _id: false
+        versionKey: false,
+        timestamps: true
     }
 );
 
