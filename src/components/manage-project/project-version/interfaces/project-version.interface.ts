@@ -19,7 +19,7 @@ export interface IProjectVersion extends Document {
     codeRepo: string;
     comment: string;
     status: boolean;
-    versionStatus: VersionStatus;
+    versionStatus: VersionStatus | string;
     updatedAt: Date;
     createdAt: Date;
     createdBy: IUser;
