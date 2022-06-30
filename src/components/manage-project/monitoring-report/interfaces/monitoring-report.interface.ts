@@ -9,6 +9,9 @@ export interface IMonitoringReport extends Document {
     createdAt: Date;
     version: string;
     createdBy: string;
+    staffing: string;
+    status: string;
+    otherStatus: string;
 }
 
 export interface IReportDocs {

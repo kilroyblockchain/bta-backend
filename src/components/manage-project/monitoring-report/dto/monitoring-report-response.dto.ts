@@ -53,6 +53,20 @@ export class MonitoringReportResponseDto {
     version: string;
 
     @ApiProperty({
+        example: '62be02c496fa72cc27af1009',
+        description: 'Id of monitoring status',
+        format: 'string'
+    })
+    status: string;
+
+    @ApiProperty({
+        example: 'MLOps Engineer',
+        description: 'Staffing unit name who added monitoring reports',
+        format: 'string'
+    })
+    staffing: string;
+
+    @ApiProperty({
         example: new Date(),
         description: 'Project version added created date'
     })
@@ -111,6 +125,20 @@ export class VersionAllReportsDto {
         format: 'object'
     })
     createdBy: IUser;
+
+    @ApiProperty({
+        example: 'HTTP restriction',
+        description: 'Status of monitoring reports for model',
+        format: 'string'
+    })
+    status: string;
+
+    @ApiProperty({
+        example: 'MLOps Engineer',
+        description: 'Staffing unit name who added monitoring reports',
+        format: 'string'
+    })
+    staffing: string;
 
     @ApiProperty({
         example: '60e6fe33d27e2133c485513b',

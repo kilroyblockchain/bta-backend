@@ -28,6 +28,16 @@ export const MonitoringReportSchema = new Schema(
         createdBy: {
             type: mongoose.Types.ObjectId,
             ref: 'User'
+        },
+        staffing: {
+            type: String
+        },
+        status: {
+            type: mongoose.Types.ObjectId,
+            ref: 'monitoring-status'
+        },
+        otherStatus: {
+            type: String
         }
     },
     {

@@ -32,4 +32,17 @@ export class AddReportDto {
         description: 'This is document of monitoring reports'
     })
     docs: Array<Express.Multer.File>;
+
+    @ApiProperty({
+        example: 'HTTP restriction',
+        description: 'Status for model on monitoring reports',
+        required: true
+    })
+    @IsNotEmpty()
+    @IsString()
+    status: string;
+
+    @IsOptional()
+    @IsString()
+    otherStatus: string;
 }
