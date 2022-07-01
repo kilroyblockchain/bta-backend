@@ -54,7 +54,7 @@ export class MonitoringReportController {
         }
     }
 
-    @Get(':id')
+    @Get('get/:id')
     @HttpCode(HttpStatus.OK)
     @UseGuards(PermissionGuard)
     @Permission(ACCESS_TYPE.READ)
