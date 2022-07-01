@@ -14,7 +14,6 @@ import {
     PERSONAL_DETAIL_STAFFING_ID,
     PROJECT_STAFFING_ID,
     PROJECT_PURPOSE_STAFFING_ID,
-    PROJECT_DETAILS_STAFFING_ID,
     STAKEHOLDER,
     UNIT_DESCRIPTION,
     UNIT_NAME
@@ -55,10 +54,6 @@ export class OrganizationEventService {
                         {
                             accessType: ['R'],
                             featureId: PROJECT_STAFFING_ID
-                        },
-                        {
-                            accessType: ['R'],
-                            featureId: PROJECT_DETAILS_STAFFING_ID
                         },
                         {
                             accessType: ['R', 'W'],
@@ -115,7 +110,7 @@ export class OrganizationEventService {
                             featureId: ORGANIZATION_DETAIL_STAFFING_ID
                         },
                         {
-                            accessType: ['R', 'U'],
+                            accessType: ['R'],
                             featureId: PROJECT_STAFFING_ID
                         },
                         {

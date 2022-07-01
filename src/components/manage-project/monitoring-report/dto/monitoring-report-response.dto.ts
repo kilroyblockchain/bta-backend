@@ -53,6 +53,20 @@ export class MonitoringReportResponseDto {
     version: string;
 
     @ApiProperty({
+        example: '62be02c496fa72cc27af1009',
+        description: 'Id of monitoring status',
+        format: 'string'
+    })
+    status: string;
+
+    @ApiProperty({
+        example: 'MLOps Engineer',
+        description: 'Staffing unit name who added monitoring reports',
+        format: 'string'
+    })
+    staffing: string;
+
+    @ApiProperty({
         example: new Date(),
         description: 'Project version added created date'
     })
@@ -113,6 +127,20 @@ export class VersionAllReportsDto {
     createdBy: IUser;
 
     @ApiProperty({
+        example: 'HTTP restriction',
+        description: 'Status of monitoring reports for model',
+        format: 'string'
+    })
+    status: string;
+
+    @ApiProperty({
+        example: 'MLOps Engineer',
+        description: 'Staffing unit name who added monitoring reports',
+        format: 'string'
+    })
+    staffing: string;
+
+    @ApiProperty({
         example: '60e6fe33d27e2133c485513b',
         description: 'Id of project where version is added',
         format: 'string'
@@ -128,6 +156,34 @@ export class VersionAllReportsDto {
     @ApiProperty({
         example: new Date(),
         description: 'Project version updated date'
+    })
+    updatedAt: Date;
+}
+
+export class MonitoringStatusResponseDto {
+    @ApiProperty({
+        example: '62be02c496fa72cc27af1002',
+        description: 'Id of the monitoring status',
+        format: 'string'
+    })
+    _id: string;
+
+    @ApiProperty({
+        example: 'App crashed',
+        description: 'Status name',
+        format: 'string'
+    })
+    name: string;
+
+    @ApiProperty({
+        example: new Date(),
+        description: 'Monitoring status added created date'
+    })
+    createdAt: Date;
+
+    @ApiProperty({
+        example: new Date(),
+        description: 'Monitoring status updated date'
     })
     updatedAt: Date;
 }

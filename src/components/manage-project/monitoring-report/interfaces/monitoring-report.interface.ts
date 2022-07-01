@@ -9,10 +9,18 @@ export interface IMonitoringReport extends Document {
     createdAt: Date;
     version: string;
     createdBy: string;
+    staffing: string;
+    status: string;
+    otherStatus: string;
 }
 
 export interface IReportDocs {
     _id?: string;
     docURL: string;
     docName: string;
+}
+
+export interface IMonitoringStatus extends Document {
+    _id: string;
+    name: string;
 }
