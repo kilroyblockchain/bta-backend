@@ -28,15 +28,11 @@ import { VerificationService } from '../verification/verification.service';
 import { OrganizationStaffingService } from '../user-roles/organization-staffing/organization-staffing.service';
 import { ICompany, IUser, ILoginCount, IUserResponse, IUserWithBlockchain, ICompanyAdmin, IJWTUserData, IUserData } from './interfaces/user.interface';
 import { ICompanyDto, IOrganization } from '../organization/interfaces/organization.interface';
-import { UserBcService } from './user-bc.service';
 import { BC_STATUS } from 'src/@core/constants/bc-status.enum';
 import { getArraysComplement, getClientTimezoneId, getHourMinuteDiff } from 'src/@core/utils/common.utils';
-import { BC_PAYLOAD } from 'src/@core/constants/bc-constants/bc-payload.constant';
 import { fullSubscriptionType } from '../subscription-type/subscription-type.constant';
 import { getSearchFilterWithRegexAll } from 'src/@core/utils/query-filter.utils';
 import { buildPaginateResult, getFinalPaginationResult, getPaginateDocumentStage, populateField, sortDocumentsBy } from 'src/@core/utils/aggregate-paginate.utils';
-import { BcUserDto } from 'src/@core/common/bc-user.dto';
-import { CaService } from 'src/components/certificate-authority/ca-client.service';
 import { CHANNEL_DETAIL } from 'src/@core/constants/bc-constants/channel-detail.constant';
 import { RejectUserDto } from './dto/reject-user.dto';
 import { UserRejectInfoService } from '../user-reject-info/user-reject-info.service';
@@ -44,10 +40,6 @@ import { CAPTCHA_STATUS } from 'src/@core/constants/captcha-status.enum';
 import { COOKIE_KEYS } from 'src/@core/constants/cookie-key.constant';
 import { IUserActivityResponse, IRefreshToken } from 'src/components/auth/interfaces/refresh-token.interface';
 import { IVerifyEmail } from './interfaces/verified-email.interface';
-import { ChannelMappingDto } from 'src/components/blockchain/channel-mapping/dto/channel-mapping.dto';
-import { generateUniqueId } from 'src/@utils/helpers';
-import { ChannelMappingService } from 'src/components/blockchain/channel-mapping/channel-mapping.service';
-import { ChannelDetailService } from 'src/components/blockchain/channel-detail/channel-detail.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FORGET_PASSWORD, ORGANIZATION_REJECTED, SUBSCRIPTION_UPDATED, USER_ACCEPTED, USER_DISABLED, USER_ENABLED, USER_REGISTERED } from 'src/@utils/events/constants/events.constants';
 import {
@@ -81,13 +73,9 @@ export class UserService {
         private readonly organizationService: OrganizationService,
         private readonly authService: AuthService,
         private readonly subsTypeService: SubscriptionTypeService,
-        private readonly userBcService: UserBcService,
         private readonly verificationService: VerificationService,
         private readonly staffingService: OrganizationStaffingService,
-        private readonly caService: CaService,
         private readonly userRejectInfoService: UserRejectInfoService,
-        private readonly channelMappingService: ChannelMappingService,
-        private readonly channelDetailService: ChannelDetailService,
         private eventEmitter: EventEmitter2
     ) {}
 
@@ -182,16 +170,6 @@ export class UserService {
                     populate: { path: 'featureAndAccess.featureId organizationUnitId' }
                 })
                 .select('-password');
-
-            if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                const bcUserDto = new BcUserDto();
-                bcUserDto.loggedInUserId = req['user']._id;
-                bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                bcUserDto.enrollmentId = user._id;
-                bcUserDto.enrollmentSecret = randomPassword;
-                await this.userBcService.storeUserBc(user, bcUserDto, BC_PAYLOAD.CREATE_USER);
-                await this.caService.userRegistrationListStaffing(newUserDto.staffingId, bcUserDto);
-            }
             const subscriptionTypeFull = await this.subsTypeService.getFullSubscription(userDto.subscriptionType);
             this.eventEmitter.emit(
                 USER_REGISTERED,
@@ -207,13 +185,6 @@ export class UserService {
                     })
                 })
             );
-            if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                const bcUserDto = new BcUserDto();
-                bcUserDto.loggedInUserId = req['user']._id;
-                bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                const blockchainVerified = await this.userBcService.getBlockchainVerifiedUser(userDetail, bcUserDto);
-                return { ...userDetail['_doc'], blockchainVerified };
-            }
             return userDetail;
         } catch (err) {
             logger.error(err);
@@ -235,23 +206,7 @@ export class UserService {
                 user.address = updateUserDto.address;
                 user.jobTitle = updateUserDto.jobTitle;
                 user.zipCode = updateUserDto.zipCode;
-                const updatedUser = await user.save();
-                if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                    const userDetail = await this.uModel
-                        .findById(user._id)
-                        .populate({
-                            path: 'company.companyId company.staffingId country state',
-                            select: '-countryCode -idNumber -phoneCode -states -countryId -countryObjectId -__v',
-                            populate: { path: 'featureAndAccess.featureId organizationUnitId' }
-                        })
-                        .select('-password');
-                    const bcUserDto = new BcUserDto();
-                    bcUserDto.loggedInUserId = req['user']._id;
-                    bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                    await this.userBcService.storeUserBc(userDetail, bcUserDto, BC_PAYLOAD.UPDATE_USER);
-                    const blockchainVerified = await this.userBcService.getBlockchainVerifiedUser(userDetail, bcUserDto);
-                    return { ...updatedUser['_doc'], blockchainVerified };
-                }
+                await user.save();
                 return await this.getUserDataByJWT(req);
             }
             throw new NotFoundException(USER_CONSTANT.USER_NOT_FOUND);
@@ -280,7 +235,7 @@ export class UserService {
         }
     }
 
-    async updateUserByOrganizationAdmin(updateUserDto: NewUserDto, userId: string, req: Request): Promise<IUser> {
+    async updateUserByOrganizationAdmin(updateUserDto: NewUserDto, userId: string): Promise<IUser> {
         const logger = new Logger(UserService.name + '-updateUserByOrganizationAdmin');
         try {
             const updatingUser = await this.uModel.findOne({ _id: userId });
@@ -305,23 +260,6 @@ export class UserService {
                     updatingUser.address = updateUserDto.address;
                     updatingUser.zipCode = updateUserDto.zipCode;
                     await updatingUser.save();
-                    if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                        const updatedUser = await this.uModel.findOne({ _id: userId });
-                        const bcUserDto = new BcUserDto();
-                        bcUserDto.loggedInUserId = req['user']._id;
-                        bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                        await this.userBcService.storeUserBc(updatedUser, bcUserDto, BC_PAYLOAD.UPDATE_USER);
-                        for (const staffingId of updateUserDto.staffingId) {
-                            const data = await this.channelMappingService.checkChannelMappingByUserOrganizationAndStaffing(userId, bcUserDto.company.companyId as string, staffingId);
-                            if (!data) {
-                                const bcUserDto = new BcUserDto();
-                                bcUserDto.loggedInUserId = req['user']._id;
-                                bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                                bcUserDto.enrollmentId = userId;
-                                await this.caService.userRegistration(bcUserDto, staffingId);
-                            }
-                        }
-                    }
                     const userData = await this.uModel
                         .findById(userId)
                         .populate({
@@ -330,13 +268,6 @@ export class UserService {
                             populate: { path: 'featureAndAccess.featureId organizationUnitId' }
                         })
                         .select('-password');
-                    if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                        const bcUserDto = new BcUserDto();
-                        bcUserDto.loggedInUserId = req['user']._id;
-                        bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                        const blockchainVerified = await this.userBcService.getBlockchainVerifiedUser(userData, bcUserDto);
-                        return { ...userData['_doc'], blockchainVerified };
-                    }
                     return userData;
                 } else {
                     throw new ConflictException([USER_CONSTANT.USER_EMAIL_HAS_ALREADY_BEEN_REGISTERED, updateUserDto.email]);
@@ -394,7 +325,7 @@ export class UserService {
         }
     }
 
-    async verifyEmailByAdmin(verifyEmailDto: VerifyEmailDto, req: Request): Promise<void> {
+    async verifyEmailByAdmin(verifyEmailDto: VerifyEmailDto): Promise<void> {
         const logger = new Logger(UserService.name + '-verifyEmailByAdmin');
         try {
             if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
@@ -426,29 +357,10 @@ export class UserService {
             } catch (error) {
                 throw new Error(USER_CONSTANT.GENERATED_PASSWORD_FAILED_TO_SAVE);
             }
-            const userSaved = await this.UserModel.findById(verifyEmailDto.userId).exec();
+            await this.UserModel.findById(verifyEmailDto.userId).exec();
 
             const defaultCompany: ICompany = user.company.find((defaultComp) => defaultComp.default);
             const subscriptionTypeFull = await this.subsTypeService.getFullSubscription(defaultCompany.subscriptionType);
-            if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                const userDetail = await this.uModel
-                    .findById(user._id)
-                    .populate({
-                        path: 'company.companyId company.staffingId country state',
-                        select: '-countryCode -idNumber -phoneCode -states -countryId -countryObjectId -__v',
-                        populate: { path: 'featureAndAccess.featureId organizationUnitId' }
-                    })
-                    .select('-password');
-                const organization = user.company.find((defaultComp) => defaultComp.default);
-                const channelId = verifyEmailDto.channelId;
-                const bcUserDto = new BcUserDto();
-                bcUserDto.loggedInUserId = req['user']._id;
-                bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                await this.userBcService.storeUserBc(userDetail, bcUserDto, BC_PAYLOAD.CREATE_USER);
-                bcUserDto.enrollmentId = userSaved._id;
-                bcUserDto.enrollmentSecret = randomPassword;
-                await this.caService.userRegistration(bcUserDto, userSaved.company[0].staffingId[0] as string, organization.companyId.toString(), channelId);
-            }
             this.eventEmitter.emit(
                 USER_REGISTERED,
                 new GettingStartedEmailDto({
@@ -469,7 +381,7 @@ export class UserService {
         }
     }
 
-    async verifyUserByOrganizationAdmin(verifyEmailDto: VerifyEmailDto, req: Request, staffingId?: string): Promise<void> {
+    async verifyUserByOrganizationAdmin(verifyEmailDto: VerifyEmailDto, req: Request): Promise<void> {
         const logger = new Logger(UserService.name + '-verifyUserByOrganizationAdmin');
         try {
             if (this.isAdmin(req['user'])) {
@@ -502,15 +414,6 @@ export class UserService {
                 }
                 const defaultCompany: ICompany = user.company.find((defaultComp) => defaultComp.default);
                 const subscriptionTypeFull = await this.subsTypeService.getFullSubscription(defaultCompany.subscriptionType);
-                if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                    const userDetail = await this.UserModel.findById(verifyEmailDto.userId).exec();
-                    const bcUserDto = new BcUserDto();
-                    bcUserDto.loggedInUserId = req['user']._id;
-                    bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                    bcUserDto.enrollmentId = userDetail._id;
-                    bcUserDto.enrollmentSecret = randomPassword;
-                    await Promise.all([this.userBcService.storeUserBc(userDetail, bcUserDto, BC_PAYLOAD.CREATE_USER), this.caService.userRegistration(bcUserDto, staffingId)]);
-                }
                 this.eventEmitter.emit(
                     USER_REGISTERED,
                     new GettingStartedEmailDto({
@@ -572,13 +475,7 @@ export class UserService {
             }
             // let mailResponse: { success: boolean; message: string };
             try {
-                const userSaved = await user.save();
-                if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                    const bcUserDto = new BcUserDto();
-                    bcUserDto.loggedInUserId = req['user']._id;
-                    bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                    await Promise.all([this.userBcService.storeUserBc(userSaved, bcUserDto, BC_PAYLOAD.ENABLE_USER), this.caService.userReEnroll(new BcUserDto(userSaved._id), '')]);
-                }
+                await user.save();
             } catch (error) {
                 throw new Error(USER_CONSTANT.FAILED_TO_ENABLE_USER);
             }
@@ -831,14 +728,7 @@ export class UserService {
                 limit: Number(limit),
                 page: Number(page)
             };
-            const users = await this.uModel.paginate({ ...query, ...searchQuery }, options);
-            if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                const bcUserDto = new BcUserDto();
-                bcUserDto.loggedInUserId = req['user']._id;
-                bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                users.docs = await this.userBcService.getBlockchainVerifiedUserList(users.docs, bcUserDto);
-            }
-            return users;
+            return await this.uModel.paginate({ ...query, ...searchQuery }, options);
         } catch (err) {
             logger.error(err);
             throw err;
@@ -1017,13 +907,6 @@ export class UserService {
                     return fetchedUser;
                 })
             );
-
-            if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                const bcUserDto = new BcUserDto();
-                bcUserDto.loggedInUserId = user._id;
-                bcUserDto.company = user.company.find((defaultCompany) => defaultCompany.default);
-                users.docs = await this.userBcService.getBlockchainVerifiedUserList(users.docs, bcUserDto);
-            }
             return users;
         } catch (err) {
             logger.error(err);
@@ -1097,20 +980,6 @@ export class UserService {
             );
             try {
                 userData = await user.save();
-                if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                    const user = await this.UserModel.findById(verifyEmailDto.userId);
-                    const company = user.company;
-                    let companyNotDeletedCount = 0;
-                    company.forEach((company) => {
-                        if (!company.isDeleted) {
-                            companyNotDeletedCount++;
-                        }
-                    });
-                    if (companyNotDeletedCount == 0) {
-                        await this.caService.revokeUserCert(new BcUserDto(userData._id), null);
-                    }
-                }
-
                 await this.organizationService.updateOrganizationStatus(verifyEmailDto.companyId, verifyEmailDto.subscriptionType, false);
             } catch (error) {
                 throw new Error(USER_CONSTANT.FAILED_TO_ENABLE_USER);
@@ -1380,21 +1249,11 @@ export class UserService {
         }
     }
 
-    async findUserData(userId: string, req: Request): Promise<IUserWithBlockchain> {
+    async findUserData(userId: string): Promise<IUserWithBlockchain> {
         const logger = new Logger(UserService.name + '-findUserData');
         try {
             const userData = await this.UserModel.findById(userId);
-            let blockchainVerified = false;
-            if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                const bcUserDto = new BcUserDto();
-                bcUserDto.loggedInUserId = req['user']._id;
-                bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                blockchainVerified = await this.userBcService.getBlockchainVerifiedUser(userData, bcUserDto);
-                const returnData = this.buildRegistrationInfo(userData);
-                return { ...returnData, blockchainVerified };
-            }
-            const returnData = this.buildRegistrationInfo(userData);
-            return returnData;
+            return this.buildRegistrationInfo(userData);
         } catch (err) {
             logger.error(err);
             throw err;
@@ -1433,16 +1292,8 @@ export class UserService {
                         throw new NotFoundException(USER_CONSTANT.USER_NOT_FOUND);
                     }
                     this.isUserBlocked(user);
-                    let bcVerified = false;
+                    const bcVerified = false;
                     user = { ...user['_doc'] };
-                    if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                        if (user) {
-                            const bcUserDto = new BcUserDto();
-                            bcUserDto.loggedInUserId = req['user']._id;
-                            bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                            bcVerified = await this.userBcService.getBlockchainVerifiedUser(user, bcUserDto);
-                        }
-                    }
                     return {
                         ...user,
                         company: {
@@ -1841,7 +1692,7 @@ export class UserService {
         }
     }
 
-    async addSubscriptionType(subscriptionTypeDto: SubscriptionTypeDto, req: Request): Promise<IUser> {
+    async addSubscriptionType(subscriptionTypeDto: SubscriptionTypeDto): Promise<IUser> {
         const logger = new Logger(UserService.name + '-addSubscriptionType');
         try {
             let newSubscription = [];
@@ -1904,13 +1755,6 @@ export class UserService {
                             })
                         })
                     );
-                    if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                        const user = await this.UserModel.findById(subscriptionTypeDto.userId);
-                        const bcUserDto = new BcUserDto();
-                        bcUserDto.loggedInUserId = req['user']._id;
-                        bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                        await this.userBcService.storeUserBc(user, bcUserDto, BC_PAYLOAD.UPDATE_SUBSCRIPTION);
-                    }
                     return updatedResponse;
                 }
                 return;
@@ -1999,15 +1843,6 @@ export class UserService {
                 })
             );
             const userSaved = await (await user.save()).populate('country state');
-            if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                const bcUserDto = new BcUserDto();
-                bcUserDto.loggedInUserId = req['user']._id;
-                bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                bcUserDto.enrollmentId = user._id;
-                bcUserDto.enrollmentSecret = user._id;
-                await Promise.all([this.userBcService.storeUserBc(userSaved, bcUserDto, BC_PAYLOAD.UPDATE_USER), this.caService.userRegistration(bcUserDto, addCompanyDto.staffingId[0])]);
-                userSaved.blockchainVerified = await this.userBcService.getBlockchainVerifiedUser(userSaved, bcUserDto);
-            }
             const resUser = this.buildRegistrationInfo(userSaved);
             return { ...resUser, _id: resUser.id };
         } catch (err) {
@@ -2042,7 +1877,7 @@ export class UserService {
         }
     }
 
-    async deleteUserByOrganizationAdmin(userId: string, req: Request, staffingId?: string): Promise<void> {
+    async deleteUserByOrganizationAdmin(userId: string, req: Request): Promise<void> {
         const logger = new Logger(UserService.name + '-deleteUserByOrganizationAdmin');
         try {
             const company = this.authService.getDefaultCompany(req);
@@ -2060,19 +1895,6 @@ export class UserService {
             }
             const userData = await this.UserModel.findById(userId).select('email');
             const subscriptionTypeFull = await this.subsTypeService.getFullSubscription(company.subscriptionType);
-            if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                const user = await this.uModel.findById(userId);
-                const company = user.company;
-                let companyNotDeletedCount = 0;
-                company.forEach((company) => {
-                    if (!company.isDeleted) {
-                        companyNotDeletedCount++;
-                    }
-                });
-                if (companyNotDeletedCount == 0) {
-                    await this.caService.revokeUserCert(new BcUserDto(userData._id), staffingId);
-                }
-            }
             this.eventEmitter.emit(
                 USER_DISABLED,
                 new UserDisabledEmailDto({
@@ -2119,13 +1941,6 @@ export class UserService {
 
             const userData = await this.UserModel.findById(verifyEmailDto.userId).select('email');
             const subscriptionTypeFull = await this.subsTypeService.getFullSubscription(verifyEmailDto.subscriptionType);
-            if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                const bcUserDto = new BcUserDto();
-                bcUserDto.loggedInUserId = req['user']._id;
-                bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                const user = await this.uModel.findById(verifyEmailDto.userId);
-                await Promise.all([this.userBcService.storeUserBc(user, bcUserDto, BC_PAYLOAD.DISABLE_USER), this.caService.revokeUserCert(new BcUserDto(verifyEmailDto.userId), null)]);
-            }
             this.eventEmitter.emit(
                 USER_DISABLED,
                 new UserDisabledEmailDto({
@@ -2294,26 +2109,5 @@ export class UserService {
             logger.error(err);
             throw new BadRequestException(USER_CONSTANT.FAILED_TO_UNBLOCK_COMPANY_USER, err);
         }
-    }
-
-    async migrateSuperAdmin(): Promise<string> {
-        const logger = new Logger('MigrateBcUser');
-        const user = await this.UserModel.findOne({ 'company.subscriptionType': 'super-admin' });
-        if (!user) {
-            logger.error('Super Admin User Not Found');
-            throw new NotFoundException('Super Admin User Not Found');
-        }
-        const defaultChannelDetail = await this.channelDetailService.getDefaultChannelDetail();
-        const channelMappingDto = new ChannelMappingDto();
-        channelMappingDto.channelId = defaultChannelDetail._id;
-        channelMappingDto.organizationId = user.company[0].companyId as string;
-        channelMappingDto.staffingId = null;
-        channelMappingDto.userId = user._id;
-        const walletId = generateUniqueId();
-        channelMappingDto.walletId = walletId;
-        await this.channelMappingService.addChannelMapping(channelMappingDto);
-        await this.caService.registerSuperAdmin(walletId);
-
-        return walletId;
     }
 }
