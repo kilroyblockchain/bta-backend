@@ -6,7 +6,8 @@ import { BcConnectionDto } from './dto/bc-connection.dto';
 import { CreateBcNodeInfoDto } from '../bc-node-info/dto/create-bc-node-info.dto';
 import { BcUserAuthenticationDto } from '../dto/bc-user-authentication.dto';
 import { RegisterBcUserDto } from 'src/components/app-user/user/dto/register-bc-user.dto';
-import { RegisterBcUserResponseDto } from './dto/register-bc-user-response.dto';
+import { IBcNodeInfo } from '../bc-node-info/interfaces/bc-node-info.interface';
+import { IRegisterBcUserResponse } from './interface/register-bc-user-response.interface';
 
 const BC_CONNECTION_HOST = process.env.BC_CONNECTION_HOST;
 const AUTHORIZATION_TOKEN = process.env.AUTHORIZATION_TOKEN;
@@ -58,7 +59,7 @@ export class BcConnectionService {
         }
     }
 
-    async registerUser(registerBcUserDto: RegisterBcUserDto, orgName: string, loggedInUserKey: string, channelName: string, loggedInUserSalt: string, bcNodeUrl: string, authorizationToken: string): Promise<RegisterBcUserResponseDto> {
+    async registerUser(registerBcUserDto: RegisterBcUserDto, orgName: string, loggedInUserKey: string, channelName: string, loggedInUserSalt: string, bcNodeUrl: string, authorizationToken: string): Promise<IRegisterBcUserResponse> {
         const logger = new Logger('BcRegisterUser');
         try {
             const response = await axios.post(bcNodeUrl + BC_CONNECTION_API.REGISTER_USER, registerBcUserDto, {
@@ -71,8 +72,8 @@ export class BcConnectionService {
                     org_name: orgName
                 }
             });
-            const registerUserData: RegisterBcUserResponseDto = response.data.data;
-            return new RegisterBcUserResponseDto(registerUserData.key, registerUserData.salt);
+            const registerUserData: IRegisterBcUserResponse = response.data.data;
+            return new IRegisterBcUserResponse(registerUserData.key, registerUserData.salt);
         } catch (error) {
             logger.error(error);
             const err = error as AxiosError;
@@ -155,6 +156,32 @@ export class BcConnectionService {
             logger.error(error);
             const err = error as AxiosError;
             logger.error(err.response ? JSON.stringify(err.response.data) : err);
+            throw err;
+        }
+    }
+
+    async registerSuperAdminUser(registerBcUserDto: RegisterBcUserDto, bcNodeInfo: IBcNodeInfo): Promise<IRegisterBcUserResponse> {
+        const logger = new Logger('BcRegisterUser');
+        try {
+            console.log('FULL URL===>', bcNodeInfo.nodeUrl + BC_CONNECTION_API.REGISTER_SUPER_ADMIN_USER);
+            const response = await axios.post(bcNodeInfo.nodeUrl + BC_CONNECTION_API.REGISTER_SUPER_ADMIN_USER, registerBcUserDto, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    authorization: 'Basic ' + bcNodeInfo.authorizationToken,
+                    admin_id: process.env.BC_CONNECTOR_ADMIN_ID,
+                    org_name: bcNodeInfo.orgName
+                }
+            });
+            const registerUserData: IRegisterBcUserResponse = response.data.data;
+            return new IRegisterBcUserResponse(registerUserData.key, registerUserData.salt);
+        } catch (error) {
+            logger.error(error);
+            const err = error as AxiosError;
+            if (err.response) {
+                logger.error(JSON.stringify(err.response.data));
+                throw err.response.data;
+            }
+            logger.error(err);
             throw err;
         }
     }

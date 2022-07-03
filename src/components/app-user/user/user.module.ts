@@ -13,7 +13,9 @@ import { OrganizationStaffingModule } from '../user-roles/organization-staffing/
 import { ChannelDetailModule } from 'src/components/blockchain/channel-detail/channel-detail.module';
 import { UserRejectInfoModule } from '../user-reject-info/user-reject-info.module';
 import { RefreshTokenSchema } from 'src/components/auth/schemas/refresh-token.schema';
+import { UserBcService } from './user-bc.service';
 import { BcConnectionModule } from 'src/components/blockchain/bc-connection/bc-connection.module';
+import { BcNodeInfoModule } from 'src/components/blockchain/bc-node-info/bc-node-info.module';
 
 @Module({
     imports: [
@@ -25,14 +27,15 @@ import { BcConnectionModule } from 'src/components/blockchain/bc-connection/bc-c
         CountryModule,
         OrganizationModule,
         SubscriptionTypeModule,
-        BcConnectionModule,
         VerificationModule,
         OrganizationStaffingModule,
         ChannelDetailModule,
-        UserRejectInfoModule
+        UserRejectInfoModule,
+        BcConnectionModule,
+        BcNodeInfoModule
     ],
     controllers: [UserController],
-    providers: [UserService],
+    providers: [UserService, UserBcService],
     exports: [UserService]
 })
 export class UserModule {}

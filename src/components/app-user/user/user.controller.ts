@@ -6,7 +6,7 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import { Roles, Permission, Feature, GetUser } from 'src/components/auth/decorators';
 import { Request, Response as ExpressResponse } from 'express';
 import { LoginUserDto } from './dto/login-user.dto';
-import { Controller, Get, Post, Body, UseGuards, Req, HttpCode, HttpStatus, Put, Delete, UploadedFile, UseInterceptors, Param, BadRequestException, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, HttpCode, HttpStatus, Put, Delete, UploadedFile, UseInterceptors, Param, BadRequestException, Res, ForbiddenException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { RefreshAccessTokenDto } from './dto/refresh-access-token.dto';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags, ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -22,13 +22,14 @@ import { NewUserDto } from './dto/new-user.dto';
 import { PermissionGuard } from 'src/components/auth/guards/permission.guard';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
 import { Response } from 'src/@core/response';
-import { USER_CONSTANT } from 'src/@core/constants/api-error-constants';
+import { COMMON_ERROR, USER_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { ResetBlockUserDto } from './dto/reset-block-user.dto';
 import { BlockchainStatusGuard } from 'src/components/auth/guards/blockhainStatus.guard';
 import { SubscriptionGuard } from 'src/components/auth/guards/subscription.guard';
 import { RejectUserDto } from './dto/reject-user.dto';
 import { Response as FLOResponse } from 'src/@core/response';
 import { IUser } from './interfaces/user.interface';
+import { BC_PAYLOAD } from 'src/@core/constants/bc-constants/bc-payload.constant';
 
 @ApiTags('User')
 @Controller('user')
@@ -588,18 +589,15 @@ export class UserController {
         return new Response(true, [USER_CONSTANT.USER_UNBLOCKED_SUCCESSFULLY]).setSuccessData(await this.userService.unblockUser(id));
     }
 
-    // @Get('migrate-super-admin')
-    // async migrateSuperAdminUser(@Req() req: Request): Promise<Response> {
-    //     await new Promise((resolve) => setTimeout(resolve, 1000));
-    //     const channelMappingToken = req.headers['admin-token'] as string;
-    //     console.error('channelMappingToken-->', channelMappingToken);
-    //     console.error('RESET_WRONG_PASSWORD_BLOCK_TOKEN-->', process.env.RESET_WRONG_PASSWORD_BLOCK_TOKEN);
-    //     if (channelMappingToken !== process.env.RESET_WRONG_PASSWORD_BLOCK_TOKEN) {
-    //         console.error('UNAUTHORIZED');
-    //         throw new ForbiddenException(COMMON_ERROR.UNAUTHORIZED_TO_ACCESS);
-    //     }
-    //     return new Response(true, [BC_PAYLOAD.MIGRATION_SUCCESS]).setSuccessData(await this.userService.migrateSuperAdmin());
-    // }
+    @Post('register-super-admin-bc')
+    async registerSuperAdminUserToBC(@Req() req: Request): Promise<Response> {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const adminToken = req.headers['admin_token'] as string;
+        if (adminToken !== process.env.BC_SUPER_ADMIN_REGISTRATION_TOKEN) {
+            throw new ForbiddenException(COMMON_ERROR.UNAUTHORIZED_TO_ACCESS);
+        }
+        return new Response(true, [BC_PAYLOAD.SUPER_ADMIN_REGISTRATION_SUCCESS]).setSuccessData(await this.userService.registerSuperAdminUserToBC());
+    }
 
     @Put('unblock-company-user/:userId')
     @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
