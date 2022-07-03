@@ -77,7 +77,6 @@ export class BcConnectionService {
         } catch (error) {
             logger.error(error);
             const err = error as AxiosError;
-            console.log('ERR===>', err.response.data);
             if (err.response) {
                 logger.error(JSON.stringify(err.response.data));
                 throw err.response.data;
@@ -163,7 +162,6 @@ export class BcConnectionService {
     async registerSuperAdminUser(registerBcUserDto: RegisterBcUserDto, bcNodeInfo: IBcNodeInfo): Promise<IRegisterBcUserResponse> {
         const logger = new Logger('BcRegisterUser');
         try {
-            console.log('FULL URL===>', bcNodeInfo.nodeUrl + BC_CONNECTION_API.REGISTER_SUPER_ADMIN_USER);
             const response = await axios.post(bcNodeInfo.nodeUrl + BC_CONNECTION_API.REGISTER_SUPER_ADMIN_USER, registerBcUserDto, {
                 headers: {
                     'Content-Type': 'application/json',
