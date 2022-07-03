@@ -58,6 +58,9 @@ import {
     UserEnabledBodyContextDto,
     UserEnabledEmailDto
 } from 'src/@utils/events/dto';
+import { UserBcService } from './user-bc.service';
+import { RegisterBcUserDto } from './dto/register-bc-user.dto';
+import { IRegisterBcUserResponse } from 'src/components/blockchain/bc-connection/interface/register-bc-user-response.interface';
 
 @Injectable()
 export class UserService {
@@ -76,7 +79,8 @@ export class UserService {
         private readonly verificationService: VerificationService,
         private readonly staffingService: OrganizationStaffingService,
         private readonly userRejectInfoService: UserRejectInfoService,
-        private eventEmitter: EventEmitter2
+        private eventEmitter: EventEmitter2,
+        private readonly userBcService: UserBcService
     ) {}
 
     async register(req: Request, logoName: string, registerUserDto: RegisterUserDto): Promise<IUserWithBlockchain> {
@@ -2109,5 +2113,18 @@ export class UserService {
             logger.error(err);
             throw new BadRequestException(USER_CONSTANT.FAILED_TO_UNBLOCK_COMPANY_USER, err);
         }
+    }
+
+    async registerSuperAdminUserToBC(): Promise<IRegisterBcUserResponse> {
+        const logger = new Logger('RegisterSuperAdminUserToBC');
+        const user = await this.UserModel.findOne({ 'company.subscriptionType': 'super-admin' });
+        if (!user) {
+            logger.error('Super Admin User Not Found');
+            throw new NotFoundException('Super Admin User Not Found');
+        }
+        const registrationResponse = await this.userBcService.registerSuperAdminToMultiOrg(new RegisterBcUserDto(user._id.toString(), user.email));
+        registrationResponse.salt = null;
+        // TODO: Store super admin key on DB
+        return registrationResponse;
     }
 }

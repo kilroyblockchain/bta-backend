@@ -15,6 +15,7 @@ import { BcNodeInfoSchema } from './schemas/bc-node-info.schema';
         BcConnectionModule
     ],
     controllers: [BcNodeInfoController],
-    providers: [BcNodeInfoService]
+    providers: [BcNodeInfoService],
+    exports: [BcNodeInfoService]
 })
 export class BcNodeInfoModule {}

@@ -1,4 +1,4 @@
-export class RegisterBcUserResponseDto {
+export class IRegisterBcUserResponse {
     key: string;
     salt: string;
 
