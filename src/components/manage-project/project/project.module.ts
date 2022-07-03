@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { OrganizationUnitModule } from 'src/components/app-user/user-roles/organization-unit/organization-unit.module';
 import { UserSchema } from 'src/components/app-user/user/schemas/user.schema';
+import { UserModule } from 'src/components/app-user/user/user.module';
 import { ProjectController } from './project.controller';
 import { ProjectService } from './project.service';
 import { ProjectSchema } from './schemas/project.schema';
@@ -10,7 +12,9 @@ import { ProjectSchema } from './schemas/project.schema';
         MongooseModule.forFeature([
             { name: 'Project', schema: ProjectSchema },
             { name: 'User', schema: UserSchema }
-        ])
+        ]),
+        UserModule,
+        OrganizationUnitModule
     ],
     controllers: [ProjectController],
     providers: [ProjectService],
