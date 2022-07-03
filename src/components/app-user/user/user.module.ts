@@ -8,15 +8,12 @@ import { MailModule } from 'src/@utils/mail/mail.module';
 import { CountryModule } from '../country/country.module';
 import { OrganizationModule } from '../organization/organization.module';
 import { SubscriptionTypeModule } from '../subscription-type/subscription-type.module';
-import { CaModule } from 'src/components/certificate-authority/ca-client.module';
-import { UserBcService } from './user-bc.service';
 import { VerificationModule } from '../verification/verification.module';
 import { OrganizationStaffingModule } from '../user-roles/organization-staffing/organization-staffing.module';
-import { OrganizationBcService } from '../organization/organization-bc.service';
-import { ChannelMappingModule } from 'src/components/blockchain/channel-mapping/channel-mapping.module';
 import { ChannelDetailModule } from 'src/components/blockchain/channel-detail/channel-detail.module';
 import { UserRejectInfoModule } from '../user-reject-info/user-reject-info.module';
 import { RefreshTokenSchema } from 'src/components/auth/schemas/refresh-token.schema';
+import { BcConnectionModule } from 'src/components/blockchain/bc-connection/bc-connection.module';
 
 @Module({
     imports: [
@@ -28,15 +25,14 @@ import { RefreshTokenSchema } from 'src/components/auth/schemas/refresh-token.sc
         CountryModule,
         OrganizationModule,
         SubscriptionTypeModule,
-        CaModule,
+        BcConnectionModule,
         VerificationModule,
         OrganizationStaffingModule,
-        ChannelMappingModule,
         ChannelDetailModule,
         UserRejectInfoModule
     ],
     controllers: [UserController],
-    providers: [UserService, UserBcService, OrganizationBcService],
+    providers: [UserService],
     exports: [UserService]
 })
 export class UserModule {}
