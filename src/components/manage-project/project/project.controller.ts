@@ -1,13 +1,17 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Patch, Post, Put, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { ApiBearerAuth, ApiConsumes, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProjectService } from './project.service';
 import { Response as FLOResponse } from 'src/@core/response';
-import { AllProjectResponseDto, CreateProjectDto, ProjectResponseDto } from './dto';
+import { AddProjectPurposeDto, AllProjectResponseDto, CreateProjectDto, ProjectPurposeResponseDto, ProjectResponseDto } from './dto';
 import { PermissionGuard, RolesGuard } from 'src/components/auth/guards';
 import { AuthGuard } from '@nestjs/passport';
 import { Feature, Permission, Roles } from 'src/components/auth/decorators';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE, MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
 import { Request } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { docsFileFilter, editFileName, purposeDocDestinationFolder } from 'src/@core/utils/file-upload.utils';
+import { diskStorage } from 'multer';
+import { COMMON_ERROR } from 'src/@core/constants/api-error-constants';
 
 @ApiTags('Project')
 @UseGuards(RolesGuard)
@@ -136,6 +140,34 @@ export class ProjectController {
             return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.PROJECT_ENABLED_SUCCESS]).setSuccessData(await this.projectService.enableProject(id, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_ENABLE_PROJECT, err);
+        }
+    }
+
+    @Post('purpose/:id')
+    @HttpCode(HttpStatus.CREATED)
+    @UseGuards(AuthGuard('jwt'), PermissionGuard)
+    @Permission(ACCESS_TYPE.WRITE)
+    @Feature(FEATURE_IDENTIFIER.PROJECT_PURPOSE)
+    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
+    @UseInterceptors(
+        FileInterceptor('purposeDoc', {
+            storage: diskStorage({ destination: purposeDocDestinationFolder, filename: editFileName }),
+            fileFilter: docsFileFilter
+        })
+    )
+    @ApiConsumes('multipart/form-data')
+    @ApiOperation({ summary: 'Add project purpose' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_ADD_PROJECT_PROJECT })
+    @ApiResponse({ status: HttpStatus.OK, type: ProjectPurposeResponseDto, description: MANAGE_PROJECT_CONSTANT.PROJECT_PROJECT_ADDED_SUCCESS })
+    async addPurpose(@UploadedFile() file: Express.Multer.File, @Req() req: Request, @Param('id') id: string, @Body() purpose: AddProjectPurposeDto): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.PROJECT_PROJECT_ADDED_SUCCESS]).setSuccessData(await this.projectService.addProjectPurpose(id, req, file, purpose)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            console.log(err);
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_ADD_PROJECT_PROJECT, err);
         }
     }
 }

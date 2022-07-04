@@ -147,3 +147,76 @@ export class AllProjectResponseDto {
     })
     companyId: string;
 }
+
+export class ProjectPurposeResponseDto {
+    @ApiProperty({
+        example: 'Blockchain',
+        description: 'Project name',
+        format: 'string'
+    })
+    name: string;
+
+    @ApiProperty({
+        example: 'This is blockchain project',
+        description: 'Description of project',
+        format: 'string'
+    })
+    details: string;
+
+    @ApiProperty({
+        example: 'Finance',
+        description: 'This describe what type of project it is',
+        format: 'string'
+    })
+    domain: string;
+
+    @ApiProperty({
+        example: ['5faa30d918352f2e4c4f0b18'],
+        description: 'User Id',
+        format: 'array'
+    })
+    members: string[];
+
+    @ApiProperty({
+        example: {
+            docURL: 'project-purposeDoc/62a3271e5fdff8cd6b40d8e2-nd6mc8glgb4ekokmprkae15m34qd2sov.jpeg',
+            docName: 'image1.jpeg',
+            text: 'This project use for finance purpose'
+        },
+        description: 'Purpose of the project',
+        format: 'string'
+    })
+    purpose: string;
+
+    @ApiProperty({
+        example: true,
+        description: 'Status of project',
+        format: 'boolean'
+    })
+    status: boolean;
+
+    @ApiProperty({
+        example: new Date(),
+        description: 'Project created date'
+    })
+    createdAt: Date;
+
+    @ApiProperty({
+        example: new Date(),
+        description: 'Project updated date'
+    })
+    updatedAt: Date;
+
+    @ApiProperty({
+        example: '60e6fe33d27e2133c485513b',
+        description: 'Id of user who create the project',
+        format: 'string'
+    })
+    createdBy: string;
+
+    @ApiProperty({
+        example: '608a49c2899c17003f7d2576',
+        description: 'Company id where project was created'
+    })
+    companyId: string;
+}

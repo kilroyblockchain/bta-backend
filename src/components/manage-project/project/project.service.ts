@@ -6,7 +6,7 @@ import { MANAGE_PROJECT_CONSTANT, USER_CONSTANT } from 'src/@core/constants/api-
 import { getCompanyId } from 'src/@core/utils/common.utils';
 import { getSearchFilterWithRegexAll } from 'src/@core/utils/query-filter.utils';
 import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
-import { CreateProjectDto } from './dto';
+import { AddProjectPurposeDto, CreateProjectDto } from './dto';
 import { IProject } from './interfaces/project.interface';
 
 @Injectable()
@@ -86,5 +86,33 @@ export class ProjectService {
     async enableProject(id: string, req: Request): Promise<IProject> {
         const companyId = getCompanyId(req);
         return await this.projectModel.findOneAndUpdate({ _id: id, companyId }, { status: true }, { new: true });
+    }
+
+    async addProjectPurpose(id: string, req: Request, file: Express.Multer.File, purpose: AddProjectPurposeDto): Promise<IProject> {
+        const project = await this.getProjectById(id, req);
+        if (!project) throw new NotFoundException([MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND]);
+
+        console.log(purpose.purpose);
+        console.log(file);
+
+        if (file) {
+            project.purpose.docName = file.originalname;
+            project.purpose.docURL = `project-purposeDoc/${file.filename}`;
+        }
+
+        // project.purpose.docName = file ? file.originalname : '';
+        // project.purpose.docURL = file ? `project-purposeDoc/${file.filename}` : '';
+
+        project.purpose.text = purpose.purpose ? purpose.purpose : project.purpose.text;
+
+        // if (file) {
+        //     project.purpose.docName = file.originalname;
+        //     project.purpose.docURL = `project-purposeDoc/${file.filename}`;
+        //     project.purpose.text = purpose.purpose !== '' ? purpose.purpose : project.purpose.text;
+        //     return await project.save();
+        // }
+        // project.purpose.text = purpose.purpose;
+
+        return await project.save();
     }
 }

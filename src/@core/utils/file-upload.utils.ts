@@ -44,3 +44,13 @@ export const createModelReviewDocDestinationFolder = (req, file, cb): void => {
 
     cb(null, path);
 };
+
+export const purposeDocDestinationFolder = (req, file, cb): void => {
+    const path = process.cwd() + `/uploads/project-purposeDoc`;
+
+    if (!fs.existsSync(path)) {
+        fs.mkdirSync(path, { recursive: true });
+    }
+
+    cb(null, path);
+};
