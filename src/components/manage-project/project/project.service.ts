@@ -2,16 +2,18 @@ import { Injectable, ConflictException, NotFoundException } from '@nestjs/common
 import { InjectModel } from '@nestjs/mongoose';
 import { Request } from 'express';
 import { Model, PaginateModel, PaginateResult } from 'mongoose';
+import { PROJECT_USER } from 'src/@core/constants';
 import { MANAGE_PROJECT_CONSTANT, USER_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { getCompanyId } from 'src/@core/utils/common.utils';
 import { getSearchFilterWithRegexAll } from 'src/@core/utils/query-filter.utils';
 import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
+import { UserService } from 'src/components/app-user/user/user.service';
 import { CreateProjectDto } from './dto';
 import { IProject } from './interfaces/project.interface';
 
 @Injectable()
 export class ProjectService {
-    constructor(@InjectModel('Project') private readonly projectModel: PaginateModel<IProject>, @InjectModel('User') private readonly userModel: Model<IUser>) {}
+    constructor(@InjectModel('Project') private readonly projectModel: PaginateModel<IProject>, @InjectModel('User') private readonly userModel: Model<IUser>, private readonly userService: UserService) {}
 
     async createNewProject(newProject: CreateProjectDto, req: Request): Promise<IProject> {
         const user = req['user']._id;
@@ -47,7 +49,17 @@ export class ProjectService {
         const { page = 1, limit = 10, status = true, search, searchValue } = req.query;
         const searchQuery = search && search === 'true' && searchValue ? getSearchFilterWithRegexAll(searchValue.toString(), ['name', 'details', 'domain', 'purpose']) : {};
         const options = {
-            populate: [{ path: 'members', select: 'firstName lastName email address phone' }, { path: 'createdBy', select: 'firstName lastName email' }, { path: 'projectVersions' }],
+            populate: [
+                { path: 'members', select: 'firstName lastName email address phone' },
+                { path: 'createdBy', select: 'firstName lastName email' },
+                {
+                    path: 'projectVersions',
+                    populate: {
+                        path: 'createdBy',
+                        select: 'firstName lastName'
+                    }
+                }
+            ],
             lean: true,
             limit: Number(limit),
             page: Number(page),
@@ -86,5 +98,19 @@ export class ProjectService {
     async enableProject(id: string, req: Request): Promise<IProject> {
         const companyId = getCompanyId(req);
         return await this.projectModel.findOneAndUpdate({ _id: id, companyId }, { status: true }, { new: true });
+    }
+
+    async canAddProject(req: Request): Promise<boolean> {
+        const currentCompanyUser = await this.userService.findAllUserOfOrganization(req);
+
+        const userStaffing = [];
+        currentCompanyUser.docs.map((user) => user.company.map((company) => company.staffingId.map((staffing) => userStaffing.push(staffing['staffingName']))));
+
+        const isAIEngineer = !!userStaffing.find((staffingName) => staffingName.toLowerCase().includes(PROJECT_USER.AI_ENGINEER.toLowerCase()));
+        const isMLOpsEngineer = !!userStaffing.find((staffingName) => staffingName.toLowerCase().includes(PROJECT_USER.MLOps_ENGINEER.toLowerCase()));
+        const isStakeholder = !!userStaffing.find((staffingName) => staffingName.toLowerCase().includes(PROJECT_USER.STAKEHOLDER.toLowerCase()));
+
+        if (isAIEngineer && isMLOpsEngineer && isStakeholder) return true;
+        return false;
     }
 }
