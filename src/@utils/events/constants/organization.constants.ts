@@ -8,6 +8,9 @@ export const PROJECT_PURPOSE_STAFFING_ID = '602102d7dfbf432c8c4f3001';
 export const MODEL_VERSION_STAFFING_ID = '602102d7dfbf432c8c4f3002';
 export const MODEL_REVIEWS_STAFFING_ID = '602102d7dfbf432c8c4f3003';
 export const MODEL_MONITORING_STAFFING_ID = '602102d7dfbf432c8c4f3004';
+export const BC_NODE_INFO_ID = '';
+export const CHANNELS_DETAILS_ID = '';
+export const ORACLE_BUCKET_URL = '';
 
 export const AI_ENGINEER = 'AI Engineer';
 export const MLOps_ENGINEER = 'MLOps Engineer';

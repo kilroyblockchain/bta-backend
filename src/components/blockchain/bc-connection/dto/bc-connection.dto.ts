@@ -1,10 +1,7 @@
-import { BcHistoryResponseDto } from '../../dto/bc-history-response.dto';
-import { BcQueryResponseDto } from '../../dto/bc-query-response.dto';
-
 export class BcConnectionDto {
-    data: BcQueryResponseDto | BcHistoryResponseDto[];
+    data: any;
 
-    constructor(data: BcQueryResponseDto | BcHistoryResponseDto[]) {
+    constructor(data: any) {
         this.data = data;
     }
 }

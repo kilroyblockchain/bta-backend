@@ -72,7 +72,7 @@ export class ChannelDetailController {
         description: 'Unauthorized.'
     })
     @Permission(ACCESS_TYPE.READ)
-    @Roles(ROLE.SUPER_ADMIN)
+    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF)
     async getAllChannelDetails(@Req() req: Request): Promise<Response> {
         return new Response(true, [CHANNEL_DETAIL.FETCHED_ALL_CHANNEL_DETAIL]).setSuccessData(await this.channelDetailService.getAllChannelDetail(req)).setStatus(HttpStatus.OK);
     }

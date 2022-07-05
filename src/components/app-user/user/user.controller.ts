@@ -23,21 +23,18 @@ import { PermissionGuard } from 'src/components/auth/guards/permission.guard';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
 import { Response } from 'src/@core/response';
 import { COMMON_ERROR, USER_CONSTANT } from 'src/@core/constants/api-error-constants';
-import { UserBcService } from './user-bc.service';
-import { BC_SUCCESS_RESPONSE } from 'src/@core/constants/bc-constants/bc-success-response.constants';
 import { ResetBlockUserDto } from './dto/reset-block-user.dto';
 import { BlockchainStatusGuard } from 'src/components/auth/guards/blockhainStatus.guard';
 import { SubscriptionGuard } from 'src/components/auth/guards/subscription.guard';
-import { BcUserDto } from 'src/@core/common/bc-user.dto';
 import { RejectUserDto } from './dto/reject-user.dto';
 import { Response as FLOResponse } from 'src/@core/response';
-import { BC_PAYLOAD } from 'src/@core/constants/bc-constants/bc-payload.constant';
 import { IUser } from './interfaces/user.interface';
+import { BC_PAYLOAD } from 'src/@core/constants/bc-constants/bc-payload.constant';
 
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-    constructor(private readonly userService: UserService, private readonly userBcService: UserBcService) {}
+    constructor(private readonly userService: UserService) {}
 
     // used for both organization and user
     @Post('register')
@@ -179,8 +176,8 @@ export class UserController {
     })
     @HttpCode(HttpStatus.OK)
     @ApiOkResponse({})
-    async findUserData(@Param('id') userId: string, @Req() req: Request): Promise<FLOResponse> {
-        const userData = await this.userService.findUserData(userId, req);
+    async findUserData(@Param('id') userId: string): Promise<FLOResponse> {
+        const userData = await this.userService.findUserData(userId);
         return new FLOResponse(true, [USER_CONSTANT.USER_DATA_FOUND]).setSuccessData(userData).setStatus(HttpStatus.OK);
     }
 
@@ -301,8 +298,8 @@ export class UserController {
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async verifyUserByAdmin(@Body() verifyEmailDto: VerifyEmailDto, @Req() req: Request): Promise<FLOResponse> {
-        await this.userService.verifyEmailByAdmin(verifyEmailDto, req);
+    async verifyUserByAdmin(@Body() verifyEmailDto: VerifyEmailDto): Promise<FLOResponse> {
+        await this.userService.verifyEmailByAdmin(verifyEmailDto);
         return new FLOResponse(true, [USER_CONSTANT.USER_VERIFIED]).setStatus(HttpStatus.OK);
     }
 
@@ -319,8 +316,8 @@ export class UserController {
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async addSubscriptionType(@Body() subscriptionTypeDto: SubscriptionTypeDto, @Req() req: Request): Promise<FLOResponse> {
-        return new Response(true, [USER_CONSTANT.SUBSCRIPTION_UPDATED]).setSuccessData(await this.userService.addSubscriptionType(subscriptionTypeDto, req)).setStatus(HttpStatus.OK);
+    async addSubscriptionType(@Body() subscriptionTypeDto: SubscriptionTypeDto): Promise<FLOResponse> {
+        return new Response(true, [USER_CONSTANT.SUBSCRIPTION_UPDATED]).setSuccessData(await this.userService.addSubscriptionType(subscriptionTypeDto)).setStatus(HttpStatus.OK);
     }
 
     @Put('add-company')
@@ -476,8 +473,8 @@ export class UserController {
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async deleteTrainingUserByAdmin(@Param('userId') userId: string, @Param('staffingId') staffingId: string, @Req() req: Request): Promise<FLOResponse> {
-        const deletedUser = await this.userService.deleteUserByOrganizationAdmin(userId, req, staffingId);
+    async deleteTrainingUserByAdmin(@Param('userId') userId: string, @Req() req: Request): Promise<FLOResponse> {
+        const deletedUser = await this.userService.deleteUserByOrganizationAdmin(userId, req);
         return new Response(true, [USER_CONSTANT.USER_DELETED]).setSuccessData(deletedUser).setStatus(HttpStatus.OK);
     }
 
@@ -494,8 +491,8 @@ export class UserController {
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async updateOrganizationUserByAdmin(@Body() updateUserDto: NewUserDto, @Param('userId') userId: string, @Req() req: Request): Promise<FLOResponse> {
-        const editedUser = await this.userService.updateUserByOrganizationAdmin(updateUserDto, userId, req);
+    async updateOrganizationUserByAdmin(@Body() updateUserDto: NewUserDto, @Param('userId') userId: string): Promise<FLOResponse> {
+        const editedUser = await this.userService.updateUserByOrganizationAdmin(updateUserDto, userId);
         return new Response(true, [USER_CONSTANT.USER_UPDATED_SUCCESSFULLY]).setSuccessData(editedUser).setStatus(HttpStatus.OK);
     }
 
@@ -555,14 +552,14 @@ export class UserController {
         return new Response(true, [USER_CONSTANT.USER_DETAIL_FOUND]).setSuccessData(await this.userService.setDefaultCompany(updateUserDto, req, res)).setStatus(HttpStatus.OK);
     }
 
-    @Post('registerBcIdentity')
-    @UseGuards(RolesGuard, PermissionGuard, BlockchainStatusGuard)
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Register user to blockchain' })
-    @ApiCreatedResponse({})
-    async registerBcAdmin(@Body() enrollDto: BcUserDto): Promise<FLOResponse> {
-        return new Response(true, [BC_SUCCESS_RESPONSE.USER_ENROLL_SUCCESS]).setSuccessData(await this.userBcService.registerUser(enrollDto, '', '')).setStatus(HttpStatus.OK);
-    }
+    // @Post('registerBcIdentity')
+    // @UseGuards(RolesGuard, PermissionGuard, BlockchainStatusGuard)
+    // @HttpCode(HttpStatus.CREATED)
+    // @ApiOperation({ summary: 'Register user to blockchain' })
+    // @ApiCreatedResponse({})
+    // async registerBcAdmin(@Body() enrollDto: BcUserDto): Promise<FLOResponse> {
+    //     return new Response(true, [BC_SUCCESS_RESPONSE.USER_ENROLL_SUCCESS]).setSuccessData(await this.userBcService.registerUser(enrollDto, '', '')).setStatus(HttpStatus.OK);
+    // }
 
     @Post('block/reset')
     @HttpCode(HttpStatus.CREATED)
@@ -592,17 +589,14 @@ export class UserController {
         return new Response(true, [USER_CONSTANT.USER_UNBLOCKED_SUCCESSFULLY]).setSuccessData(await this.userService.unblockUser(id));
     }
 
-    @Get('migrate-super-admin')
-    async migrateSuperAdminUser(@Req() req: Request): Promise<Response> {
+    @Post('register-super-admin-bc')
+    async registerSuperAdminUserToBC(@Req() req: Request): Promise<Response> {
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        const channelMappingToken = req.headers['admin-token'] as string;
-        console.error('channelMappingToken-->', channelMappingToken);
-        console.error('RESET_WRONG_PASSWORD_BLOCK_TOKEN-->', process.env.RESET_WRONG_PASSWORD_BLOCK_TOKEN);
-        if (channelMappingToken !== process.env.RESET_WRONG_PASSWORD_BLOCK_TOKEN) {
-            console.error('UNAUTHORIZED');
+        const adminToken = req.headers['admin_token'] as string;
+        if (adminToken !== process.env.BC_SUPER_ADMIN_REGISTRATION_TOKEN) {
             throw new ForbiddenException(COMMON_ERROR.UNAUTHORIZED_TO_ACCESS);
         }
-        return new Response(true, [BC_PAYLOAD.MIGRATION_SUCCESS]).setSuccessData(await this.userService.migrateSuperAdmin());
+        return new Response(true, [BC_PAYLOAD.SUPER_ADMIN_REGISTRATION_SUCCESS]).setSuccessData(await this.userService.registerSuperAdminUserToBC());
     }
 
     @Put('unblock-company-user/:userId')

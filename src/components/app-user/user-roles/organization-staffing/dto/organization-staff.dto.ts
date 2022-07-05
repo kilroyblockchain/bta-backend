@@ -40,6 +40,24 @@ export class OrganizationStaffResponse extends TimestampDto {
         description: 'Status'
     })
     status?: boolean;
+
+    @ApiProperty({
+        description: 'Id of bcNodeInfo for staffing',
+        example: '62bf110abae854986e95799b'
+    })
+    bcNodeInfo: string;
+
+    @ApiProperty({
+        description: 'Id of bc channel for staffing',
+        example: ['62bea0296e7a4bfd3ff56268']
+    })
+    channels: string[];
+
+    @ApiProperty({
+        description: 'Url of oracle bucket for staffing',
+        example: 'https://orcalebucket.org'
+    })
+    bucketUrl: string;
 }
 
 export class DeletedOrganizationStaffResponse extends OrganizationStaffResponse {
