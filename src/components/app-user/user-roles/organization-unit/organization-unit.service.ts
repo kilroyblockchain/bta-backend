@@ -65,7 +65,6 @@ export class OrganizationUnitService {
                 {
                     $group: {
                         _id: '$_id',
-                        bcNodeInfo: { $first: '$bcNodeInfo' },
                         featureListId: { $first: '$featureListId' },
                         status: { $first: '$status' },
                         companyID: { $first: '$companyID' },
