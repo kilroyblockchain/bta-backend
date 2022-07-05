@@ -10,6 +10,9 @@ export interface StaffingInterface extends Document, IDocumentTimestamp {
         accessType?: string[];
     }[];
     status?: boolean;
+    bcNodeInfo: string;
+    channels: string[];
+    bucketUrl: string;
 }
 
 export interface IStaticUnitAndStaffing {

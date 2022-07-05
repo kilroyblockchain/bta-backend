@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsArray } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateStaffingDto {
@@ -33,4 +33,31 @@ export class CreateStaffingDto {
         featureId: string;
         accessType: string[];
     }[];
+
+    @ApiProperty({
+        description: 'Id of bcNodeInfo for staffing',
+        example: '62bf110abae854986e95799b',
+        format: 'string'
+    })
+    @IsNotEmpty()
+    @IsString()
+    bcNodeInfo: string;
+
+    @ApiProperty({
+        description: 'Id of bc channel for staffing',
+        example: ['62bea0296e7a4bfd3ff56268'],
+        format: 'array'
+    })
+    @IsNotEmpty()
+    @IsArray()
+    channels: string[];
+
+    @ApiProperty({
+        description: 'Url of oracle bucket for staffing',
+        example: 'https://orcalebucket.org',
+        format: 'string'
+    })
+    @IsNotEmpty()
+    @IsString()
+    bucketUrl: string;
 }

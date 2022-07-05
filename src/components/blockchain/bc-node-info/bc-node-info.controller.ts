@@ -43,7 +43,7 @@ export class BcNodeInfoController {
     @UseGuards(AuthGuard('jwt'), PermissionGuard)
     @Permission(ACCESS_TYPE.READ)
     @Feature(FEATURE_IDENTIFIER.BC_NODE_INFO)
-    @Roles(ROLE.SUPER_ADMIN)
+    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF)
     @ApiBearerAuth()
     @ApiHeader({
         name: 'Bearer',
