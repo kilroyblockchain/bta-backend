@@ -6,7 +6,6 @@ import { PROJECT_USER } from 'src/@core/constants';
 import { MANAGE_PROJECT_CONSTANT, USER_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { getCompanyId } from 'src/@core/utils/common.utils';
 import { getSearchFilterWithRegexAll } from 'src/@core/utils/query-filter.utils';
-import { OrganizationUnitService } from 'src/components/app-user/user-roles/organization-unit/organization-unit.service';
 import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
 import { UserService } from 'src/components/app-user/user/user.service';
 import { CreateProjectDto } from './dto';
@@ -14,7 +13,7 @@ import { IProject } from './interfaces/project.interface';
 
 @Injectable()
 export class ProjectService {
-    constructor(@InjectModel('Project') private readonly projectModel: PaginateModel<IProject>, @InjectModel('User') private readonly userModel: Model<IUser>, private readonly userService: UserService, private readonly orgUnitService: OrganizationUnitService) {}
+    constructor(@InjectModel('Project') private readonly projectModel: PaginateModel<IProject>, @InjectModel('User') private readonly userModel: Model<IUser>, private readonly userService: UserService) {}
 
     async createNewProject(newProject: CreateProjectDto, req: Request): Promise<IProject> {
         const user = req['user']._id;

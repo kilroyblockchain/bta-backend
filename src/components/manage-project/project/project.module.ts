@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { OrganizationUnitModule } from 'src/components/app-user/user-roles/organization-unit/organization-unit.module';
 import { UserSchema } from 'src/components/app-user/user/schemas/user.schema';
 import { UserModule } from 'src/components/app-user/user/user.module';
 import { ProjectController } from './project.controller';
@@ -13,8 +12,7 @@ import { ProjectSchema } from './schemas/project.schema';
             { name: 'Project', schema: ProjectSchema },
             { name: 'User', schema: UserSchema }
         ]),
-        UserModule,
-        OrganizationUnitModule
+        UserModule
     ],
     controllers: [ProjectController],
     providers: [ProjectService],
