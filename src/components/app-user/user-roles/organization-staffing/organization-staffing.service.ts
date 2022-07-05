@@ -67,6 +67,10 @@ export class OrganizationStaffingService {
                 staff.organizationUnitId = updateStaff.organizationUnitId;
                 staff.staffingName = updateStaff.staffingName;
                 staff.featureAndAccess = updateStaff.featureAndAccess;
+                staff.bcNodeInfo = updateStaff.bcNodeInfo;
+                staff.channels = updateStaff.channels;
+                staff.bucketUrl = updateStaff.bucketUrl;
+
                 const updatedStaff = await staff.save();
                 return this.buildStaffingResponse(updatedStaff);
             }
@@ -99,7 +103,7 @@ export class OrganizationStaffingService {
                 organizationUnitId: { $in: unitIds }
             };
             const options = {
-                select: 'staffingName featureAndAccess organizationUnitId status createdAt updatedAt',
+                select: 'staffingName featureAndAccess organizationUnitId status createdAt updatedAt bcNodeInfo channels bucketUrl',
                 sort: { updatedAt: -1 },
                 populate: {
                     path: 'organizationUnitId featureAndAccess.featureId'
@@ -174,7 +178,11 @@ export class OrganizationStaffingService {
             staffingResponse.featureAndAccess = staffDocument.featureAndAccess;
             staffingResponse.status = staffDocument.status;
             staffingResponse.createdAt = staffDocument.createdAt;
-            staffingResponse.updatedAt = staffDocument.updatedAt;
+            staffingResponse.createdAt = staffDocument.createdAt;
+            staffingResponse.bcNodeInfo = staffDocument.bcNodeInfo;
+            staffingResponse.channels = staffDocument.channels;
+            staffingResponse.bucketUrl = staffDocument.bucketUrl;
+
             return staffingResponse;
         } else {
             logger.log('Organization staff document is undefined / null');

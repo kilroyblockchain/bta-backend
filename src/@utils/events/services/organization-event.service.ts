@@ -16,7 +16,10 @@ import {
     PROJECT_PURPOSE_STAFFING_ID,
     STAKEHOLDER,
     UNIT_DESCRIPTION,
-    UNIT_NAME
+    UNIT_NAME,
+    BC_NODE_INFO_ID,
+    CHANNELS_DETAILS_ID,
+    ORACLE_BUCKET_URL
 } from '../constants/organization.constants';
 
 @Injectable()
@@ -134,7 +137,10 @@ export class OrganizationEventService {
             ].map((staffingUnit) => ({
                 ...staffingUnit,
                 organizationUnitId: organizationUnit._id,
-                status: true
+                status: true,
+                bcNodeInfo: BC_NODE_INFO_ID,
+                channels: [CHANNELS_DETAILS_ID],
+                bucketUrl: ORACLE_BUCKET_URL
             }));
 
             for (const staffingUnit of STATIC_STAFFING_UNIT) {
