@@ -5,5 +5,6 @@ export const BC_ERROR_RESPONSE = {
     FETCH_ERROR: 'Failed to get data from Blockchain',
     USER_ALREADY_ENROLLED: 'User is already enrolled',
     BLOCKCHAIN_NOT_ENABLED: 'Blockchain not enabled',
-    USER_REGISTRATION_FAILED: 'USER_REGISTRATION_FAILED'
+    USER_REGISTRATION_FAILED: 'USER_REGISTRATION_FAILED',
+    INVALID_BC_KEY: 'INVALID_BC_KEY'
 };

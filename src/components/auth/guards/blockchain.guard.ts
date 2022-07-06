@@ -1,5 +1,6 @@
 import { Injectable, ExecutionContext, CanActivate, Logger, UnauthorizedException } from '@nestjs/common';
 import * as dotenv from 'dotenv';
+import { BC_ERROR_RESPONSE } from 'src/@core/constants/bc-constants/bc-error-response.constants';
 import { decryptKey } from 'src/@utils/helpers';
 import { BcConnectionService } from 'src/components/blockchain/bc-connection/bc-connection.service';
 import { BcNodeInfoService } from 'src/components/blockchain/bc-node-info/bc-node-info.service';
@@ -26,7 +27,7 @@ export class BlockchainGuard implements CanActivate {
             await this.bcConnectionService.checkBcNodeConnection(bcNodeInfo, new BcUserAuthenticationDto(await decryptKey(request.headers.key), user.bcSalt));
         } catch (err) {
             logger.error(err);
-            throw new UnauthorizedException(['Invalid Key']);
+            throw new UnauthorizedException([BC_ERROR_RESPONSE.INVALID_BC_KEY]);
         }
         return request;
     }

@@ -62,7 +62,12 @@ import { UserBcService } from './user-bc.service';
 import { RegisterBcUserDto } from './dto/register-bc-user.dto';
 import { IRegisterBcUserResponse } from 'src/components/blockchain/bc-connection/interface/register-bc-user-response.interface';
 import { BcTransactionInfoDto } from 'src/components/blockchain/bc-connection/dto/bc-transaction-info.dto';
-import { decryptKey } from 'src/@utils/helpers';
+import { decryptKey, encryptKey } from 'src/@utils/helpers';
+import { BcNodeInfoService } from 'src/components/blockchain/bc-node-info/bc-node-info.service';
+import { BcConnectionService } from 'src/components/blockchain/bc-connection/bc-connection.service';
+import { VerifyBcKeyDto } from './dto/verify-bc-key.dto';
+import { BcUserAuthenticationDto } from 'src/components/blockchain/dto/bc-user-authentication.dto';
+import { BC_ERROR_RESPONSE } from 'src/@core/constants/bc-constants/bc-error-response.constants';
 
 @Injectable()
 export class UserService {
@@ -82,7 +87,9 @@ export class UserService {
         private readonly staffingService: OrganizationStaffingService,
         private readonly userRejectInfoService: UserRejectInfoService,
         private eventEmitter: EventEmitter2,
-        private readonly userBcService: UserBcService
+        private readonly userBcService: UserBcService,
+        private readonly bcNodeInfoService: BcNodeInfoService,
+        private readonly bcConnectionService: BcConnectionService
     ) {}
 
     async register(req: Request, logoName: string, registerUserDto: RegisterUserDto): Promise<IUserWithBlockchain> {
@@ -2168,5 +2175,18 @@ export class UserService {
             },
             { new: true }
         );
+    }
+
+    async verifyBlockchainKey(verifyBcKeyDto: VerifyBcKeyDto, req: Request): Promise<VerifyBcKeyDto> {
+        const user = req['user'];
+        const bcNodeInfoId = user.company[0].staffingId[0]['bcNodeInfo'].toString();
+        const bcNodeInfo = await this.bcNodeInfoService.getBcNodeInfoById(bcNodeInfoId);
+        try {
+            await this.bcConnectionService.checkBcNodeConnection(bcNodeInfo, new BcUserAuthenticationDto(verifyBcKeyDto.bcKey, user.bcSalt));
+            const encryptedKey = await encryptKey(verifyBcKeyDto.bcKey);
+            return new VerifyBcKeyDto(encryptedKey);
+        } catch (err) {
+            throw new UnauthorizedException([BC_ERROR_RESPONSE.INVALID_BC_KEY]);
+        }
     }
 }
