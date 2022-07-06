@@ -61,6 +61,8 @@ import {
 import { UserBcService } from './user-bc.service';
 import { RegisterBcUserDto } from './dto/register-bc-user.dto';
 import { IRegisterBcUserResponse } from 'src/components/blockchain/bc-connection/interface/register-bc-user-response.interface';
+import { BcTransactionInfoDto } from 'src/components/blockchain/bc-connection/dto/bc-transaction-info.dto';
+import { decryptKey } from 'src/@utils/helpers';
 
 @Injectable()
 export class UserService {
@@ -171,22 +173,39 @@ export class UserService {
                 .populate({
                     path: 'company.companyId company.staffingId country state',
                     select: '-countryCode -idNumber -phoneCode -states -countryId -countryObjectId -__v',
-                    populate: { path: 'featureAndAccess.featureId organizationUnitId' }
+                    populate: { path: 'featureAndAccess.featureId organizationUnitId channels' }
                 })
                 .select('-password');
             const subscriptionTypeFull = await this.subsTypeService.getFullSubscription(userDto.subscriptionType);
+
+            const staffing = await this.staffingService.getStaffingById(userDto.staffingId[0]);
+
+            // Get key from header
+            const key = await decryptKey(req.headers.key.toString());
+            // Get channel name from User staffing
+            const channelName = staffing.channels[0].toString();
+            // Get bc node info from User staffing
+            const bcNodeInfoId = staffing.bcNodeInfo.toString();
+
+            const registerUserResponse = await this.userBcService.registerUser(new RegisterBcUserDto(user._id, user.email), new BcTransactionInfoDto(key, parentUser.bcSalt, channelName), bcNodeInfoId);
+
+            user.bcSalt = registerUserResponse.salt;
+            await user.save();
             this.eventEmitter.emit(
                 USER_REGISTERED,
                 new GettingStartedEmailDto({
                     to: user.email,
                     subject: EMAIL_CONSTANTS.USER_CREATED,
                     title: EMAIL_CONSTANTS.TITLE_WELCOME,
-                    partialContext: new GettingStartedBodyContextDto({
-                        subscriptionType: subscriptionTypeFull,
-                        email: user.email,
-                        password: randomPassword,
-                        clientAppURL: process.env.CLIENT_APP_URL
-                    })
+                    partialContext: new GettingStartedBodyContextDto(
+                        {
+                            subscriptionType: subscriptionTypeFull,
+                            email: user.email,
+                            password: randomPassword,
+                            clientAppURL: process.env.CLIENT_APP_URL
+                        },
+                        registerUserResponse.key
+                    )
                 })
             );
             return userDetail;

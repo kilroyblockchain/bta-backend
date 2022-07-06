@@ -24,7 +24,7 @@ import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
 import { Response } from 'src/@core/response';
 import { COMMON_ERROR, USER_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { ResetBlockUserDto } from './dto/reset-block-user.dto';
-import { BlockchainStatusGuard } from 'src/components/auth/guards/blockhainStatus.guard';
+import { BlockchainGuard } from 'src/components/auth/guards/blockchain.guard';
 import { SubscriptionGuard } from 'src/components/auth/guards/subscription.guard';
 import { RejectUserDto } from './dto/reject-user.dto';
 import { Response as FLOResponse } from 'src/@core/response';
@@ -56,7 +56,7 @@ export class UserController {
     }
 
     @Put('update')
-    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.PERSONAL_DETAIL)
     @Roles(ROLE.SUPER_ADMIN, ROLE.OTHER, ROLE.STAFF)
@@ -114,7 +114,7 @@ export class UserController {
     }
 
     @Get('data')
-    @UseGuards(RolesGuard, PermissionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, BlockchainGuard)
     @Permission(ACCESS_TYPE.READ)
     @Feature(FEATURE_IDENTIFIER.PERSONAL_DETAIL)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -132,7 +132,7 @@ export class UserController {
     }
 
     @Get('user-activity')
-    @UseGuards(RolesGuard, PermissionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, BlockchainGuard)
     @Permission(ACCESS_TYPE.READ)
     @Feature(FEATURE_IDENTIFIER.USER_ACTIVITY)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -150,7 +150,7 @@ export class UserController {
     }
 
     @Get('user-count')
-    @UseGuards(RolesGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, BlockchainGuard)
     @Roles(ROLE.SUPER_ADMIN)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'A private route for geting user detail' })
@@ -166,7 +166,7 @@ export class UserController {
     }
 
     @Get('data/:id')
-    @UseGuards(RolesGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, BlockchainGuard)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'A private route for getting user detail' })
@@ -270,7 +270,7 @@ export class UserController {
     }
 
     @Put('change-password')
-    @UseGuards(RolesGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, BlockchainGuard)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
@@ -286,7 +286,7 @@ export class UserController {
     }
 
     @Put('verify')
-    @UseGuards(RolesGuard, PermissionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, BlockchainGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.MANAGE_ALL_USER)
     @Roles(ROLE.SUPER_ADMIN)
@@ -304,7 +304,7 @@ export class UserController {
     }
 
     @Put('add-subscription')
-    @UseGuards(RolesGuard, PermissionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, BlockchainGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.MANAGE_ALL_USER)
     @Roles(ROLE.SUPER_ADMIN)
@@ -321,7 +321,7 @@ export class UserController {
     }
 
     @Put('add-company')
-    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.ORGANIZATION_USER)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF)
@@ -371,7 +371,7 @@ export class UserController {
     }
 
     @Post('create/:subscription')
-    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainGuard)
     @Permission(ACCESS_TYPE.WRITE)
     @Feature(FEATURE_IDENTIFIER.ORGANIZATION_USER)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -389,7 +389,7 @@ export class UserController {
     }
 
     @Get('organization-user/all')
-    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainGuard)
     @Permission(ACCESS_TYPE.READ)
     @Feature(FEATURE_IDENTIFIER.ORGANIZATION_USER)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -407,7 +407,7 @@ export class UserController {
     }
 
     @Put('organization-user/verify')
-    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.ORGANIZATION_USER)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -479,7 +479,7 @@ export class UserController {
     }
 
     @Put('organization-user/:userId')
-    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.ORGANIZATION_USER)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -497,7 +497,7 @@ export class UserController {
     }
 
     @Put('organization-user')
-    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.ORGANIZATION_USER)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF)
@@ -552,15 +552,6 @@ export class UserController {
         return new Response(true, [USER_CONSTANT.USER_DETAIL_FOUND]).setSuccessData(await this.userService.setDefaultCompany(updateUserDto, req, res)).setStatus(HttpStatus.OK);
     }
 
-    // @Post('registerBcIdentity')
-    // @UseGuards(RolesGuard, PermissionGuard, BlockchainStatusGuard)
-    // @HttpCode(HttpStatus.CREATED)
-    // @ApiOperation({ summary: 'Register user to blockchain' })
-    // @ApiCreatedResponse({})
-    // async registerBcAdmin(@Body() enrollDto: BcUserDto): Promise<FLOResponse> {
-    //     return new Response(true, [BC_SUCCESS_RESPONSE.USER_ENROLL_SUCCESS]).setSuccessData(await this.userBcService.registerUser(enrollDto, '', '')).setStatus(HttpStatus.OK);
-    // }
-
     @Post('block/reset')
     @HttpCode(HttpStatus.CREATED)
     @ApiHeader({
@@ -575,7 +566,7 @@ export class UserController {
     }
 
     @Put('unblock-user/:id')
-    @UseGuards(RolesGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, BlockchainGuard)
     @Roles(ROLE.SUPER_ADMIN)
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
@@ -600,7 +591,7 @@ export class UserController {
     }
 
     @Put('unblock-company-user/:userId')
-    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @UseGuards(RolesGuard, PermissionGuard, SubscriptionGuard, BlockchainGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.MANAGE_BLOCKED_COMPANY_USERS)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)

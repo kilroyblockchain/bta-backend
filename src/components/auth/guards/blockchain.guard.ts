@@ -1,0 +1,33 @@
+import { Injectable, ExecutionContext, CanActivate, Logger, UnauthorizedException } from '@nestjs/common';
+import * as dotenv from 'dotenv';
+import { decryptKey } from 'src/@utils/helpers';
+import { BcConnectionService } from 'src/components/blockchain/bc-connection/bc-connection.service';
+import { BcNodeInfoService } from 'src/components/blockchain/bc-node-info/bc-node-info.service';
+import { BcUserAuthenticationDto } from 'src/components/blockchain/dto/bc-user-authentication.dto';
+dotenv.config();
+
+@Injectable()
+export class BlockchainGuard implements CanActivate {
+    constructor(private readonly bcNodeInfo: BcNodeInfoService, private readonly bcConnectionService: BcConnectionService) {}
+
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+        const logger = new Logger('BlockchainGuard');
+        const request = context.switchToHttp().getRequest();
+
+        // Checking if key exists on header
+        if (!request.headers.key) {
+            logger.error('Key not found on header: ' + request.headers.key);
+            throw new UnauthorizedException();
+        }
+        const user = request['user'];
+        const bcNodeInfo = await this.bcNodeInfo.getBcNodeInfoById(user.company[0].staffingId[0].bcNodeInfo.toString());
+        try {
+            // Check valid key on blockchain
+            await this.bcConnectionService.checkBcNodeConnection(bcNodeInfo, new BcUserAuthenticationDto(await decryptKey(request.headers.key), user.bcSalt));
+        } catch (err) {
+            logger.error(err);
+            throw new UnauthorizedException(['Invalid Key']);
+        }
+        return request;
+    }
+}
