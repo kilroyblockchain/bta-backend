@@ -13,7 +13,6 @@ import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
 import { PermissionGuard } from 'src/components/auth/guards/permission.guard';
 import { SubscriptionGuard } from 'src/components/auth/guards/subscription.guard';
-import { BlockchainStatusGuard } from 'src/components/auth/guards/blockhainStatus.guard';
 import { ORGANIZATION_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { Response as FLOResponse } from 'src/@core/response';
 
@@ -78,7 +77,7 @@ export class OrganizationController {
     }
 
     @Get(':organizationId')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @UseGuards(AuthGuard('jwt'), PermissionGuard, SubscriptionGuard)
     @Permission(ACCESS_TYPE.READ)
     @Feature(FEATURE_IDENTIFIER.ORGANIZATION_DETAIL)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
