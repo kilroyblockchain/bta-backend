@@ -30,6 +30,8 @@ import { RejectUserDto } from './dto/reject-user.dto';
 import { Response as FLOResponse } from 'src/@core/response';
 import { IUser } from './interfaces/user.interface';
 import { BC_PAYLOAD } from 'src/@core/constants/bc-constants/bc-payload.constant';
+import { VerifyBcKeyDto } from './dto/verify-bc-key.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('User')
 @Controller('user')
@@ -606,5 +608,21 @@ export class UserController {
     async unblockCompanyUser(@Param('userId') userId: string, @GetUser() user: IUser): Promise<FLOResponse> {
         await this.userService.unblockCompanyUser(user, userId);
         return new Response(true, [USER_CONSTANT.SUCCESSFULLY_UNBLOCKED_COMPANY_USER]).setStatus(HttpStatus.OK);
+    }
+
+    @Post('verify-bc-key')
+    @UseGuards(AuthGuard('jwt'))
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Verify Blockchain Key' })
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'the token we need for auth.'
+    })
+    @ApiOperation({ summary: 'Verify Blockchain Key', description: 'This is verify blockchain key API which verifies blockchain key of the logged in user on blockchain' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
+    @ApiResponse({ status: HttpStatus.OK, type: VerifyBcKeyDto, description: USER_CONSTANT.BLOCKCHAIN_KEY_VERIFICATION_SUCCESS })
+    async verifyBlockchainKey(@Body() verifyBcKeyDto: VerifyBcKeyDto, @Req() req: Request): Promise<FLOResponse> {
+        return new FLOResponse(true, [USER_CONSTANT.BLOCKCHAIN_KEY_VERIFICATION_SUCCESS]).setSuccessData(await this.userService.verifyBlockchainKey(verifyBcKeyDto, req)).setStatus(HttpStatus.OK);
     }
 }
