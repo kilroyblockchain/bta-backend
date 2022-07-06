@@ -1,4 +1,4 @@
 {
-    "dbConnectionUri": "mongodb://localhost:27017/app",
+    "dbConnectionUri": "mongodb://nestapi:a458CsBsa$osf3KYhiN!xrdF@localhost:27034/kilroy-base-api?authSource=admin",
     "migrationsDir": "app-migrations/migrations"
 }

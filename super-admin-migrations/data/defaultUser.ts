@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import { DEFAULT_COMPANY_ID, STAFFING_UNIT_ID } from 'super-admin-migrations/constants/default-constant';
 
 export const admin =
     /* 1 */
@@ -18,14 +19,14 @@ export const admin =
         password: 'Kbc@2020',
         company: [
             {
-                staffingId: [],
+                staffingId: [STAFFING_UNIT_ID],
                 userAccept: true,
                 default: true,
                 verified: true,
                 isAdmin: true,
                 isDeleted: false,
                 _id: new Types.ObjectId('60895385b0068f003fe9d0db'),
-                companyId: new Types.ObjectId('608a49c2899c17003f7d2576'),
+                companyId: DEFAULT_COMPANY_ID,
                 subscriptionType: 'super-admin'
             }
         ],
@@ -36,7 +37,7 @@ export const admin =
     };
 
 export const adminCompany = {
-    _id: new Types.ObjectId('608a49c2899c17003f7d2576'),
+    _id: DEFAULT_COMPANY_ID,
     companyName: 'Kilroy Blockchain',
     country: null,
     state: null,
