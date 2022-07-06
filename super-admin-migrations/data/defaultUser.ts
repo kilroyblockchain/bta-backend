@@ -1,10 +1,10 @@
 import { Types } from 'mongoose';
-import { DEFAULT_COMPANY_ID, STAFFING_UNIT_ID } from 'super-admin-migrations/constants/default-constant';
+import { DEFAULT_COMPANY_ID, DEFAULT_SUPER_ADMIN_ID, STAFFING_UNIT_ID } from 'super-admin-migrations/constants/default-constant';
 
 export const admin =
     /* 1 */
     {
-        _id: new Types.ObjectId('60895385b0068f003fe9d0d9'),
+        _id: DEFAULT_SUPER_ADMIN_ID,
         loginAttempts: 0,
         autoPassword: false,
         firstName: 'Suyog',

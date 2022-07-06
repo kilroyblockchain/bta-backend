@@ -1,6 +1,8 @@
 import { Types } from 'mongoose';
 
 export const DEFAULT_COMPANY_ID = new Types.ObjectId('608a49c2899c17003f7d2576');
+export const DEFAULT_SUPER_ADMIN_ID = new Types.ObjectId('60895385b0068f003fe9d0d9');
+
 export const superAdminFeaturesIds = {
     MANAGE_ALL_USER: new Types.ObjectId('602102d7dfbf432c8c4f0001'),
     APPLICATION_LOGS: new Types.ObjectId('602102d7dfbf432c8c4f0002'),
@@ -17,3 +19,4 @@ export const superAdminFeaturesIds = {
 export const STAFFING_UNIT_ID = new Types.ObjectId('608a49c2899c17003f7d2906');
 export const ORGANIZATION_UNIT_ID = new Types.ObjectId('608a49c2899c17003f7d2976');
 export const GLOBAL_CHANNEL_ID = new Types.ObjectId('607fb4f9eeef453aeb000001');
+export const DEFAULT_BC_NODE_INFO_ID = new Types.ObjectId('60e6fe3dd27e2133c4855255');

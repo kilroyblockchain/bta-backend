@@ -1,4 +1,5 @@
-import { GLOBAL_CHANNEL_ID, ORGANIZATION_UNIT_ID, STAFFING_UNIT_ID, superAdminFeaturesIds } from 'super-admin-migrations/constants/default-constant';
+import 'dotenv/config';
+import { DEFAULT_BC_NODE_INFO_ID, GLOBAL_CHANNEL_ID, ORGANIZATION_UNIT_ID, STAFFING_UNIT_ID, superAdminFeaturesIds } from 'super-admin-migrations/constants/default-constant';
 
 export const adminStaffingUnit = {
     _id: STAFFING_UNIT_ID,
@@ -46,7 +47,7 @@ export const adminStaffingUnit = {
             featureId: superAdminFeaturesIds.CHANGE_USER_PASSWORD
         }
     ],
-    bcNodeInfo: '',
+    bcNodeInfo: DEFAULT_BC_NODE_INFO_ID,
     channels: [GLOBAL_CHANNEL_ID],
-    bucketUrl: ''
+    bucketUrl: process.env.SUPER_ADMIN_BUCKET_URL
 };
