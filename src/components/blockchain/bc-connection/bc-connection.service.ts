@@ -8,6 +8,7 @@ import { BcUserAuthenticationDto } from '../dto/bc-user-authentication.dto';
 import { RegisterBcUserDto } from 'src/components/app-user/user/dto/register-bc-user.dto';
 import { IBcNodeInfo } from '../bc-node-info/interfaces/bc-node-info.interface';
 import { IRegisterBcUserResponse } from './interface/register-bc-user-response.interface';
+import { BcTransactionInfoDto } from './dto/bc-transaction-info.dto';
 
 const BC_CONNECTION_HOST = process.env.BC_CONNECTION_HOST;
 const AUTHORIZATION_TOKEN = process.env.AUTHORIZATION_TOKEN;
@@ -59,17 +60,17 @@ export class BcConnectionService {
         }
     }
 
-    async registerUser(registerBcUserDto: RegisterBcUserDto, orgName: string, loggedInUserKey: string, channelName: string, loggedInUserSalt: string, bcNodeUrl: string, authorizationToken: string): Promise<IRegisterBcUserResponse> {
+    async registerUser(registerBcUserDto: RegisterBcUserDto, bcNodeInfo: IBcNodeInfo, bcTransactionInfo: BcTransactionInfoDto): Promise<IRegisterBcUserResponse> {
         const logger = new Logger('BcRegisterUser');
         try {
-            const response = await axios.post(bcNodeUrl + BC_CONNECTION_API.REGISTER_USER, registerBcUserDto, {
+            const response = await axios.post(bcNodeInfo.nodeUrl + BC_CONNECTION_API.REGISTER_USER, registerBcUserDto, {
                 headers: {
                     'Content-Type': 'application/json',
-                    authorization: authorizationToken,
-                    key: loggedInUserKey,
-                    salt: loggedInUserSalt,
-                    channel_name: channelName,
-                    org_name: orgName
+                    authorization: 'Basic ' + bcNodeInfo.authorizationToken,
+                    key: bcTransactionInfo.key,
+                    salt: bcTransactionInfo.salt,
+                    channel_name: bcTransactionInfo.channelName,
+                    org_name: bcNodeInfo.orgName
                 }
             });
             const registerUserData: IRegisterBcUserResponse = response.data.data;
