@@ -41,7 +41,7 @@ import { COOKIE_KEYS } from 'src/@core/constants/cookie-key.constant';
 import { IUserActivityResponse, IRefreshToken } from 'src/components/auth/interfaces/refresh-token.interface';
 import { IVerifyEmail } from './interfaces/verified-email.interface';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { FORGET_PASSWORD, ORGANIZATION_REJECTED, SUBSCRIPTION_UPDATED, USER_ACCEPTED, USER_DISABLED, USER_ENABLED, USER_REGISTERED } from 'src/@utils/events/constants/events.constants';
+import { COMPANY_ADMIN_ORGANIZATION_CREATED, FORGET_PASSWORD, ORGANIZATION_REJECTED, SUBSCRIPTION_UPDATED, USER_ACCEPTED, USER_DISABLED, USER_ENABLED, USER_REGISTERED } from 'src/@utils/events/constants/events.constants';
 import {
     ForgetPasswordBodyContextDto,
     ForgetPasswordEmailDto,
@@ -383,6 +383,17 @@ export class UserService {
             // save new password for user
             try {
                 user.autoPassword = autoPassword;
+
+                this.eventEmitter.emit(COMPANY_ADMIN_ORGANIZATION_CREATED, {
+                    companyId: verifyEmailDto.companyId,
+                    bcNodeInfo: verifyEmailDto.bcNodeInfo,
+                    channels: verifyEmailDto.channels,
+                    bucketUrl: verifyEmailDto.bucketUrl,
+                    organizationName: verifyEmailDto.organizationName,
+                    staffingType: verifyEmailDto.subscriptionType,
+                    userId: verifyEmailDto.userId
+                });
+
                 await user.save();
             } catch (error) {
                 throw new Error(USER_CONSTANT.GENERATED_PASSWORD_FAILED_TO_SAVE);
@@ -2152,6 +2163,18 @@ export class UserService {
         registrationResponse.salt = null;
         // TODO: Store super admin key on DB
         return registrationResponse;
+    }
+
+    async addStaffingId(id: string, companyId: string, staffingId: string): Promise<void> {
+        await this.uModel.findOneAndUpdate(
+            { _id: id, 'company.companyId': companyId },
+            {
+                $push: {
+                    'company.$.staffingId': staffingId
+                }
+            },
+            { new: true }
+        );
     }
 
     async verifyBlockchainKey(verifyBcKeyDto: VerifyBcKeyDto, req: Request): Promise<VerifyBcKeyDto> {

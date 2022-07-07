@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { ORGANIZATION_CREATED } from '../constants/events.constants';
+import { COMPANY_ADMIN_ORGANIZATION_CREATED, ORGANIZATION_CREATED } from '../constants/events.constants';
+import { ICompanyAdminOrganizationPayload } from '../interfaces';
 import { OrganizationEventService } from '../services/organization-event.service';
 
 @Injectable()
@@ -10,5 +11,10 @@ export class OrganizationEvent {
     @OnEvent(ORGANIZATION_CREATED, { async: true })
     handleCreateOrganization(payload: { companyId: string }): void {
         this.organizationEventService.createOrganizationUnit(payload);
+    }
+
+    @OnEvent(COMPANY_ADMIN_ORGANIZATION_CREATED, { async: true })
+    handleCreateCompanyAdminOrganization(payload: ICompanyAdminOrganizationPayload): void {
+        this.organizationEventService.createCompanyAdminOrganization(payload);
     }
 }
