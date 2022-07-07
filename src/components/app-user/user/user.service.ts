@@ -195,7 +195,6 @@ export class UserService {
             const bcNodeInfoId = staffing.bcNodeInfo.toString();
 
             const registerUserResponse = await this.userBcService.registerUser(new RegisterBcUserDto(user._id, user.email), new BcTransactionInfoDto(key, parentUser.bcSalt, channelName), bcNodeInfoId);
-
             user.bcSalt = registerUserResponse.salt;
             await user.save();
             this.eventEmitter.emit(
@@ -380,6 +379,7 @@ export class UserService {
             await this.setUserAsVerified(user, verifyEmailDto.companyRowId);
             await this.organizationService.allowOrganization(verifyEmailDto.companyId);
             await this.organizationService.updateOrganizationStatus(verifyEmailDto.companyId, verifyEmailDto.subscriptionType, true);
+            let registrationResponse: IRegisterBcUserResponse;
             // save new password for user
             try {
                 user.autoPassword = autoPassword;
@@ -394,6 +394,8 @@ export class UserService {
                     userId: verifyEmailDto.userId
                 });
 
+                registrationResponse = await this.userBcService.registerSuperAdminToMultiOrg(new RegisterBcUserDto(verifyEmailDto.userId, user.email));
+                user.bcSalt = registrationResponse.salt;
                 await user.save();
             } catch (error) {
                 throw new Error(USER_CONSTANT.GENERATED_PASSWORD_FAILED_TO_SAVE);
@@ -408,12 +410,15 @@ export class UserService {
                     to: user.email,
                     subject: EMAIL_CONSTANTS.ORGANIZATION_VERIFIED,
                     title: EMAIL_CONSTANTS.TITLE_WELCOME,
-                    partialContext: new GettingStartedBodyContextDto({
-                        subscriptionType: subscriptionTypeFull,
-                        email: user.email,
-                        password: randomPassword,
-                        clientAppURL: process.env.CLIENT_APP_URL
-                    })
+                    partialContext: new GettingStartedBodyContextDto(
+                        {
+                            subscriptionType: subscriptionTypeFull,
+                            email: user.email,
+                            password: randomPassword,
+                            clientAppURL: process.env.CLIENT_APP_URL
+                        },
+                        registrationResponse.key
+                    )
                 })
             );
         } catch (err) {
@@ -2160,8 +2165,9 @@ export class UserService {
             throw new NotFoundException('Super Admin User Not Found');
         }
         const registrationResponse = await this.userBcService.registerSuperAdminToMultiOrg(new RegisterBcUserDto(user._id.toString(), user.email));
+        user.bcSalt = registrationResponse.salt;
         registrationResponse.salt = null;
-        // TODO: Store super admin key on DB
+        await user.save();
         return registrationResponse;
     }
 
