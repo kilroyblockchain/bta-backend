@@ -18,7 +18,7 @@ export class BlockchainGuard implements CanActivate {
         // Checking if bc-key exists on header
         if (!request.headers['bc-key']) {
             logger.error('Key not found on header: ' + request.headers['bc-key']);
-            throw new UnauthorizedException();
+            throw new UnauthorizedException(['Bc key not found on header']);
         }
         const user = request['user'];
         const bcNodeInfo = await this.bcNodeInfo.getBcNodeInfoById(user.company[0].staffingId[0].bcNodeInfo.toString());
