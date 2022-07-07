@@ -184,11 +184,10 @@ export class UserService {
                 })
                 .select('-password');
             const subscriptionTypeFull = await this.subsTypeService.getFullSubscription(userDto.subscriptionType);
-
             const staffing = await this.staffingService.getStaffingById(userDto.staffingId[0]);
 
             // Get key from header
-            const key = await decryptKey(req.headers.key.toString());
+            const key = await decryptKey(req.headers['bc-key'].toString());
             // Get channel name from User staffing
             const channelName = staffing.channels[0].toString();
             // Get bc node info from User staffing
