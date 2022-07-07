@@ -10,7 +10,7 @@ export const admin =
         autoPassword: false,
         firstName: 'Suyog',
         lastName: 'Khanal',
-        email: 'suraj@kilroyblockchain.com',
+        email: 'suyog@kilroyblockchain.com',
         phone: '+1 (488) 431-4341',
         country: new Types.ObjectId('60e6fe33d27e2133c4855221'),
         state: new Types.ObjectId('60e6fe3dd27e2133c4856174'),
