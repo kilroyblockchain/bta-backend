@@ -6,3 +6,4 @@ export const SUBSCRIPTION_UPDATED = 'subscription.updated';
 export const ORGANIZATION_REJECTED = 'organization.rejected';
 export const USER_ACCEPTED = 'user.accepted';
 export const ORGANIZATION_CREATED = 'organization.created';
+export const COMPANY_ADMIN_ORGANIZATION_CREATED = 'company_admin_organization.created';
