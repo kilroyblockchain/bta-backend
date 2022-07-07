@@ -15,16 +15,16 @@ export class BlockchainGuard implements CanActivate {
         const logger = new Logger('BlockchainGuard');
         const request = context.switchToHttp().getRequest();
 
-        // Checking if key exists on header
-        if (!request.headers.key) {
-            logger.error('Key not found on header: ' + request.headers.key);
+        // Checking if bc-key exists on header
+        if (!request.headers['bc-key']) {
+            logger.error('Key not found on header: ' + request.headers['bc-key']);
             throw new UnauthorizedException();
         }
         const user = request['user'];
         const bcNodeInfo = await this.bcNodeInfo.getBcNodeInfoById(user.company[0].staffingId[0].bcNodeInfo.toString());
         try {
-            // Check valid key on blockchain
-            await this.bcConnectionService.checkBcNodeConnection(bcNodeInfo, new BcUserAuthenticationDto(await decryptKey(request.headers.key), user.bcSalt));
+            // Check valid bc-key on blockchain
+            await this.bcConnectionService.checkBcNodeConnection(bcNodeInfo, new BcUserAuthenticationDto(await decryptKey(request.headers['bc-key']), user.bcSalt));
         } catch (err) {
             logger.error(err);
             throw new UnauthorizedException([BC_ERROR_RESPONSE.INVALID_BC_KEY]);
