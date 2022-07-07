@@ -92,26 +92,17 @@ export class ProjectService {
         const project = await this.getProjectById(id, req);
         if (!project) throw new NotFoundException([MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND]);
 
-        console.log(purpose.purpose);
-        console.log(file);
-
         if (file) {
             project.purpose.docName = file.originalname;
             project.purpose.docURL = `project-purposeDoc/${file.filename}`;
         }
 
-        // project.purpose.docName = file ? file.originalname : '';
-        // project.purpose.docURL = file ? `project-purposeDoc/${file.filename}` : '';
+        if (purpose.purposeDoc === '') {
+            project.purpose.docName = '';
+            project.purpose.docURL = '';
+        }
 
         project.purpose.text = purpose.purpose ? purpose.purpose : project.purpose.text;
-
-        // if (file) {
-        //     project.purpose.docName = file.originalname;
-        //     project.purpose.docURL = `project-purposeDoc/${file.filename}`;
-        //     project.purpose.text = purpose.purpose !== '' ? purpose.purpose : project.purpose.text;
-        //     return await project.save();
-        // }
-        // project.purpose.text = purpose.purpose;
 
         return await project.save();
     }

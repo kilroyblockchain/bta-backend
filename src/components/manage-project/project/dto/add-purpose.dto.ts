@@ -18,5 +18,5 @@ export class AddProjectPurposeDto {
         required: false,
         description: 'This is document of project purpose'
     })
-    purposeDoc: Express.Multer.File;
+    purposeDoc: Express.Multer.File | string;
 }
