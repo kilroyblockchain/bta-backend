@@ -2194,4 +2194,28 @@ export class UserService {
             throw new UnauthorizedException([BC_ERROR_RESPONSE.INVALID_BC_KEY]);
         }
     }
+
+    async getUserBcInfoDefaultChannel(userId: string): Promise<IUser> {
+        const userData = await this.UserModel.findOne({ _id: userId })
+            .select('bcSalt company.staffingId')
+            .populate({
+                path: 'company.staffingId',
+                select: '_id',
+                populate: [
+                    {
+                        path: 'bcNodeInfo',
+                        select: 'orgName nodeUrl authorizationToken'
+                    },
+                    {
+                        path: 'channels',
+                        match: {
+                            isDefault: true
+                        },
+                        select: 'channelName'
+                    }
+                ]
+            });
+
+        return userData;
+    }
 }

@@ -6,5 +6,7 @@ export const BC_CONNECTION_API = {
     DEACTIVATE_USER: '/api/v1/user/deactivate',
     CHECK_USER: '/api/v1/user/check',
     REGISTER_SUPER_ADMIN_USER: '/api/v1/bc-user/registerSuperAdmin',
-    CHECK_BC_NODE_CONNECTION: '/api/v1/connection'
+    CHECK_BC_NODE_CONNECTION: '/api/v1/connection',
+    PROJECT_BC: '/api/v1/project',
+    GET_PROJECT_BC_HISTORY: '/api/v1/project/history'
 };
