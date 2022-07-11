@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
@@ -6,12 +6,11 @@ import { ProjectService } from '../project/project.service';
 import { IProjectVersion } from './interfaces/project-version.interface';
 import { AddReviewModelDto, AddVersionDto } from './dto';
 import { Request } from 'express';
-import { UserService } from 'src/components/app-user/user/user.service';
-import { ProjectVersionBcService } from './project-version-bc.service';
+import { VersionBcService } from './project-version-bc.service';
 
 @Injectable()
 export class ProjectVersionService {
-    constructor(@InjectModel('project-version') private readonly versionModel: Model<IProjectVersion>, private readonly projectService: ProjectService, private readonly userService: UserService, private readonly projectVersionBcService: ProjectVersionBcService) {}
+    constructor(@InjectModel('project-version') private readonly versionModel: Model<IProjectVersion>, private readonly projectService: ProjectService, @Inject(forwardRef(() => VersionBcService)) private readonly versionBcService: VersionBcService) {}
 
     async addNewVersion(req: Request, projectId: string, newVersion: AddVersionDto): Promise<IProjectVersion> {
         const user = req['user']._id;
@@ -29,7 +28,7 @@ export class ProjectVersionService {
         project.projectVersions.push(version._id);
 
         await project.save();
-        await this.projectVersionBcService.createBcProjectVersion(req, version);
+        await this.versionBcService.createBcProjectVersion(req, version);
         return await version.save();
     }
 
