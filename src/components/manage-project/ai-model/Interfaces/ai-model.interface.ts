@@ -2,6 +2,7 @@ import { Document } from 'mongoose';
 
 export interface IAiModel extends Document {
     expNo: string;
+    experimentBcHash: string;
     updatedAt: Date;
     createdAt: Date;
     version: string;

@@ -7,6 +7,7 @@ import { HttpService } from '@nestjs/axios';
 import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
 import { firstValueFrom } from 'rxjs';
 import { Request } from 'express';
+import { sha256Hash } from 'src/@utils/helpers';
 
 @Injectable()
 export class AiModelService {
@@ -25,6 +26,7 @@ export class AiModelService {
 
         const aiModel = await this.aiModel.paginate({ version: version._id }, options);
         let i = 0;
+        const logFileBcHash = [];
         if (!aiModel.docs.length) {
             while (true) {
                 try {
@@ -37,8 +39,12 @@ export class AiModelService {
                     i++;
                     expData.version = version._id;
                     expData.project = version.project['_id'];
+                    expData.experimentBcHash = await sha256Hash(JSON.stringify(data));
+                    logFileBcHash.push(expData.experimentBcHash);
                     await expData.save();
                 } catch (err) {
+                    version.logFileBCHash = await sha256Hash(JSON.stringify(logFileBcHash));
+                    await version.save();
                     return await this.aiModel.paginate({ version: version._id }, options);
                 }
             }
