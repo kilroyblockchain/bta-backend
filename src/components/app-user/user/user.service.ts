@@ -2194,4 +2194,41 @@ export class UserService {
             throw new UnauthorizedException([BC_ERROR_RESPONSE.INVALID_BC_KEY]);
         }
     }
+
+    async getUserBcInfoDefaultChannel(userId: string): Promise<IUser> {
+        const userData = await this.UserModel.findOne({ _id: userId })
+            .select('bcSalt company.staffingId')
+            .populate({
+                path: 'company.staffingId',
+                select: '_id',
+                populate: [
+                    {
+                        path: 'bcNodeInfo',
+                        select: 'orgName nodeUrl authorizationToken'
+                    },
+                    {
+                        path: 'channels',
+                        match: {
+                            isDefault: true
+                        },
+                        select: 'channelName'
+                    }
+                ]
+            });
+
+        return userData;
+    }
+
+    async getUserEmail(userId: string | string[]): Promise<string[] | { _id: string; email: string }> {
+        const userEmail = [];
+        if (userId.length) {
+            for (const id of userId) {
+                const user = await this.UserModel.findById(id).select('email');
+                userEmail.push(user.email);
+            }
+            return userEmail;
+        } else {
+            return await this.UserModel.findById(userId).select('email');
+        }
+    }
 }

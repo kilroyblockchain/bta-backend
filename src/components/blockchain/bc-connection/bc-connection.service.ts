@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
-import { BcRequestDto } from 'src/@core/constants/dto/bc-request.dto';
 import axios, { AxiosError } from 'axios';
 import { BC_CONNECTION_API } from 'src/@core/constants/bc-constants/bc-connection.api.constant';
 import { BcConnectionDto } from './dto/bc-connection.dto';
@@ -9,20 +8,26 @@ import { RegisterBcUserDto } from 'src/components/app-user/user/dto/register-bc-
 import { IBcNodeInfo } from '../bc-node-info/interfaces/bc-node-info.interface';
 import { IRegisterBcUserResponse } from './interface/register-bc-user-response.interface';
 import { BcTransactionInfoDto } from './dto/bc-transaction-info.dto';
+import { decryptKey } from 'src/@utils/helpers';
+import { BcAuthenticationDto } from './dto/bc-common-authenticate.dto';
 
 const BC_CONNECTION_HOST = process.env.BC_CONNECTION_HOST;
 const AUTHORIZATION_TOKEN = process.env.AUTHORIZATION_TOKEN;
 
 @Injectable()
 export class BcConnectionService {
-    async invoke(bcRequestDto: BcRequestDto, userId: string): Promise<BcConnectionDto> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async invoke(bcRequestDto: any, bcAuthenticateDto: BcAuthenticationDto): Promise<BcConnectionDto> {
         const logger = new Logger('BcConnectionInvoke');
         try {
-            const response = await axios.post(BC_CONNECTION_HOST + BC_CONNECTION_API.INVOKE_BC, bcRequestDto, {
+            const response = await axios.post(bcAuthenticateDto.nodeUrl + bcAuthenticateDto.bcConnectionApi, bcRequestDto, {
                 headers: {
                     'Content-Type': 'application/json',
-                    user_id: userId,
-                    authorization: 'Basic ' + AUTHORIZATION_TOKEN
+                    authorization: 'Basic ' + bcAuthenticateDto.basicAuthorization,
+                    org_name: bcAuthenticateDto.organizationName,
+                    channel_name: bcAuthenticateDto.channelName,
+                    key: await decryptKey(bcAuthenticateDto.bcKey),
+                    salt: bcAuthenticateDto.salt
                 }
             });
             return new BcConnectionDto(response.data);
@@ -41,14 +46,17 @@ export class BcConnectionService {
         }
     }
 
-    async query(bcRequestDto: BcRequestDto, userId: string): Promise<BcConnectionDto> {
+    async query(bcAuthenticateDto: BcAuthenticationDto): Promise<BcConnectionDto> {
         const logger = new Logger('BcConnectionQuery');
         try {
-            const response = await axios.post(BC_CONNECTION_HOST + BC_CONNECTION_API.QUERY_BC, bcRequestDto, {
+            const response = await axios.get(bcAuthenticateDto.nodeUrl + bcAuthenticateDto.bcConnectionApi, {
                 headers: {
                     'Content-Type': 'application/json',
-                    user_id: userId,
-                    authorization: 'Basic ' + AUTHORIZATION_TOKEN
+                    authorization: 'Basic ' + bcAuthenticateDto.basicAuthorization,
+                    org_name: bcAuthenticateDto.organizationName,
+                    channel_name: bcAuthenticateDto.channelName,
+                    key: await decryptKey(bcAuthenticateDto.bcKey),
+                    salt: bcAuthenticateDto.salt
                 }
             });
             return new BcConnectionDto(response.data.data);
