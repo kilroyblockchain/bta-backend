@@ -5,12 +5,14 @@ export class GettingStartedBodyContextDto {
     email: string;
     password: string;
     clientAppURL: string;
+    bcKey: string;
 
-    constructor({ subscriptionType, email, password, clientAppURL }) {
+    constructor({ subscriptionType, email, password, clientAppURL }, bcKey?) {
         this.subscriptionType = subscriptionType;
         this.email = email;
         this.password = password;
         this.clientAppURL = clientAppURL;
+        this.bcKey = bcKey;
     }
 }
 

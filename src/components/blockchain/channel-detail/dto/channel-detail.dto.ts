@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class ChannelDetailDto {
     @ApiProperty({
@@ -22,7 +22,7 @@ export class ChannelDetailDto {
         example: true,
         description: 'Flag to determine if the channel is default channel or not'
     })
-    @IsNotEmpty()
+    @IsOptional()
     @IsBoolean()
     isDefault: boolean;
 }

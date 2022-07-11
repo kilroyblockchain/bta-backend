@@ -24,6 +24,7 @@ export interface IUser extends Document {
     autoPassword?: boolean;
     reCaptchaToken?: string;
     blockchainVerified?: boolean;
+    bcSalt: string;
 }
 
 export interface ICompany {

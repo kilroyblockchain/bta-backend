@@ -37,8 +37,20 @@ export class BcNodeInfoService {
         return bcNodeInfo;
     }
 
-    async getAllBcNodeInfo(req: Request): Promise<PaginateResult<IBcNodeInfo>> {
-        const { page = 1, limit = 10, status = true, search, searchValue } = req.query;
+    async getAllBcNodeInfo(req?: Request): Promise<PaginateResult<IBcNodeInfo>> {
+        let page;
+        let limit;
+        let status;
+        let search = null;
+        let searchValue = null;
+
+        if (req) {
+            ({ page = 1, limit = 10, status = true, search, searchValue } = req.query);
+        } else {
+            page = 1;
+            limit = 10;
+            status = true;
+        }
         const searchQuery = search && search === 'true' && searchValue ? getSearchFilterWithRegexAll(searchValue.toString(), ['orgName', 'nodeUrl']) : {};
         const options = {
             populate: [{ path: 'addedBy', select: 'firstName lastName email' }],

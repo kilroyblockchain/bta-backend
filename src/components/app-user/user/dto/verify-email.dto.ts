@@ -1,4 +1,4 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsArray } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 
@@ -48,4 +48,20 @@ export class VerifyEmailDto {
     })
     @IsOptional()
     readonly staffingId: Array<string>;
+
+    @IsOptional()
+    @IsString()
+    readonly bcNodeInfo: string;
+
+    @IsOptional()
+    @IsString()
+    readonly bucketUrl: string;
+
+    @IsOptional()
+    @IsArray()
+    readonly channels: string[];
+
+    @IsOptional()
+    @IsString()
+    readonly organizationName: string;
 }

@@ -13,8 +13,6 @@ import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
 import { PermissionGuard } from 'src/components/auth/guards/permission.guard';
 import { SubscriptionGuard } from 'src/components/auth/guards/subscription.guard';
-import { BlockchainStatusGuard } from 'src/components/auth/guards/blockhainStatus.guard';
-import { BC_SUCCESS_RESPONSE } from 'src/@core/constants/bc-constants/bc-success-response.constants';
 import { ORGANIZATION_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { Response as FLOResponse } from 'src/@core/response';
 
@@ -64,8 +62,8 @@ export class OrganizationController {
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Edit Organization' })
     @ApiOkResponse({})
-    async updateOrganization(@Param('organizationId') organizationId: string, @UploadedFile() file, @Body() updateOrganizationDto: UpdateOrganizationDto, @Req() req: Request): Promise<FLOResponse> {
-        const updatedOrganization = await this.organizationService.update(organizationId, file?.filename, updateOrganizationDto, req);
+    async updateOrganization(@Param('organizationId') organizationId: string, @UploadedFile() file, @Body() updateOrganizationDto: UpdateOrganizationDto): Promise<FLOResponse> {
+        const updatedOrganization = await this.organizationService.update(organizationId, file?.filename, updateOrganizationDto);
         return new FLOResponse(true, [ORGANIZATION_CONSTANT.ORGANIZATION_UPDATED]).setSuccessData(updatedOrganization).setStatus(HttpStatus.OK);
     }
 
@@ -79,7 +77,7 @@ export class OrganizationController {
     }
 
     @Get(':organizationId')
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, SubscriptionGuard, BlockchainStatusGuard)
+    @UseGuards(AuthGuard('jwt'), PermissionGuard, SubscriptionGuard)
     @Permission(ACCESS_TYPE.READ)
     @Feature(FEATURE_IDENTIFIER.ORGANIZATION_DETAIL)
     @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
@@ -91,8 +89,8 @@ export class OrganizationController {
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get Organization' })
     @ApiOkResponse({})
-    async getOrganizationById(@Param('organizationId') organizationId: string, @Req() req: Request): Promise<FLOResponse> {
-        const organization = await this.organizationService.findOrganizationByIdBcVerified(organizationId, req);
+    async getOrganizationById(@Param('organizationId') organizationId: string): Promise<FLOResponse> {
+        const organization = await this.organizationService.findOrganizationByIdBcVerified(organizationId);
         return new FLOResponse(true, [ORGANIZATION_CONSTANT.ORGANIZATION_FOUND]).setSuccessData(organization).setStatus(HttpStatus.OK);
     }
 
@@ -112,24 +110,5 @@ export class OrganizationController {
     async getAllOrganization(@Req() req: Request): Promise<FLOResponse> {
         const allOrganizations = await this.organizationService.findAllOrganization(req);
         return new FLOResponse(true, [ORGANIZATION_CONSTANT.ORGANIZATION_FOUND]).setSuccessData(allOrganizations).setStatus(HttpStatus.OK);
-    }
-
-    @Get('blockchain-history/:organizationId')
-    @HttpCode(HttpStatus.OK)
-    @UseGuards(AuthGuard('jwt'), PermissionGuard, BlockchainStatusGuard)
-    @Feature(FEATURE_IDENTIFIER.BLOCKCHAIN_HISTORY)
-    @Permission(ACCESS_TYPE.READ)
-    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF, ROLE.OTHER)
-    @ApiBearerAuth()
-    @ApiHeader({
-        name: 'Bearer',
-        description: 'The token we need for auth.'
-    })
-    @ApiOperation({ summary: 'Get Blockchain History of given organization' })
-    @ApiOkResponse({
-        description: 'Organization Blockchain history retrieved successfully.'
-    })
-    async getBlockchainHistory(@Req() req: Request, @Param('organizationId') organizationId: string): Promise<FLOResponse> {
-        return new FLOResponse(true, [BC_SUCCESS_RESPONSE.BLOCKCHAIN_HISTORY_FOUND]).setSuccessData(await this.organizationService.findOrganizationBlockchainHistory(req, organizationId)).setStatus(HttpStatus.OK);
     }
 }

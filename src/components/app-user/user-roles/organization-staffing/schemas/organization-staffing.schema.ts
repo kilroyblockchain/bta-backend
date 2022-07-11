@@ -25,6 +25,19 @@ export const StaffingSchema = new Schema(
         status: {
             type: Boolean,
             default: true
+        },
+        bcNodeInfo: {
+            type: Schema.Types.ObjectId,
+            ref: 'BcNodeInfo'
+        },
+        channels: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'channelDetail'
+            }
+        ],
+        bucketUrl: {
+            type: String
         }
     },
     {

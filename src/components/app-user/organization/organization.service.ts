@@ -1,24 +1,17 @@
 import { CreateOrganizationDto } from './dto/create-organization.dto';
-import { HttpException, Injectable, HttpStatus, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
+import { HttpException, Injectable, HttpStatus, BadRequestException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { IOrganizationResponse, IOrganization, ICompanyDto, IOrganizationInit, ISubscription } from './interfaces/organization.interface';
 import { Request } from 'express';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { ROLE } from 'src/@core/constants';
-import { OrganizationBcService } from './organization-bc.service';
-import { BC_STATUS } from 'src/@core/constants/bc-status.enum';
-import { BC_PAYLOAD } from 'src/@core/constants/bc-constants/bc-payload.constant';
-import { BC_ERROR_RESPONSE } from 'src/@core/constants/bc-constants/bc-error-response.constants';
-import { BcUserDto } from 'src/@core/common/bc-user.dto';
 import { ORGANIZATION_CONSTANT, USER_CONSTANT } from 'src/@core/constants/api-error-constants';
-import { OrganizationBcHistoryDto } from './dto/organization-bc-history.dto';
 @Injectable()
 export class OrganizationService {
     constructor(
         @InjectModel('Organization')
-        private readonly organizationModel: Model<IOrganization>,
-        private readonly organizationBcService: OrganizationBcService
+        private readonly organizationModel: Model<IOrganization>
     ) {}
 
     async create(req: Request, logoName: string, createOrganizationDto: CreateOrganizationDto): Promise<IOrganizationResponse> {
@@ -44,7 +37,7 @@ export class OrganizationService {
         }
     }
 
-    async update(organizationId: string, logoName: string, updateOrganizationDto: UpdateOrganizationDto, req: Request): Promise<IOrganization> {
+    async update(organizationId: string, logoName: string, updateOrganizationDto: UpdateOrganizationDto): Promise<IOrganization> {
         const logger = new Logger(OrganizationService.name + '-update');
         try {
             const currentOrganization = await this.organizationModel.findById(organizationId).exec();
@@ -66,18 +59,7 @@ export class OrganizationService {
             }
         }
         try {
-            const updatedOrg = await this.organizationModel.findById(organizationId).populate({ path: 'country state', select: 'name' }).exec();
-
-            if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                const organization = await this.organizationModel.findById(organizationId).exec();
-                const bcUserDto = new BcUserDto();
-                bcUserDto.loggedInUserId = req['user']._id;
-                bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                await this.organizationBcService.storeOrganizationBC(organization, bcUserDto, BC_PAYLOAD.UPDATE_ORGANIZATION);
-                const blockchainVerified = await this.organizationBcService.getBlockchainVerified(organization, bcUserDto);
-                return { ...updatedOrg['_doc'], blockchainVerified };
-            }
-            return updatedOrg;
+            return await this.organizationModel.findById(organizationId).populate({ path: 'country state', select: 'name' }).exec();
         } catch (err) {
             logger.error(err);
             throw err;
@@ -128,18 +110,10 @@ export class OrganizationService {
     }
 
     // Function Created For Controller to show Blockchain Verified
-    async findOrganizationByIdBcVerified(id: string, req: Request): Promise<IOrganization> {
+    async findOrganizationByIdBcVerified(id: string): Promise<IOrganization> {
         const logger = new Logger(OrganizationService.name + '-findOrganizationByIdBcVerified');
         try {
-            const orgDetail = await this.organizationModel.findById(id).exec();
-            if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                const bcUserDto = new BcUserDto();
-                bcUserDto.loggedInUserId = req['user']._id;
-                bcUserDto.company = req['user'].company.find((defaultCompany) => defaultCompany.default);
-                const blockchainVerified = await this.organizationBcService.getBlockchainVerified(orgDetail, bcUserDto);
-                return { ...orgDetail['_doc'], blockchainVerified };
-            }
-            return orgDetail;
+            return await this.organizationModel.findById(id).exec();
         } catch (err) {
             logger.error(err);
             throw err;
@@ -340,41 +314,6 @@ export class OrganizationService {
                 companyLogo: org.companyLogo,
                 subscription: org.subscription
             };
-        } catch (err) {
-            logger.error(err);
-            throw err;
-        }
-    }
-
-    /**
-     * Find Organization Blockchain History
-     * Calls getOrganizationBcHistory function of organization blockchain service. If organization not found, throws an error.
-     *
-     *
-     * @param {Request} options - Option of type Request
-     * @param {string} organizationId - Id of the organization to get the history from blockchain
-     *
-     *
-     **/
-    async findOrganizationBlockchainHistory(options: Request, organizationId: string): Promise<OrganizationBcHistoryDto> {
-        const logger = new Logger(OrganizationService.name + '-findOrganizationBlockchainHistory');
-        try {
-            if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                const bcUserDto = new BcUserDto();
-                bcUserDto.loggedInUserId = options['user']._id;
-                bcUserDto.company = options['user'].company.find((defaultCompany) => defaultCompany.default);
-                const blockchainHistory = await this.organizationBcService.getOrganizationBcHistory(bcUserDto, organizationId);
-                if (blockchainHistory.length == 0) {
-                    throw new NotFoundException(BC_ERROR_RESPONSE.BLOCKCHAIN_HISTORY_NOT_FOUND);
-                }
-                const organizationData = await this.findOrganizationById(organizationId);
-                const organizationBcHistoryDto = new OrganizationBcHistoryDto();
-                organizationBcHistoryDto.blockchainHistory = blockchainHistory;
-                organizationBcHistoryDto.organizationData = organizationData;
-                return organizationBcHistoryDto;
-            } else {
-                throw new BadRequestException(BC_ERROR_RESPONSE.BLOCKCHAIN_NOT_ENABLED);
-            }
         } catch (err) {
             logger.error(err);
             throw err;

@@ -42,6 +42,10 @@ export const ProjectSchema = new mongoose.Schema(
             type: mongoose.Types.ObjectId,
             ref: 'User'
         },
+        updatedBy: {
+            type: mongoose.Types.ObjectId,
+            ref: 'User'
+        },
         companyId: {
             type: mongoose.Types.ObjectId,
             ref: 'Organization'

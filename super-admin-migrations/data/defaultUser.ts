@@ -1,9 +1,11 @@
+import 'dotenv/config';
 import { Types } from 'mongoose';
+import { DEFAULT_COMPANY_ID, DEFAULT_SUPER_ADMIN_ID, STAFFING_UNIT_ID } from 'super-admin-migrations/constants/default-constant';
 
 export const admin =
     /* 1 */
     {
-        _id: new Types.ObjectId('60895385b0068f003fe9d0d9'),
+        _id: DEFAULT_SUPER_ADMIN_ID,
         loginAttempts: 0,
         autoPassword: false,
         firstName: 'Suyog',
@@ -18,25 +20,26 @@ export const admin =
         password: 'Kbc@2020',
         company: [
             {
-                staffingId: [],
+                staffingId: [STAFFING_UNIT_ID],
                 userAccept: true,
                 default: true,
                 verified: true,
                 isAdmin: true,
                 isDeleted: false,
                 _id: new Types.ObjectId('60895385b0068f003fe9d0db'),
-                companyId: new Types.ObjectId('608a49c2899c17003f7d2576'),
+                companyId: DEFAULT_COMPANY_ID,
                 subscriptionType: 'super-admin'
             }
         ],
         verificationExpires: new Date(),
         blockExpires: new Date(),
         verification: 'ff2fc9c8-b8e8-484d-8e0d-b053d1945ebe',
-        resetLink: ''
+        resetLink: '',
+        bcSalt: process.env.SUPER_ADMIN_BC_SALT
     };
 
 export const adminCompany = {
-    _id: new Types.ObjectId('608a49c2899c17003f7d2576'),
+    _id: DEFAULT_COMPANY_ID,
     companyName: 'Kilroy Blockchain',
     country: null,
     state: null,

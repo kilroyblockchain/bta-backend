@@ -133,6 +133,10 @@ export const UserSchema = new mongoose.Schema(
         autoPassword: {
             type: Boolean,
             default: true
+        },
+        bcSalt: {
+            type: String,
+            required: false
         }
     },
     {
