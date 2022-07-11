@@ -10,6 +10,7 @@ import { getSearchFilterWithRegexAll } from 'src/@core/utils/query-filter.utils'
 import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
 import { UserService } from 'src/components/app-user/user/user.service';
 import { BcConnectionService } from 'src/components/blockchain/bc-connection/bc-connection.service';
+import { BcAuthenticationDto } from 'src/components/blockchain/bc-connection/dto/bc-common-authenticate.dto';
 import { CreateProjectDto } from './dto';
 import { IProject } from './interfaces/project.interface';
 
@@ -40,7 +41,7 @@ export class ProjectService {
         const entryUser = await this.userService.getUserEmail(user);
 
         const userData = await this.userService.getUserBcInfoDefaultChannel(project.createdBy);
-        const blockChainAuthDto = {
+        const blockChainAuthDto: BcAuthenticationDto = {
             basicAuthorization: userData.company[0].staffingId[0]['bcNodeInfo'].authorizationToken,
             organizationName: userData.company[0].staffingId[0]['bcNodeInfo'].orgName,
             channelName: userData.company[0].staffingId[0]['channels'][0].channelName,

@@ -6,10 +6,13 @@ import { ProjectService } from '../project/project.service';
 import { IProjectVersion } from './interfaces/project-version.interface';
 import { AddReviewModelDto, AddVersionDto } from './dto';
 import { Request } from 'express';
+import { UserService } from 'src/components/app-user/user/user.service';
+import { BC_CONNECTION_API } from 'src/@core/constants/bc-constants/bc-connection.api.constant';
+import { BcConnectionService } from 'src/components/blockchain/bc-connection/bc-connection.service';
 
 @Injectable()
 export class ProjectVersionService {
-    constructor(@InjectModel('project-version') private readonly versionModel: Model<IProjectVersion>, private readonly projectService: ProjectService) {}
+    constructor(@InjectModel('project-version') private readonly versionModel: Model<IProjectVersion>, private readonly projectService: ProjectService, private readonly userService: UserService, private readonly bcConnectionService: BcConnectionService) {}
 
     async addNewVersion(req: Request, projectId: string, newVersion: AddVersionDto): Promise<IProjectVersion> {
         const user = req['user']._id;
@@ -27,6 +30,42 @@ export class ProjectVersionService {
         project.projectVersions.push(version._id);
 
         await project.save();
+        const entryUser = await this.userService.getUserEmail(user);
+
+        const userData = await this.userService.getUserBcInfoDefaultChannel(version.createdBy);
+        const blockChainAuthDto = {
+            basicAuthorization: userData.company[0].staffingId[0]['bcNodeInfo'].authorizationToken,
+            organizationName: userData.company[0].staffingId[0]['bcNodeInfo'].orgName,
+            channelName: userData.company[0].staffingId[0]['channels'][0].channelName,
+            bcKey: req.headers['bc-key'] as string,
+            salt: userData.bcSalt,
+            nodeUrl: userData.company[0].staffingId[0]['bcNodeInfo'].nodeUrl,
+            bcConnectionApi: BC_CONNECTION_API.CREATE_PROJECT_VERSION_BC
+        };
+
+        const versionDto = {
+            id: version._id,
+            versionName: version.versionName,
+            logFilePath: version.logFilePath,
+            logFileVersion: version.logFileVersion,
+            logFileBCHash: version.logFileBCHash,
+            versionModel: version.versionModel,
+            noteBookVersion: version.noteBookVersion,
+            testDataSets: version.testDataSets,
+            testDatasetBCHash: version.testDatasetBCHash,
+            trainDataSets: version.trainDataSets,
+            trainDatasetBCHash: version.trainDatasetBCHash,
+            artifacts: version.artifacts,
+            codeVersion: version.codeVersion,
+            codeRepo: version.codeRepo,
+            comment: version.comment,
+            versionStatus: version.versionStatus,
+            status: version.status,
+            project: project.name,
+            entryUser: entryUser['email']
+        };
+
+        await this.bcConnectionService.invoke(versionDto, blockChainAuthDto);
         return await version.save();
     }
 

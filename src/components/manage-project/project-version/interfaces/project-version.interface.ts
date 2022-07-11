@@ -1,5 +1,4 @@
 import { Document } from 'mongoose';
-import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
 import { VersionStatus } from '../enum/version-status.enum';
 
 export interface IProjectVersion extends Document {
@@ -22,6 +21,6 @@ export interface IProjectVersion extends Document {
     versionStatus: VersionStatus | string;
     updatedAt: Date;
     createdAt: Date;
-    createdBy: IUser;
+    createdBy: string;
     project: string;
 }

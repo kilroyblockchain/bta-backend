@@ -8,5 +8,6 @@ export const BC_CONNECTION_API = {
     REGISTER_SUPER_ADMIN_USER: '/api/v1/bc-user/registerSuperAdmin',
     CHECK_BC_NODE_CONNECTION: '/api/v1/connection',
     PROJECT_BC: '/api/v1/project',
-    GET_PROJECT_BC_HISTORY: '/api/v1/project/history'
+    GET_PROJECT_BC_HISTORY: '/api/v1/project/history',
+    CREATE_PROJECT_VERSION_BC: '/api/v1/project-version'
 };
