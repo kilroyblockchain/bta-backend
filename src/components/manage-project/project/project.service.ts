@@ -36,11 +36,8 @@ export class ProjectService {
         project.createdBy = user;
         project.companyId = companyId;
 
-        const projectMembers = [];
-        for (const userId of project.members) {
-            const user = await this.userModel.findById(userId).select('email');
-            projectMembers.push(user.email);
-        }
+        const projectMembers = await this.userService.getUserEmail(newProject.members);
+        const entryUser = await this.userService.getUserEmail(user);
 
         const userData = await this.userService.getUserBcInfoDefaultChannel(project.createdBy);
         const blockChainAuthDto = {
@@ -59,7 +56,7 @@ export class ProjectService {
             detail: project.details,
             members: projectMembers,
             domain: project.domain,
-            entryUser: project.createdBy
+            entryUser: entryUser['email']
         };
 
         await this.bcConnectionService.invoke(projectDto, blockChainAuthDto);
@@ -108,6 +105,8 @@ export class ProjectService {
     }
 
     async updateProject(id: string, updateProject: CreateProjectDto, req: Request): Promise<IProject> {
+        const userId = req['user']._id;
+
         const project = await this.getProjectById(id, req);
         const companyId = getCompanyId(req);
 
@@ -118,12 +117,8 @@ export class ProjectService {
         }
 
         const updatedProject = await this.projectModel.findOneAndUpdate({ _id: project._id }, updateProject, { new: true });
-
-        const projectMembers = [];
-        for (const userId of updatedProject.members) {
-            const user = await this.userModel.findById(userId).select('email');
-            projectMembers.push(user.email);
-        }
+        const projectMembers = await this.userService.getUserEmail(updateProject.members);
+        const entryUser = await this.userService.getUserEmail(userId);
 
         const userData = await this.userService.getUserBcInfoDefaultChannel(updatedProject.createdBy);
         const blockChainAuthDto = {
@@ -142,12 +137,13 @@ export class ProjectService {
             detail: updatedProject.details,
             members: projectMembers,
             domain: updatedProject.domain,
-            entryUser: updatedProject.createdBy
+            entryUser: entryUser['email']
         };
 
         await this.bcConnectionService.invoke(updatedProjectDto, blockChainAuthDto);
 
-        return updatedProject;
+        updatedProject.updatedBy = userId;
+        return await updatedProject.save();
     }
 
     async deleteProject(id: string, req: Request): Promise<IProject> {

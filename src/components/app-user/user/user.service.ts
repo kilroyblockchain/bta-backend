@@ -2218,4 +2218,17 @@ export class UserService {
 
         return userData;
     }
+
+    async getUserEmail(userId: string | string[]): Promise<string[] | { _id: string; email: string }> {
+        const userEmail = [];
+        if (userId.length) {
+            for (const id of userId) {
+                const user = await this.UserModel.findById(id).select('email');
+                userEmail.push(user.email);
+            }
+            return userEmail;
+        } else {
+            return await this.UserModel.findById(userId).select('email');
+        }
+    }
 }
