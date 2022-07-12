@@ -30,8 +30,9 @@ export const ProjectSchema = new mongoose.Schema(
             required: true
         },
         purpose: {
-            type: String,
-            maxlength: 40
+            text: { type: String },
+            docURL: { type: String },
+            docName: { type: String }
         },
         status: {
             type: Boolean,
