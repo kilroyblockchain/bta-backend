@@ -6,6 +6,9 @@ export const AiModelSchema = new mongoose.Schema(
         expNo: {
             type: String
         },
+        experimentBcHash: {
+            type: String
+        },
         version: {
             type: mongoose.Types.ObjectId,
             ref: 'project-version'

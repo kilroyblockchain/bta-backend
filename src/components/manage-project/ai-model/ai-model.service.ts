@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ProjectVersionService } from 'src/components/manage-project/project-version/project-version.service';
 import { PaginateModel, PaginateResult } from 'mongoose';
 import { IAiModel, IAiModelExp } from './Interfaces/ai-model.interface';
@@ -7,10 +7,17 @@ import { HttpService } from '@nestjs/axios';
 import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
 import { firstValueFrom } from 'rxjs';
 import { Request } from 'express';
+import { sha256Hash } from 'src/@utils/helpers';
+import { VersionBcService } from '../project-version/project-version-bc.service';
 
 @Injectable()
 export class AiModelService {
-    constructor(@InjectModel('ai-model') private readonly aiModel: PaginateModel<IAiModel>, private readonly httpService: HttpService, private readonly versionService: ProjectVersionService) {}
+    constructor(
+        @InjectModel('ai-model') private readonly aiModel: PaginateModel<IAiModel>,
+        private readonly httpService: HttpService,
+        @Inject(forwardRef(() => ProjectVersionService)) private readonly versionService: ProjectVersionService,
+        @Inject(forwardRef(() => VersionBcService)) private readonly versionBcService: VersionBcService
+    ) {}
 
     async getAllExperiment(req: Request, versionId: string): Promise<PaginateResult<IAiModel>> {
         const version = await this.versionService.getVersionInfo(versionId);
@@ -25,6 +32,7 @@ export class AiModelService {
 
         const aiModel = await this.aiModel.paginate({ version: version._id }, options);
         let i = 0;
+        const logFileBcHash = [];
         if (!aiModel.docs.length) {
             while (true) {
                 try {
@@ -37,8 +45,13 @@ export class AiModelService {
                     i++;
                     expData.version = version._id;
                     expData.project = version.project['_id'];
+                    expData.experimentBcHash = await sha256Hash(JSON.stringify(data));
+                    logFileBcHash.push(expData.experimentBcHash);
                     await expData.save();
                 } catch (err) {
+                    version.logFileBCHash = await sha256Hash(JSON.stringify(logFileBcHash));
+                    await this.versionBcService.createBcProjectVersion(req, version);
+                    await version.save();
                     return await this.aiModel.paginate({ version: version._id }, options);
                 }
             }

@@ -6,5 +6,6 @@ export enum VersionStatus {
     PRODUCTION = 'Production',
     DEPLOYED = 'Deployed',
     MONITORING = 'Monitoring',
-    COMPLETE = 'Complete'
+    COMPLETE = 'Complete',
+    DRAFT = 'Draft'
 }

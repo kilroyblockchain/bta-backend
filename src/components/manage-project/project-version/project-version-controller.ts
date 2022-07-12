@@ -1,23 +1,25 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, MANAGE_PROJECT_CONSTANT, ROLE } from 'src/@core/constants';
-import { AuthGuard } from '@nestjs/passport';
 import { PermissionGuard, RolesGuard } from 'src/components/auth/guards';
 import { Feature, Permission, Roles } from 'src/components/auth/decorators';
-import { AddVersionDto, VersionInfoResponseDto, VersionResponseDto } from './dto';
+import { AddVersionDto, BCVersionDataResponseDto, BCVersionHistoryResponseDto, VersionInfoResponseDto, VersionResponseDto } from './dto';
 import { ProjectVersionService } from './project-version.service';
 import { Response as FLOResponse } from 'src/@core/response';
 import { Request } from 'express';
+import { VersionBcService } from './project-version-bc.service';
+import { COMMON_ERROR } from 'src/@core/constants/api-error-constants';
+import { MANAGE_PROJECT_BC_CONSTANT } from 'src/@core/constants/bc-constants/bc-manage-project.constant';
 
 @ApiTags('Project Version')
 @UseGuards(RolesGuard)
 @Controller('project-version')
 export class ProjectVersionController {
-    constructor(private readonly versionService: ProjectVersionService) {}
+    constructor(private readonly versionService: ProjectVersionService, private readonly versionBcService: VersionBcService) {}
 
     @Post(':id')
     @HttpCode(HttpStatus.CREATED)
-    @UseGuards(AuthGuard('jwt'), PermissionGuard)
+    @UseGuards(PermissionGuard)
     @Permission(ACCESS_TYPE.WRITE)
     @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
     @Roles(ROLE.STAFF, ROLE.OTHER)
@@ -28,8 +30,8 @@ export class ProjectVersionController {
     })
     @ApiOperation({ summary: 'Add new version in project' })
     @ApiParam({ name: 'id', required: true, description: 'Project Id' })
-    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
-    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_ADD_VERSION })
     @ApiResponse({ status: HttpStatus.CONFLICT, description: MANAGE_PROJECT_CONSTANT.PROJECT_VERSION_CONFLICT })
     @ApiResponse({ status: HttpStatus.CREATED, type: VersionResponseDto, description: MANAGE_PROJECT_CONSTANT.NEW_VERSION_ADDED_SUCCESS })
@@ -43,7 +45,7 @@ export class ProjectVersionController {
 
     @Put('update/:id/:projectId')
     @HttpCode(HttpStatus.OK)
-    @UseGuards(AuthGuard('jwt'), PermissionGuard)
+    @UseGuards(PermissionGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
     @Roles(ROLE.STAFF, ROLE.OTHER)
@@ -55,8 +57,8 @@ export class ProjectVersionController {
     @ApiOperation({ summary: 'Update project version' })
     @ApiParam({ name: 'id', required: true, description: 'Version Id' })
     @ApiParam({ name: 'projectId', required: true, description: 'Project Id' })
-    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
-    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_UPDATE_VERSION })
     @ApiResponse({ status: HttpStatus.OK, type: VersionResponseDto, description: MANAGE_PROJECT_CONSTANT.UPDATE_VERSION_SUCCESS })
@@ -71,7 +73,7 @@ export class ProjectVersionController {
 
     @Get('info/:id')
     @HttpCode(HttpStatus.OK)
-    @UseGuards(AuthGuard('jwt'), PermissionGuard)
+    @UseGuards(PermissionGuard)
     @Permission(ACCESS_TYPE.READ)
     @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
     @Roles(ROLE.STAFF, ROLE.OTHER)
@@ -82,8 +84,8 @@ export class ProjectVersionController {
     })
     @ApiOperation({ summary: 'Get details of project version' })
     @ApiParam({ name: 'id', required: true, description: 'Version Id' })
-    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
-    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_VERSION_INFO })
     @ApiResponse({ status: HttpStatus.OK, type: VersionInfoResponseDto, description: MANAGE_PROJECT_CONSTANT.GET_VERSION_INFO_SUCCESS })
@@ -97,7 +99,7 @@ export class ProjectVersionController {
 
     @Delete('delete/:id')
     @HttpCode(HttpStatus.OK)
-    @UseGuards(AuthGuard('jwt'), PermissionGuard)
+    @UseGuards(PermissionGuard)
     @Permission(ACCESS_TYPE.DELETE)
     @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
     @Roles(ROLE.STAFF, ROLE.OTHER)
@@ -107,8 +109,8 @@ export class ProjectVersionController {
         description: 'The token we need for auth'
     })
     @ApiOperation({ summary: 'Delete/disable a version', description: 'This is soft delete api which change status of version to false' })
-    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
-    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_DELETE_VERSION })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.OK, type: VersionResponseDto, description: MANAGE_PROJECT_CONSTANT.VERSION_DELETE_SUCCESS })
@@ -122,7 +124,7 @@ export class ProjectVersionController {
 
     @Patch('enable/:id')
     @HttpCode(HttpStatus.OK)
-    @UseGuards(AuthGuard('jwt'), PermissionGuard)
+    @UseGuards(PermissionGuard)
     @Permission(ACCESS_TYPE.DELETE)
     @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
     @Roles(ROLE.STAFF, ROLE.OTHER)
@@ -132,8 +134,8 @@ export class ProjectVersionController {
         description: 'The token we need for auth'
     })
     @ApiOperation({ summary: 'Enable project' })
-    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
-    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_ENABLE_VERSION })
     @ApiResponse({ status: HttpStatus.OK, type: VersionResponseDto, description: MANAGE_PROJECT_CONSTANT.VERSION_ENABLED_SUCCESS })
@@ -142,6 +144,56 @@ export class ProjectVersionController {
             return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.VERSION_ENABLED_SUCCESS]).setSuccessData(await this.versionService.enableVersion(id)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_ENABLE_VERSION, err);
+        }
+    }
+
+    @Get('bc-details/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Get Project Version blockchain details' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_GET_PROJECT_VERSION_BC_DETAILS })
+    @ApiResponse({ status: HttpStatus.OK, type: BCVersionDataResponseDto, description: MANAGE_PROJECT_BC_CONSTANT.PROJECT_VERSION_BC_DETAILS_RETRIEVED_SUCCESS })
+    async getBcProjectDetails(@Param('id') versionId: string, @Req() req: Request): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.PROJECT_VERSION_BC_DETAILS_RETRIEVED_SUCCESS]).setSuccessData(await this.versionBcService.getProjectVersionDetails(versionId, req)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_GET_PROJECT_VERSION_BC_DETAILS, err);
+        }
+    }
+
+    @Get('bc-history/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Get project version blockchain history' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_PROJECT_VERSION_BC_HISTORY })
+    @ApiResponse({ status: HttpStatus.OK, type: BCVersionHistoryResponseDto, isArray: true, description: MANAGE_PROJECT_BC_CONSTANT.PROJECT_VERSION_BC_HISTORY_FETCHED_SUCCESS })
+    async getProjectBcHistory(@Param('id') versionId: string, @Req() req: Request): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.PROJECT_VERSION_BC_HISTORY_FETCHED_SUCCESS]).setSuccessData(await this.versionBcService.getProjectVersionBcHistory(versionId, req)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_PROJECT_VERSION_BC_HISTORY, err);
         }
     }
 }
