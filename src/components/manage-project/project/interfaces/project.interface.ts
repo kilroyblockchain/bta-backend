@@ -6,7 +6,7 @@ export interface IProject extends Document {
     details: string;
     members: string[];
     domain: string;
-    purpose: string;
+    purpose: IPurposeDoc;
     status: boolean;
     updatedAt: Date;
     createdAt: Date;
@@ -14,4 +14,10 @@ export interface IProject extends Document {
     updatedBy: string;
     companyId: string;
     projectVersions: string[];
+}
+
+interface IPurposeDoc {
+    text: string;
+    docName: string;
+    docURL: string;
 }
