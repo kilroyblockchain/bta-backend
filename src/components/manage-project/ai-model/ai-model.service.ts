@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ProjectVersionService } from 'src/components/manage-project/project-version/project-version.service';
 import { PaginateModel, PaginateResult } from 'mongoose';
 import { IAiModel, IAiModelExp } from './Interfaces/ai-model.interface';
@@ -12,7 +12,12 @@ import { VersionBcService } from '../project-version/project-version-bc.service'
 
 @Injectable()
 export class AiModelService {
-    constructor(@InjectModel('ai-model') private readonly aiModel: PaginateModel<IAiModel>, private readonly httpService: HttpService, private readonly versionService: ProjectVersionService, private readonly versionBcService: VersionBcService) {}
+    constructor(
+        @InjectModel('ai-model') private readonly aiModel: PaginateModel<IAiModel>,
+        private readonly httpService: HttpService,
+        @Inject(forwardRef(() => ProjectVersionService)) private readonly versionService: ProjectVersionService,
+        @Inject(forwardRef(() => VersionBcService)) private readonly versionBcService: VersionBcService
+    ) {}
 
     async getAllExperiment(req: Request, versionId: string): Promise<PaginateResult<IAiModel>> {
         const version = await this.versionService.getVersionInfo(versionId);
@@ -45,7 +50,7 @@ export class AiModelService {
                     await expData.save();
                 } catch (err) {
                     version.logFileBCHash = await sha256Hash(JSON.stringify(logFileBcHash));
-                    this.versionBcService.createBcProjectVersion(req, version);
+                    await this.versionBcService.createBcProjectVersion(req, version);
                     await version.save();
                     return await this.aiModel.paginate({ version: version._id }, options);
                 }

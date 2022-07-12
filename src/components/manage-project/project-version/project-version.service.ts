@@ -7,29 +7,36 @@ import { IProjectVersion } from './interfaces/project-version.interface';
 import { AddReviewModelDto, AddVersionDto } from './dto';
 import { Request } from 'express';
 import { VersionBcService } from './project-version-bc.service';
+import { AiModelService } from '../ai-model/ai-model.service';
 
 @Injectable()
 export class ProjectVersionService {
-    constructor(@InjectModel('project-version') private readonly versionModel: Model<IProjectVersion>, private readonly projectService: ProjectService, @Inject(forwardRef(() => VersionBcService)) private readonly versionBcService: VersionBcService) {}
+    constructor(
+        @InjectModel('project-version') private readonly versionModel: Model<IProjectVersion>,
+        private readonly projectService: ProjectService,
+        @Inject(forwardRef(() => VersionBcService)) private readonly versionBcService: VersionBcService,
+        @Inject(forwardRef(() => AiModelService)) private readonly aiModelService: AiModelService
+    ) {}
 
-    async addNewVersion(req: Request, projectId: string, newVersion: AddVersionDto): Promise<IProjectVersion> {
+    async addNewVersion(req: Request, projectId: string, newVersionDto: AddVersionDto): Promise<IProjectVersion> {
         const user = req['user']._id;
 
         const project = await this.projectService.getProjectById(projectId, req);
         if (!project) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
 
-        const isVersionUnique = await this.isVersionUnique(newVersion.versionName, project._id);
+        const isVersionUnique = await this.isVersionUnique(newVersionDto.versionName, project._id);
         if (!isVersionUnique) throw new ConflictException(MANAGE_PROJECT_CONSTANT.PROJECT_VERSION_CONFLICT);
 
-        const version = new this.versionModel(newVersion);
+        const version = new this.versionModel(newVersionDto);
         version.createdBy = user;
         version.project = project._id;
 
         project.projectVersions.push(version._id);
 
         await project.save();
-        await this.versionBcService.createBcProjectVersion(req, version);
-        return await version.save();
+        const newVersion = await version.save();
+        await this.aiModelService.getAllExperiment(req, newVersion._id);
+        return newVersion;
     }
 
     async isVersionUnique(name: string, projectId: string): Promise<boolean> {
