@@ -21,7 +21,7 @@ export class VersionBcService {
             const entryUser = await this.userService.getUserEmail(userId);
             const project = await this.projectService.getProjectById(version.project, req);
 
-            const userData = await this.userService.getUserBcInfoDefaultChannel(version.createdBy);
+            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
             const projectVersionDto: IBcProjectVersion = {
                 id: version._id,
                 versionName: version.versionName,
@@ -66,12 +66,14 @@ export class VersionBcService {
     async getProjectVersionDetails(versionId: string, req: Request): Promise<BcConnectionDto> {
         const logger = new Logger(VersionBcService.name + '-getProjectVersionDetails');
         try {
+            const userId = req['user']._id;
+
             const version = await this.projectVersionService.getVersionById(versionId);
             if (!version) {
                 throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
             }
 
-            const userData = await this.userService.getUserBcInfoDefaultChannel(version.createdBy);
+            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
             const blockChainAuthDto: BcAuthenticationDto = {
                 basicAuthorization: userData.company[0].staffingId[0]['bcNodeInfo'].authorizationToken,
                 organizationName: userData.company[0].staffingId[0]['bcNodeInfo'].orgName,
@@ -95,12 +97,13 @@ export class VersionBcService {
     async getProjectVersionBcHistory(versionId: string, req: Request): Promise<BcConnectionDto> {
         const logger = new Logger(VersionBcService.name + '-getProjectVersionBcHistory');
         try {
+            const userId = req['user']._id;
             const version = await this.projectVersionService.getVersionById(versionId);
             if (!version) {
                 throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
             }
 
-            const userData = await this.userService.getUserBcInfoDefaultChannel(version.createdBy);
+            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
 
             const blockChainAuthDto = {
                 basicAuthorization: userData.company[0].staffingId[0]['bcNodeInfo'].authorizationToken,

@@ -11,6 +11,7 @@ import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
 import { UserService } from 'src/components/app-user/user/user.service';
 import { BcConnectionService } from 'src/components/blockchain/bc-connection/bc-connection.service';
 import { BcAuthenticationDto } from 'src/components/blockchain/bc-connection/dto/bc-common-authenticate.dto';
+import { VersionStatus } from '../project-version/enum/version-status.enum';
 import { AddProjectPurposeDto, CreateProjectDto } from './dto';
 import { IProject } from './interfaces/project.interface';
 
@@ -74,6 +75,10 @@ export class ProjectService {
 
     async getAllProject(req: Request): Promise<PaginateResult<IProject>> {
         const companyId = getCompanyId(req);
+
+        const userId = req['user']._id;
+        console.log(userId);
+
         const { page = 1, limit = 10, status = true, search, searchValue } = req.query;
         const searchQuery = search && search === 'true' && searchValue ? getSearchFilterWithRegexAll(searchValue.toString(), ['name', 'details', 'domain', 'purpose']) : {};
         const options = {
@@ -82,6 +87,9 @@ export class ProjectService {
                 { path: 'createdBy', select: 'firstName lastName email' },
                 {
                     path: 'projectVersions',
+                    match: {
+                        $or: [{ createdBy: userId.toString(), versionStatus: VersionStatus.DRAFT }, { versionStatus: { $ne: VersionStatus.DRAFT } }]
+                    },
                     populate: {
                         path: 'createdBy',
                         select: 'firstName lastName'

@@ -1,4 +1,4 @@
-import { ConflictException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
@@ -8,6 +8,7 @@ import { AddReviewModelDto, AddVersionDto } from './dto';
 import { Request } from 'express';
 import { VersionBcService } from './project-version-bc.service';
 import { AiModelService } from '../ai-model/ai-model.service';
+import { VersionStatus } from './enum/version-status.enum';
 
 @Injectable()
 export class ProjectVersionService {
@@ -35,7 +36,7 @@ export class ProjectVersionService {
 
         await project.save();
         const newVersion = await version.save();
-        await this.aiModelService.getAllExperiment(req, newVersion._id);
+        await this.aiModelService.getLogExperiment(req, newVersion._id);
         return newVersion;
     }
 
@@ -51,16 +52,19 @@ export class ProjectVersionService {
         return await this.versionModel.findOne({ _id: id });
     }
 
-    async updateVersion(id: string, projectId: string, updateVersion: AddVersionDto): Promise<IProjectVersion> {
+    async updateVersion(id: string, updateVersion: AddVersionDto, req: Request): Promise<IProjectVersion> {
         const version = await this.getVersionById(id);
         if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
 
-        const isVersionUnique = await this.isVersionUnique(updateVersion.versionName, projectId);
+        const isVersionUnique = await this.isVersionUnique(updateVersion.versionName, version.project);
         if (!isVersionUnique && version.versionName !== updateVersion.versionName) {
             throw new ConflictException(MANAGE_PROJECT_CONSTANT.PROJECT_VERSION_CONFLICT);
         }
 
-        return await this.versionModel.findOneAndUpdate({ _id: version._id }, updateVersion, { new: true });
+        const updatedVersion = await this.versionModel.findOneAndUpdate({ _id: version._id }, updateVersion, { new: true });
+        await this.aiModelService.getLogExperiment(req, updatedVersion._id);
+
+        return updatedVersion;
     }
 
     async getVersionInfo(id: string): Promise<IProjectVersion> {
@@ -100,5 +104,23 @@ export class ProjectVersionService {
         version.project = project._id;
 
         return await version.save();
+    }
+
+    async submitModelVersion(req: Request, versionId: string): Promise<IProjectVersion> {
+        const version = await this.getVersionById(versionId);
+        const userId = req['user']._id;
+
+        if (!version) {
+            throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+        }
+        if (version.createdBy.toString() !== userId.toString()) {
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_SUBMIT_MODEL_VERSION);
+        }
+
+        version.versionStatus = VersionStatus.PENDING;
+
+        const updatedVersion = await version.save();
+        await this.versionBcService.createBcProjectVersion(req, updatedVersion);
+        return updatedVersion;
     }
 }
