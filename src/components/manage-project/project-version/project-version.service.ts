@@ -2,12 +2,12 @@ import { BadRequestException, ConflictException, forwardRef, Inject, Injectable,
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
-import { ProjectService } from '../project/project.service';
 import { IProjectVersion } from './interfaces/project-version.interface';
 import { AddReviewModelDto, AddVersionDto } from './dto';
 import { Request } from 'express';
+import { ProjectService } from 'src/components/manage-project/project/project.service';
 import { VersionBcService } from './project-version-bc.service';
-import { AiModelService } from '../ai-model/ai-model.service';
+import { AiModelService } from 'src/components/manage-project/ai-model/ai-model.service';
 import { VersionStatus } from './enum/version-status.enum';
 
 @Injectable()
@@ -121,7 +121,22 @@ export class ProjectVersionService {
         version.submittedDate = new Date();
 
         const updatedVersion = await version.save();
+        updatedVersion.project;
+        // call project bc
         await this.versionBcService.createBcProjectVersion(req, updatedVersion);
         return updatedVersion;
+    }
+
+    async getVersionData(versionIds: string[]): Promise<{ id: string; versionName: string }[]> {
+        const versionData: { id: string; versionName: string }[] = [];
+        for (const id of versionIds) {
+            const version = await this.versionModel.findOne({ _id: id }).select('_id name');
+            const versionInfo = {
+                id: version._id,
+                versionName: version.versionName
+            };
+            versionData.push(versionInfo);
+        }
+        return versionData;
     }
 }

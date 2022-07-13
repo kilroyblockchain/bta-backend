@@ -13,7 +13,8 @@ export interface IProjectVersion extends Document {
     trainDatasetBCHash: string;
     testDataSets: string;
     testDatasetBCHash: string;
-    artifacts: string;
+    aiModel: string;
+    aiModelBcHash: string;
     codeVersion: string;
     codeRepo: string;
     comment: string;

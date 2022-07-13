@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Request } from 'express';
 import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
 import { BC_CONNECTION_API } from 'src/@core/constants/bc-constants/bc-connection.api.constant';
@@ -6,14 +6,14 @@ import { MANAGE_PROJECT_BC_CONSTANT } from 'src/@core/constants/bc-constants/bc-
 import { UserService } from 'src/components/app-user/user/user.service';
 import { BcConnectionService } from 'src/components/blockchain/bc-connection/bc-connection.service';
 import { BcAuthenticationDto, BcConnectionDto } from 'src/components/blockchain/bc-connection/dto';
-import { ProjectService } from '../project/project.service';
+import { ProjectService } from 'src/components/manage-project/project/project.service';
 import { IBcProjectVersion } from './interfaces/bc-project-version.interface';
 import { IProjectVersion } from './interfaces/project-version.interface';
 import { ProjectVersionService } from './project-version.service';
 
 @Injectable()
 export class VersionBcService {
-    constructor(private readonly bcConnectionService: BcConnectionService, private readonly projectService: ProjectService, private readonly userService: UserService, private readonly projectVersionService: ProjectVersionService) {}
+    constructor(private readonly bcConnectionService: BcConnectionService, private readonly projectService: ProjectService, private readonly userService: UserService, @Inject(forwardRef(() => ProjectVersionService)) private readonly projectVersionService: ProjectVersionService) {}
     async createBcProjectVersion(req: Request, version: IProjectVersion): Promise<BcConnectionDto> {
         const logger = new Logger(VersionBcService.name + '-createBcProjectVersion');
         try {
@@ -34,7 +34,8 @@ export class VersionBcService {
                 testDatasetBCHash: version.testDatasetBCHash,
                 trainDataSets: version.trainDataSets,
                 trainDatasetBCHash: version.trainDatasetBCHash,
-                artifacts: version.artifacts,
+                aiModel: version.aiModel,
+                aiModelBcHash: version.aiModelBcHash,
                 codeVersion: version.codeVersion,
                 codeRepo: version.codeRepo,
                 comment: version.comment,
@@ -81,10 +82,10 @@ export class VersionBcService {
                 bcKey: req.headers['bc-key'] as string,
                 salt: userData.bcSalt,
                 nodeUrl: userData.company[0].staffingId[0]['bcNodeInfo'].nodeUrl,
-                bcConnectionApi: BC_CONNECTION_API.PROJECT_VERSION_BC + `/${version._id}`
+                bcConnectionApi: BC_CONNECTION_API.PROJECT_VERSION_BC
             };
 
-            return await this.bcConnectionService.query(blockChainAuthDto);
+            return await this.bcConnectionService.query(blockChainAuthDto, version._id);
         } catch (err) {
             logger.error(err);
             if (err.statusCode) {
@@ -112,10 +113,10 @@ export class VersionBcService {
                 bcKey: req.headers['bc-key'] as string,
                 salt: userData.bcSalt,
                 nodeUrl: userData.company[0].staffingId[0]['bcNodeInfo'].nodeUrl,
-                bcConnectionApi: BC_CONNECTION_API.PROJECT_VERSION_BC_HISTORY + `/${version._id}`
+                bcConnectionApi: BC_CONNECTION_API.PROJECT_VERSION_BC_HISTORY
             };
 
-            return await this.bcConnectionService.query(blockChainAuthDto);
+            return await this.bcConnectionService.query(blockChainAuthDto, version._id);
         } catch (err) {
             logger.error(err);
             if (err.statusCode) {

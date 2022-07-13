@@ -46,10 +46,10 @@ export class BcConnectionService {
         }
     }
 
-    async query(bcAuthenticateDto: BcAuthenticationDto): Promise<BcConnectionDto> {
+    async query(bcAuthenticateDto: BcAuthenticationDto, URLId: string): Promise<BcConnectionDto> {
         const logger = new Logger('BcConnectionQuery');
         try {
-            const response = await axios.get(bcAuthenticateDto.nodeUrl + bcAuthenticateDto.bcConnectionApi, {
+            const response = await axios.get(bcAuthenticateDto.nodeUrl + bcAuthenticateDto.bcConnectionApi + `/${URLId}`, {
                 headers: {
                     'Content-Type': 'application/json',
                     authorization: 'Basic ' + bcAuthenticateDto.basicAuthorization,

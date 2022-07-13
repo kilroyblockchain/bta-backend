@@ -1,23 +1,28 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, forwardRef, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Request } from 'express';
 import { Model, PaginateModel, PaginateResult } from 'mongoose';
 import { PROJECT_USER } from 'src/@core/constants';
 import { MANAGE_PROJECT_CONSTANT, USER_CONSTANT } from 'src/@core/constants/api-error-constants';
-import { BC_CONNECTION_API } from 'src/@core/constants/bc-constants/bc-connection.api.constant';
 import { getCompanyId } from 'src/@core/utils/common.utils';
 import { getSearchFilterWithRegexAll } from 'src/@core/utils/query-filter.utils';
 import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
 import { UserService } from 'src/components/app-user/user/user.service';
 import { BcConnectionService } from 'src/components/blockchain/bc-connection/bc-connection.service';
-import { BcAuthenticationDto } from 'src/components/blockchain/bc-connection/dto/bc-common-authenticate.dto';
-import { VersionStatus } from '../project-version/enum/version-status.enum';
+import { VersionStatus } from 'src/components/manage-project/project-version/enum/version-status.enum';
 import { AddProjectPurposeDto, CreateProjectDto } from './dto';
 import { IProject } from './interfaces/project.interface';
+import { ProjectBcService } from './project-bc.service';
 
 @Injectable()
 export class ProjectService {
-    constructor(@InjectModel('Project') private readonly projectModel: PaginateModel<IProject>, @InjectModel('User') private readonly userModel: Model<IUser>, private readonly userService: UserService, private readonly bcConnectionService: BcConnectionService) {}
+    constructor(
+        @InjectModel('Project') private readonly projectModel: PaginateModel<IProject>,
+        @InjectModel('User') private readonly userModel: Model<IUser>,
+        private readonly userService: UserService,
+        private readonly bcConnectionService: BcConnectionService,
+        @Inject(forwardRef(() => ProjectBcService)) private readonly projectBcService: ProjectBcService
+    ) {}
 
     async createNewProject(newProject: CreateProjectDto, req: Request): Promise<IProject> {
         const user = req['user']._id;
@@ -38,30 +43,7 @@ export class ProjectService {
         project.createdBy = user;
         project.companyId = companyId;
 
-        const projectMembers = await this.userService.getUserEmail(newProject.members);
-        const entryUser = await this.userService.getUserEmail(user);
-
-        const userData = await this.userService.getUserBcInfoDefaultChannel(project.createdBy);
-        const blockChainAuthDto: BcAuthenticationDto = {
-            basicAuthorization: userData.company[0].staffingId[0]['bcNodeInfo'].authorizationToken,
-            organizationName: userData.company[0].staffingId[0]['bcNodeInfo'].orgName,
-            channelName: userData.company[0].staffingId[0]['channels'][0].channelName,
-            bcKey: req.headers['bc-key'] as string,
-            salt: userData.bcSalt,
-            nodeUrl: userData.company[0].staffingId[0]['bcNodeInfo'].nodeUrl,
-            bcConnectionApi: BC_CONNECTION_API.PROJECT_BC
-        };
-
-        const projectDto = {
-            id: project._id,
-            name: project.name,
-            detail: project.details,
-            members: projectMembers,
-            domain: project.domain,
-            entryUser: entryUser['email']
-        };
-
-        await this.bcConnectionService.invoke(projectDto, blockChainAuthDto);
+        await this.projectBcService.createBcProject(req, project);
         return await project.save();
     }
 
@@ -77,8 +59,6 @@ export class ProjectService {
         const companyId = getCompanyId(req);
 
         const userId = req['user']._id;
-        console.log(userId);
-
         const { page = 1, limit = 10, status = true, search, searchValue } = req.query;
         const searchQuery = search && search === 'true' && searchValue ? getSearchFilterWithRegexAll(searchValue.toString(), ['name', 'details', 'domain', 'purpose']) : {};
         const options = {
@@ -126,32 +106,9 @@ export class ProjectService {
         }
 
         const updatedProject = await this.projectModel.findOneAndUpdate({ _id: project._id }, updateProject, { new: true });
-        const projectMembers = await this.userService.getUserEmail(updateProject.members);
-        const entryUser = await this.userService.getUserEmail(userId);
-
-        const userData = await this.userService.getUserBcInfoDefaultChannel(updatedProject.createdBy);
-        const blockChainAuthDto = {
-            basicAuthorization: userData.company[0].staffingId[0]['bcNodeInfo'].authorizationToken,
-            organizationName: userData.company[0].staffingId[0]['bcNodeInfo'].orgName,
-            channelName: userData.company[0].staffingId[0]['channels'][0].channelName,
-            bcKey: req.headers['bc-key'] as string,
-            salt: userData.bcSalt,
-            nodeUrl: userData.company[0].staffingId[0]['bcNodeInfo'].nodeUrl,
-            bcConnectionApi: BC_CONNECTION_API.PROJECT_BC
-        };
-
-        const updatedProjectDto = {
-            id: updatedProject._id,
-            name: updatedProject.name,
-            detail: updatedProject.details,
-            members: projectMembers,
-            domain: updatedProject.domain,
-            entryUser: entryUser['email']
-        };
-
-        await this.bcConnectionService.invoke(updatedProjectDto, blockChainAuthDto);
-
         updatedProject.updatedBy = userId;
+
+        await this.projectBcService.createBcProject(req, updatedProject);
         return await updatedProject.save();
     }
 
