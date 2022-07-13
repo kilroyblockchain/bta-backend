@@ -3,6 +3,7 @@ import { Request } from 'express';
 import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
 import { BC_CONNECTION_API } from 'src/@core/constants/bc-constants/bc-connection.api.constant';
 import { MANAGE_PROJECT_BC_CONSTANT } from 'src/@core/constants/bc-constants/bc-manage-project.constant';
+import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
 import { UserService } from 'src/components/app-user/user/user.service';
 import { BcConnectionService } from 'src/components/blockchain/bc-connection/bc-connection.service';
 import { BcAuthenticationDto, BcConnectionDto } from 'src/components/blockchain/bc-connection/dto';
@@ -22,6 +23,7 @@ export class VersionBcService {
             const project = await this.projectService.getProjectById(version.project, req);
 
             const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+            const blockChainAuthDto = this.getBcBcAuthentication(req, userData, BC_CONNECTION_API.PROJECT_VERSION_BC);
             const projectVersionDto: IBcProjectVersion = {
                 id: version._id,
                 versionName: version.versionName,
@@ -34,8 +36,8 @@ export class VersionBcService {
                 testDatasetBCHash: version.testDatasetBCHash,
                 trainDataSets: version.trainDataSets,
                 trainDatasetBCHash: version.trainDatasetBCHash,
-                aiModel: version.aiModel,
-                aiModelBcHash: version.aiModelBcHash,
+                artifacts: version.aiModel,
+                // aiModelBcHash: version.aiModelBcHash,
                 codeVersion: version.codeVersion,
                 codeRepo: version.codeRepo,
                 comment: version.comment,
@@ -43,16 +45,6 @@ export class VersionBcService {
                 status: version.status,
                 project: project.name,
                 entryUser: entryUser['email']
-            };
-
-            const blockChainAuthDto: BcAuthenticationDto = {
-                basicAuthorization: userData.company[0].staffingId[0]['bcNodeInfo'].authorizationToken,
-                organizationName: userData.company[0].staffingId[0]['bcNodeInfo'].orgName,
-                channelName: userData.company[0].staffingId[0]['channels'][0].channelName,
-                bcKey: req.headers['bc-key'] as string,
-                salt: userData.bcSalt,
-                nodeUrl: userData.company[0].staffingId[0]['bcNodeInfo'].nodeUrl,
-                bcConnectionApi: BC_CONNECTION_API.PROJECT_VERSION_BC
             };
 
             return await this.bcConnectionService.invoke(projectVersionDto, blockChainAuthDto);
@@ -68,22 +60,13 @@ export class VersionBcService {
         const logger = new Logger(VersionBcService.name + '-getProjectVersionDetails');
         try {
             const userId = req['user']._id;
-
             const version = await this.projectVersionService.getVersionById(versionId);
             if (!version) {
                 throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
             }
 
             const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
-            const blockChainAuthDto: BcAuthenticationDto = {
-                basicAuthorization: userData.company[0].staffingId[0]['bcNodeInfo'].authorizationToken,
-                organizationName: userData.company[0].staffingId[0]['bcNodeInfo'].orgName,
-                channelName: userData.company[0].staffingId[0]['channels'][0].channelName,
-                bcKey: req.headers['bc-key'] as string,
-                salt: userData.bcSalt,
-                nodeUrl: userData.company[0].staffingId[0]['bcNodeInfo'].nodeUrl,
-                bcConnectionApi: BC_CONNECTION_API.PROJECT_VERSION_BC
-            };
+            const blockChainAuthDto = this.getBcBcAuthentication(req, userData, BC_CONNECTION_API.PROJECT_VERSION_BC);
 
             return await this.bcConnectionService.query(blockChainAuthDto, version._id);
         } catch (err) {
@@ -105,16 +88,7 @@ export class VersionBcService {
             }
 
             const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
-
-            const blockChainAuthDto = {
-                basicAuthorization: userData.company[0].staffingId[0]['bcNodeInfo'].authorizationToken,
-                organizationName: userData.company[0].staffingId[0]['bcNodeInfo'].orgName,
-                channelName: userData.company[0].staffingId[0]['channels'][0].channelName,
-                bcKey: req.headers['bc-key'] as string,
-                salt: userData.bcSalt,
-                nodeUrl: userData.company[0].staffingId[0]['bcNodeInfo'].nodeUrl,
-                bcConnectionApi: BC_CONNECTION_API.PROJECT_VERSION_BC_HISTORY
-            };
+            const blockChainAuthDto = this.getBcBcAuthentication(req, userData, BC_CONNECTION_API.PROJECT_VERSION_BC_HISTORY);
 
             return await this.bcConnectionService.query(blockChainAuthDto, version._id);
         } catch (err) {
@@ -124,5 +98,19 @@ export class VersionBcService {
             }
             throw new BadRequestException([MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_PROJECT_VERSION_BC_HISTORY], err);
         }
+    }
+
+    getBcBcAuthentication(req: Request, userData: IUser, bcConnectionApi: string): BcAuthenticationDto {
+        const blockChainAuthDto: BcAuthenticationDto = {
+            basicAuthorization: userData.company[0].staffingId[0]['bcNodeInfo'].authorizationToken,
+            organizationName: userData.company[0].staffingId[0]['bcNodeInfo'].orgName,
+            channelName: userData.company[0].staffingId[0]['channels'][0].channelName,
+            bcKey: req.headers['bc-key'] as string,
+            salt: userData.bcSalt,
+            nodeUrl: userData.company[0].staffingId[0]['bcNodeInfo'].nodeUrl,
+            bcConnectionApi
+        };
+
+        return blockChainAuthDto;
     }
 }

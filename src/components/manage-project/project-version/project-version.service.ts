@@ -9,6 +9,7 @@ import { ProjectService } from 'src/components/manage-project/project/project.se
 import { VersionBcService } from './project-version-bc.service';
 import { AiModelService } from 'src/components/manage-project/ai-model/ai-model.service';
 import { VersionStatus } from './enum/version-status.enum';
+import { ProjectBcService } from '../project/project-bc.service';
 
 @Injectable()
 export class ProjectVersionService {
@@ -16,7 +17,8 @@ export class ProjectVersionService {
         @InjectModel('project-version') private readonly versionModel: Model<IProjectVersion>,
         private readonly projectService: ProjectService,
         @Inject(forwardRef(() => VersionBcService)) private readonly versionBcService: VersionBcService,
-        @Inject(forwardRef(() => AiModelService)) private readonly aiModelService: AiModelService
+        @Inject(forwardRef(() => AiModelService)) private readonly aiModelService: AiModelService,
+        @Inject(forwardRef(() => ProjectBcService)) private readonly projectBcService: ProjectBcService
     ) {}
 
     async addNewVersion(req: Request, projectId: string, newVersionDto: AddVersionDto): Promise<IProjectVersion> {
@@ -121,16 +123,20 @@ export class ProjectVersionService {
         version.submittedDate = new Date();
 
         const updatedVersion = await version.save();
-        updatedVersion.project;
-        // call project bc
+
+        const project = await this.projectService.getProjectById(updatedVersion.project, req);
+        if (!project) {
+            throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
+        }
         await this.versionBcService.createBcProjectVersion(req, updatedVersion);
+        await this.projectBcService.createBcProject(req, project);
         return updatedVersion;
     }
 
     async getVersionData(versionIds: string[]): Promise<{ id: string; versionName: string }[]> {
         const versionData: { id: string; versionName: string }[] = [];
         for (const id of versionIds) {
-            const version = await this.versionModel.findOne({ _id: id }).select('_id name');
+            const version = await this.versionModel.findOne({ _id: id }).select('_id versionName');
             const versionInfo = {
                 id: version._id,
                 versionName: version.versionName

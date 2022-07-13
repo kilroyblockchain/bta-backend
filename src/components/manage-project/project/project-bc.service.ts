@@ -9,9 +9,7 @@ import { BcConnectionService } from 'src/components/blockchain/bc-connection/bc-
 import { BcAuthenticationDto } from 'src/components/blockchain/bc-connection/dto';
 import { BcConnectionDto } from 'src/components/blockchain/bc-connection/dto/bc-connection.dto';
 import { ProjectVersionService } from 'src/components/manage-project/project-version/project-version.service';
-
 import { IBcProject, IProject } from './interfaces';
-
 import { ProjectService } from './project.service';
 
 @Injectable()
@@ -27,7 +25,7 @@ export class ProjectBcService {
             const projectMembers = await this.userService.getUserEmail(project.members);
             const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
             const modelVersion = await this.versionService.getVersionData(project.projectVersions);
-
+            console.log('=========', modelVersion);
             const blockChainAuthDto = this.getBcBcAuthentication(req, userData, BC_CONNECTION_API.PROJECT_BC);
             const projectDto: IBcProject = {
                 id: project._id,
@@ -39,7 +37,7 @@ export class ProjectBcService {
                 projectVersions: modelVersion,
                 entryUser: entryUser['email']
             };
-
+            console.log('-------', projectDto);
             return await this.bcConnectionService.invoke(projectDto, blockChainAuthDto);
         } catch (err) {
             logger.error(err);
@@ -52,12 +50,14 @@ export class ProjectBcService {
     async getProjectBcDetails(projectId: string, req: Request): Promise<BcConnectionDto> {
         const logger = new Logger(ProjectBcService.name + '-getProjectBcDetails');
         try {
+            const userId = req['user']._id;
+
             const project = await this.projectService.getProjectById(projectId, req);
             if (!project) {
                 throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
             }
 
-            const userData = await this.userService.getUserBcInfoDefaultChannel(project.createdBy);
+            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
             const blockChainAuthDto = this.getBcBcAuthentication(req, userData, BC_CONNECTION_API.PROJECT_BC);
 
             return await this.bcConnectionService.query(blockChainAuthDto, project._id);
@@ -73,12 +73,14 @@ export class ProjectBcService {
     async getProjectBcHistory(projectId: string, req: Request): Promise<BcConnectionDto> {
         const logger = new Logger(ProjectBcService.name + '-getProjectBcHistory');
         try {
+            const userId = req['user']._id;
+
             const project = await this.projectService.getProjectById(projectId, req);
             if (!project) {
                 throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
             }
 
-            const userData = await this.userService.getUserBcInfoDefaultChannel(project.createdBy);
+            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
             const blockChainAuthDto = this.getBcBcAuthentication(req, userData, BC_CONNECTION_API.GET_PROJECT_BC_HISTORY);
 
             return await this.bcConnectionService.query(blockChainAuthDto, project._id);
