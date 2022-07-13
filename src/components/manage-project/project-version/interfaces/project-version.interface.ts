@@ -21,6 +21,9 @@ export interface IProjectVersion extends Document {
     versionStatus: VersionStatus | string;
     updatedAt: Date;
     createdAt: Date;
+    submittedDate: Date;
+    reviewedDate: Date;
+    productionDate: Date;
     createdBy: string;
     project: string;
 }

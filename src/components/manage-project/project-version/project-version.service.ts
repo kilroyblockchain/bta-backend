@@ -118,6 +118,7 @@ export class ProjectVersionService {
         }
 
         version.versionStatus = VersionStatus.PENDING;
+        version.submittedDate = new Date();
 
         const updatedVersion = await version.save();
         await this.versionBcService.createBcProjectVersion(req, updatedVersion);

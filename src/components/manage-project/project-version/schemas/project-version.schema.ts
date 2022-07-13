@@ -46,6 +46,9 @@ export const ProjectVersionSchema = new Schema(
         artifacts: {
             type: String
         },
+        aiModelBcHash: {
+            type: String
+        },
         codeVersion: {
             type: String,
             required: true
@@ -66,6 +69,15 @@ export const ProjectVersionSchema = new Schema(
         status: {
             type: Boolean,
             default: true
+        },
+        submittedDate: {
+            type: Date
+        },
+        reviewedDate: {
+            type: Date
+        },
+        productionDate: {
+            type: Date
         },
         createdBy: {
             type: mongoose.Types.ObjectId,
