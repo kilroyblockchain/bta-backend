@@ -38,7 +38,7 @@ export class ProjectVersionService {
 
         await project.save();
         const newVersion = await version.save();
-        await this.aiModelService.getLogExperiment(req, newVersion._id);
+        await this.aiModelService.getAllExperiment(req, newVersion._id);
         return newVersion;
     }
 
@@ -136,12 +136,14 @@ export class ProjectVersionService {
     async getVersionData(versionIds: string[]): Promise<{ id: string; versionName: string }[]> {
         const versionData: { id: string; versionName: string }[] = [];
         for (const id of versionIds) {
-            const version = await this.versionModel.findOne({ _id: id }).select('_id versionName');
-            const versionInfo = {
-                id: version._id,
-                versionName: version.versionName
-            };
-            versionData.push(versionInfo);
+            const version = await this.versionModel.findOne({ _id: id, versionStatus: { $ne: VersionStatus.DRAFT } }).select('_id versionName');
+            if (version) {
+                const versionInfo = {
+                    id: version._id,
+                    versionName: version.versionName
+                };
+                versionData.push(versionInfo);
+            }
         }
         return versionData;
     }

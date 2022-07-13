@@ -25,7 +25,7 @@ export class ProjectBcService {
             const projectMembers = await this.userService.getUserEmail(project.members);
             const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
             const modelVersion = await this.versionService.getVersionData(project.projectVersions);
-            console.log('=========', modelVersion);
+
             const blockChainAuthDto = this.getBcBcAuthentication(req, userData, BC_CONNECTION_API.PROJECT_BC);
             const projectDto: IBcProject = {
                 id: project._id,
@@ -37,7 +37,6 @@ export class ProjectBcService {
                 projectVersions: modelVersion,
                 entryUser: entryUser['email']
             };
-            console.log('-------', projectDto);
             return await this.bcConnectionService.invoke(projectDto, blockChainAuthDto);
         } catch (err) {
             logger.error(err);

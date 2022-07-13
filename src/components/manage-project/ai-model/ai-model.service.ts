@@ -50,9 +50,9 @@ export class AiModelService {
                     logFileBcHash.push(expData.experimentBcHash);
                     await expData.save();
                 } catch (err) {
-                    // version.logFileBCHash = await sha256Hash(JSON.stringify(logFileBcHash));
-                    // await this.versionBcService.createBcProjectVersion(req, version);
-                    // await version.save();
+                    version.logFileBCHash = await sha256Hash(JSON.stringify(logFileBcHash));
+                    await this.versionBcService.createBcProjectVersion(req, version);
+                    await version.save();
                     return await this.aiModel.paginate({ version: version._id }, options);
                 }
             }
