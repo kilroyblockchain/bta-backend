@@ -80,11 +80,11 @@ export class BCVersionDataResponseDto {
     testDatasetBCHash: string;
 
     @ApiProperty({
-        example: 'http://ml.oracle.com/artificats/',
-        description: 'URL of artifacts',
+        example: 'http://ml.oracle.com/aiModel/',
+        description: 'URL of aiModel',
         format: 'string'
     })
-    artifacts: string;
+    aiModel: string;
 
     @ApiProperty({
         example: 'http://git.com/michael/project-name/',
