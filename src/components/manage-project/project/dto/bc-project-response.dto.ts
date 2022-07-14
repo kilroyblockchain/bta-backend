@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IBcProjectVersion } from '../interfaces';
 
 export class BCProjectResponseDto {
     @ApiProperty({
@@ -42,6 +43,18 @@ export class BCProjectResponseDto {
         format: 'string'
     })
     purpose: string;
+
+    @ApiProperty({
+        example: [
+            {
+                id: '62c691709f89137adad3d056',
+                versionName: 'V1'
+            }
+        ],
+        description: 'list of project version model',
+        format: 'array'
+    })
+    projectVersion: IBcProjectVersion[];
 
     @ApiProperty({
         example: 'John',
