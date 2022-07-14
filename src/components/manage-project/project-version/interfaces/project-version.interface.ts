@@ -13,7 +13,8 @@ export interface IProjectVersion extends Document {
     trainDatasetBCHash: string;
     testDataSets: string;
     testDatasetBCHash: string;
-    artifacts: string;
+    aiModel: string;
+    aiModelBcHash: string;
     codeVersion: string;
     codeRepo: string;
     comment: string;
@@ -21,6 +22,9 @@ export interface IProjectVersion extends Document {
     versionStatus: VersionStatus | string;
     updatedAt: Date;
     createdAt: Date;
+    submittedDate: Date;
+    reviewedDate: Date;
+    productionDate: Date;
     createdBy: string;
     project: string;
 }

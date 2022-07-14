@@ -43,7 +43,7 @@ export class ProjectVersionController {
         }
     }
 
-    @Put('update/:id/:projectId')
+    @Put('update/:id')
     @HttpCode(HttpStatus.OK)
     @UseGuards(PermissionGuard)
     @Permission(ACCESS_TYPE.UPDATE)
@@ -56,16 +56,15 @@ export class ProjectVersionController {
     })
     @ApiOperation({ summary: 'Update project version' })
     @ApiParam({ name: 'id', required: true, description: 'Version Id' })
-    @ApiParam({ name: 'projectId', required: true, description: 'Project Id' })
     @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_UPDATE_VERSION })
     @ApiResponse({ status: HttpStatus.OK, type: VersionResponseDto, description: MANAGE_PROJECT_CONSTANT.UPDATE_VERSION_SUCCESS })
     @ApiResponse({ status: HttpStatus.CONFLICT, description: MANAGE_PROJECT_CONSTANT.PROJECT_VERSION_CONFLICT })
-    async updateVersion(@Param('id') id: string, @Param('projectId') projectId: string, @Body() updateVersion: AddVersionDto): Promise<FLOResponse> {
+    async updateVersion(@Param('id') id: string, @Req() req: Request, @Body() updateVersion: AddVersionDto): Promise<FLOResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.UPDATE_VERSION_SUCCESS]).setSuccessData(await this.versionService.updateVersion(id, projectId, updateVersion)).setStatus(HttpStatus.OK);
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.UPDATE_VERSION_SUCCESS]).setSuccessData(await this.versionService.updateVersion(id, updateVersion, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_UPDATE_VERSION, err);
         }
@@ -194,6 +193,31 @@ export class ProjectVersionController {
             return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.PROJECT_VERSION_BC_HISTORY_FETCHED_SUCCESS]).setSuccessData(await this.versionBcService.getProjectVersionBcHistory(versionId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_PROJECT_VERSION_BC_HISTORY, err);
+        }
+    }
+
+    @Patch('submit/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.WRITE)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Submit the the version model', description: 'When model version is submitted then its status is changes Draft to Pending' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_SUBMIT_MODEL_VERSION })
+    @ApiResponse({ status: HttpStatus.OK, type: VersionResponseDto, isArray: true, description: MANAGE_PROJECT_CONSTANT.MODEL_VERSION_SUBMITTED_SUCCESS })
+    async submitModelVersion(@Param('id') versionId: string, @Req() req: Request): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.MODEL_VERSION_SUBMITTED_SUCCESS]).setSuccessData(await this.versionService.submitModelVersion(req, versionId)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_SUBMIT_MODEL_VERSION, err);
         }
     }
 }

@@ -9,6 +9,7 @@ import { firstValueFrom } from 'rxjs';
 import { Request } from 'express';
 import { sha256Hash } from 'src/@utils/helpers';
 import { VersionBcService } from '../project-version/project-version-bc.service';
+import { IProjectVersion } from '../project-version/interfaces/project-version.interface';
 
 @Injectable()
 export class AiModelService {
@@ -75,5 +76,25 @@ export class AiModelService {
         if (!experimentInfo) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND);
 
         return experimentInfo;
+    }
+
+    async getLogExperiment(req: Request, versionId: string): Promise<IProjectVersion> {
+        const version = await this.versionService.getVersionInfo(versionId);
+        if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+
+        let i = 0;
+        const logFileBcHash = [];
+        while (true) {
+            try {
+                const { data } = await firstValueFrom(this.httpService.get(`${version.logFilePath}/log_exp_${i}.json`));
+                if (!data) break;
+                i++;
+                logFileBcHash.push(await sha256Hash(JSON.stringify(data)));
+            } catch (err) {
+                version.logFileBCHash = await sha256Hash(JSON.stringify(logFileBcHash));
+                await this.versionBcService.createBcProjectVersion(req, version);
+                return await version.save();
+            }
+        }
     }
 }

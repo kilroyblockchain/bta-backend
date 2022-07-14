@@ -167,7 +167,6 @@ export class ProjectController {
         try {
             return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.PROJECT_PROJECT_ADDED_SUCCESS]).setSuccessData(await this.projectService.addProjectPurpose(id, req, file, purpose)).setStatus(HttpStatus.OK);
         } catch (err) {
-            console.log(err);
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_ADD_PROJECT_PROJECT, err);
         }
     }
