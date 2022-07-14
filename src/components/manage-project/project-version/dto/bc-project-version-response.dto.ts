@@ -87,6 +87,13 @@ export class BCVersionDataResponseDto {
     aiModel: string;
 
     @ApiProperty({
+        example: 'abd3b5501f5d9922665ab27206a9febfb58e61b33ae7073ae49dbeb01d569672',
+        description: 'Ai model Bc Hash of version',
+        format: 'string'
+    })
+    aiModelBcHash: string;
+
+    @ApiProperty({
         example: 'http://git.com/michael/project-name/',
         description: 'URL of code repository',
         format: 'string'
