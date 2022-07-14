@@ -7,7 +7,7 @@ export class BCProjectResponseDto {
         description: 'Project Id',
         format: 'string'
     })
-    projectId: string;
+    id: string;
 
     @ApiProperty({
         example: 'Blockchain',
