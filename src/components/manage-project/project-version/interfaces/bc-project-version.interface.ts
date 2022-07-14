@@ -10,7 +10,7 @@ export interface IBcProjectVersion {
     testDatasetBCHash: string;
     trainDataSets: string;
     trainDatasetBCHash: string;
-    artifacts: string;
+    aiModel: string;
     aiModelBcHash?: string;
     codeVersion: string;
     codeRepo: string;
