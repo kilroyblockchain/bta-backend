@@ -7,10 +7,11 @@ import { AddModelReviewDto } from './dto';
 import { ProjectVersionService } from '../project-version/project-version.service';
 import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
 import { UserService } from 'src/components/app-user/user/user.service';
+import { ModelReviewBcService } from './bc-model-review.service';
 
 @Injectable()
 export class ModelReviewService {
-    constructor(@InjectModel('model-review') private readonly reviewModel: PaginateModel<IModelReview>, private readonly versionService: ProjectVersionService, private readonly userService: UserService) {}
+    constructor(@InjectModel('model-review') private readonly reviewModel: PaginateModel<IModelReview>, private readonly versionService: ProjectVersionService, private readonly userService: UserService, private readonly modelReviewBcService: ModelReviewBcService) {}
 
     async addModelReview(req: Request, versionId: string, files: Array<Express.Multer.File>, newReview: AddModelReviewDto): Promise<IModelReview> {
         const version = await this.versionService.getVersionById(versionId);
@@ -35,7 +36,10 @@ export class ModelReviewService {
         review.staffing = staffing.join();
 
         await version.save();
-        return await review.save();
+        const reviewModel = await review.save();
+
+        await this.modelReviewBcService.createBcVersionReview(req, reviewModel);
+        return reviewModel;
     }
 
     async getModelReviews(req: Request, versionId: string): Promise<PaginateResult<IModelReview>> {
@@ -50,6 +54,6 @@ export class ModelReviewService {
             page: Number(page),
             sort: { createdAt: -1 }
         };
-        return await this.reviewModel.paginate({ versionId }, options);
+        return await this.reviewModel.paginate({ version: versionId }, options);
     }
 }

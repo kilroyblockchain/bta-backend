@@ -10,5 +10,6 @@ export const BC_CONNECTION_API = {
     PROJECT_BC: '/api/v1/project',
     GET_PROJECT_BC_HISTORY: '/api/v1/project/history',
     PROJECT_VERSION_BC: '/api/v1/model-version',
-    PROJECT_VERSION_BC_HISTORY: '/api/v1/model-version/history'
+    PROJECT_VERSION_BC_HISTORY: '/api/v1/model-version/history',
+    MODEL_VERSION_BC: '/api/v1/model-review'
 };
