@@ -11,7 +11,7 @@ export enum VersionStatus {
 }
 
 export enum OracleBucketDataStatus {
-    FETCHING = 'Fetching',
-    FETCHED = 'Fetched',
-    ERROR = 'Error'
+    FETCHING = 'fetching',
+    FETCHED = 'fetched',
+    ERROR = 'error'
 }

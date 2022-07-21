@@ -183,7 +183,7 @@ export class AiModelController {
         name: 'Bearer',
         description: 'The token we need for auth'
     })
-    @ApiOperation({ summary: "Get test data sets oracle data's bc hash" })
+    @ApiOperation({ summary: "Get ai model oracle data's bc hash" })
     @ApiParam({ name: 'id', required: true, description: 'version Id' })
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
     @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
