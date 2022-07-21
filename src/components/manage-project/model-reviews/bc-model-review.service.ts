@@ -1,6 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Request } from 'express';
+import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
 import { BC_CONNECTION_API } from 'src/@core/constants/bc-constants/bc-connection.api.constant';
+import { MANAGE_PROJECT_BC_CONSTANT } from 'src/@core/constants/bc-constants/bc-manage-project.constant';
 import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
 import { UserService } from 'src/components/app-user/user/user.service';
 import { BcConnectionService } from 'src/components/blockchain/bc-connection/bc-connection.service';
@@ -12,6 +14,7 @@ import { IModelReview } from './interfaces/model-review.interface';
 @Injectable()
 export class ModelReviewBcService {
     constructor(private readonly bcConnectionService: BcConnectionService, private readonly userService: UserService, private readonly modeVersionService: ProjectVersionService) {}
+
     async createBcVersionReview(req: Request, modelReview: IModelReview): Promise<BcConnectionDto> {
         const logger = new Logger(ModelReviewBcService.name + '-createBcVersionReview');
         try {
@@ -20,7 +23,7 @@ export class ModelReviewBcService {
             const version = await this.modeVersionService.getVersionById(modelReview.version);
 
             const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
-            const blockChainAuthDto = this.getBcBcAuthentication(req, userData, BC_CONNECTION_API.MODEL_VERSION_BC);
+            const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.MODEL_VERSION_BC);
             const reviewModelDto: IBcModelReview = {
                 id: version._id,
                 reviewStatus: version.versionStatus,
@@ -46,7 +49,29 @@ export class ModelReviewBcService {
         }
     }
 
-    getBcBcAuthentication(req: Request, userData: IUser, bcConnectionApi: string): BcAuthenticationDto {
+    async getModelReviewBcDetails(versionId: string, req: Request): Promise<BcConnectionDto> {
+        const logger = new Logger(ModelReviewBcService.name + '-getModelReviewBcDetails');
+        try {
+            const userId = req['user']._id;
+
+            const version = await this.modeVersionService.getVersionById(versionId);
+            if (!version) {
+                throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+            }
+            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+            const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.MODEL_VERSION_BC);
+
+            return await this.bcConnectionService.query(blockChainAuthDto, version._id);
+        } catch (err) {
+            logger.error(err);
+            if (err.statusCode) {
+                throw err;
+            }
+            throw new BadRequestException([MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_GET_MODEL_REVIEW_BC_DETAILS], err);
+        }
+    }
+
+    getBcAuthentication(req: Request, userData: IUser, bcConnectionApi: string): BcAuthenticationDto {
         const blockChainAuthDto: BcAuthenticationDto = {
             basicAuthorization: userData.company[0].staffingId[0]['bcNodeInfo'].authorizationToken,
             organizationName: userData.company[0].staffingId[0]['bcNodeInfo'].orgName,

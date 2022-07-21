@@ -3,7 +3,7 @@ export interface IBcModelReview {
     reviewStatus: string;
     comment: string;
     ratings: string;
-    entryUserDetail: IEntryUserDetail;
+    entryUserDetail: IEntryUserBcDetail;
     deployedUrl: string;
     deploymentInstruction: string;
     productionURL: string;
@@ -15,7 +15,7 @@ export interface IReviewSupportingDocument {
     docName: string;
 }
 
-export interface IEntryUserDetail {
+export interface IEntryUserBcDetail {
     entryUser: string;
     organizationUnit: string;
     staffing: string;
