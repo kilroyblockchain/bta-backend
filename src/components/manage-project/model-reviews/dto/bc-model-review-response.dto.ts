@@ -99,7 +99,7 @@ export class BcModelReviewDetailsResponseDto {
         example: [
             {
                 docName: 'review-document1.png',
-                docUrl: 'http://review-model/review-document1.png'
+                docURL: 'http://review-model/review-document1.png'
             }
         ],
         description: 'Url of production review model',
