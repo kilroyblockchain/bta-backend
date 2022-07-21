@@ -71,6 +71,28 @@ export class ModelReviewBcService {
         }
     }
 
+    async getModelReviewBcHistory(versionId: string, req: Request): Promise<BcConnectionDto> {
+        const logger = new Logger(ModelReviewBcService.name + '-getModelReviewBcHistory');
+        try {
+            const userId = req['user']._id;
+
+            const version = await this.modeVersionService.getVersionById(versionId);
+            if (!version) {
+                throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+            }
+            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+            const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.MODEL_VERSION_BC_HISTORY);
+
+            return await this.bcConnectionService.query(blockChainAuthDto, version._id);
+        } catch (err) {
+            logger.error(err);
+            if (err.statusCode) {
+                throw err;
+            }
+            throw new BadRequestException([MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_REVIEW_BC_HISTORY], err);
+        }
+    }
+
     getBcAuthentication(req: Request, userData: IUser, bcConnectionApi: string): BcAuthenticationDto {
         const blockChainAuthDto: BcAuthenticationDto = {
             basicAuthorization: userData.company[0].staffingId[0]['bcNodeInfo'].authorizationToken,

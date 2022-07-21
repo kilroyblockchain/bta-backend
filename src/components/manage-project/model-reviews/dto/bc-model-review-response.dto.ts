@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IReviewSupportingDocument } from '../interfaces/bc-model-review.interface';
 
 class EntryUserBcDetailsDto {
     @ApiProperty({
@@ -62,7 +63,7 @@ export class BcModelReviewDetailsResponseDto {
     @ApiProperty({
         example: EntryUserBcDetailsDto,
         description: 'Recorded date when model review data in store in bc state ',
-        format: 'string'
+        format: 'object'
     })
     entryUserDetail: EntryUserBcDetailsDto;
 
@@ -72,4 +73,60 @@ export class BcModelReviewDetailsResponseDto {
         format: 'string'
     })
     creatorMSP: string;
+
+    @ApiProperty({
+        example: 'http://deployedurl.com',
+        description: 'Url of deployed review model',
+        format: 'string'
+    })
+    deployedUrl: string;
+
+    @ApiProperty({
+        example: 'Instruction of model',
+        description: 'Instruction of model version deployment',
+        format: 'string'
+    })
+    deploymentInstruction: string;
+
+    @ApiProperty({
+        example: 'http://productionURL.com',
+        description: 'Url of production review model',
+        format: 'string'
+    })
+    productionURL: string;
+
+    @ApiProperty({
+        example: [
+            {
+                docName: 'review-document1.png',
+                docUrl: 'http://review-model/review-document1.png'
+            }
+        ],
+        description: 'Url of production review model',
+        format: 'array'
+    })
+    reviewSupportingDocument: IReviewSupportingDocument[];
+}
+
+export class BcModelReviewHistoryResponseDto {
+    @ApiProperty({
+        example: '9915ebe99b6249bb129590e86a858d539ac8a066047f8dfc60c95afe5039f735',
+        description: 'blockchain transaction Id',
+        format: 'string'
+    })
+    txId: string;
+
+    @ApiProperty({
+        example: false,
+        description: 'It describes is model review deleted or not',
+        format: 'boolean'
+    })
+    isDeleted: boolean;
+
+    @ApiProperty({
+        example: BcModelReviewDetailsResponseDto,
+        description: 'Data of model version',
+        format: 'object'
+    })
+    modelReview: BcModelReviewDetailsResponseDto;
 }
