@@ -2,21 +2,24 @@ export interface IBcProjectVersion {
     id: string;
     versionName: string;
     logFilePath: string;
-    logFileVersion: string;
     logFileBCHash: string;
-    versionModel: string;
     noteBookVersion: string;
-    testDataSets: string;
+    testDataSetsUrl: string;
     testDatasetBCHash: string;
-    trainDataSets: string;
+    trainDataSetsUrl: string;
     trainDatasetBCHash: string;
-    artifacts: string;
-    aiModelBcHash?: string;
+    aiModelUrl: string;
+    aiModelBcHash: string;
     codeVersion: string;
     codeRepo: string;
     comment: string;
     versionStatus: string;
     status: boolean;
-    project: string;
+    project: IBcProject;
     entryUser: string;
+}
+
+export interface IBcProject {
+    id: string;
+    projectName: string;
 }

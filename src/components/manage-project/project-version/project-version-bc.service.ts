@@ -8,7 +8,7 @@ import { UserService } from 'src/components/app-user/user/user.service';
 import { BcConnectionService } from 'src/components/blockchain/bc-connection/bc-connection.service';
 import { BcAuthenticationDto, BcConnectionDto } from 'src/components/blockchain/bc-connection/dto';
 import { ProjectService } from 'src/components/manage-project/project/project.service';
-import { IBcProjectVersion } from './interfaces/bc-project-version.interface';
+import { IBcProject, IBcProjectVersion } from './interfaces/bc-project-version.interface';
 import { IProjectVersion } from './interfaces/project-version.interface';
 import { ProjectVersionService } from './project-version.service';
 
@@ -21,6 +21,10 @@ export class VersionBcService {
             const userId = req['user']._id;
             const entryUser = await this.userService.getUserEmail(userId);
             const project = await this.projectService.getProjectById(version.project, req);
+            const projectInfo: IBcProject = {
+                id: project._id,
+                projectName: project.name
+            };
 
             const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
             const blockChainAuthDto = this.getBcBcAuthentication(req, userData, BC_CONNECTION_API.PROJECT_VERSION_BC);
@@ -28,22 +32,20 @@ export class VersionBcService {
                 id: version._id,
                 versionName: version.versionName,
                 logFilePath: version.logFilePath,
-                logFileVersion: '1.2',
                 logFileBCHash: version.logFileBCHash,
-                versionModel: 'model',
                 noteBookVersion: version.noteBookVersion,
-                testDataSets: version.testDataSets,
+                testDataSetsUrl: version.testDataSets,
                 testDatasetBCHash: version.testDatasetBCHash,
-                trainDataSets: version.trainDataSets,
+                trainDataSetsUrl: version.trainDataSets,
                 trainDatasetBCHash: version.trainDatasetBCHash,
-                artifacts: version.aiModel,
+                aiModelUrl: version.aiModel,
                 aiModelBcHash: version.aiModelBcHash,
                 codeVersion: version.codeVersion,
                 codeRepo: version.codeRepo,
                 comment: version.comment,
                 versionStatus: version.versionStatus,
                 status: version.status,
-                project: project.name,
+                project: projectInfo,
                 entryUser: entryUser['email']
             };
 
