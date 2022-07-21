@@ -1,20 +1,22 @@
 import { Document } from 'mongoose';
-import { VersionStatus } from '../enum/version-status.enum';
+import { OracleBucketDataStatus, VersionStatus } from '../enum/version-status.enum';
 
 export interface IProjectVersion extends Document {
     _id: string;
     versionName: string;
     logFilePath: string;
-    logFileVersion: string;
     logFileBCHash: string;
-    versionModel: string;
+    logFileStatus: IOracleBucketDataStatus;
     noteBookVersion: string;
     trainDataSets: string;
     trainDatasetBCHash: string;
+    trainDatasetStatus: IOracleBucketDataStatus;
     testDataSets: string;
     testDatasetBCHash: string;
+    testDatasetStatus: IOracleBucketDataStatus;
     aiModel: string;
     aiModelBcHash: string;
+    aiModelStatus: IOracleBucketDataStatus;
     codeVersion: string;
     codeRepo: string;
     comment: string;
@@ -27,4 +29,9 @@ export interface IProjectVersion extends Document {
     productionDate: Date;
     createdBy: string;
     project: string;
+}
+
+export interface IOracleBucketDataStatus {
+    message?: string;
+    code: OracleBucketDataStatus;
 }

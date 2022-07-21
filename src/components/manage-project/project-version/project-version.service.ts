@@ -10,6 +10,7 @@ import { VersionBcService } from './project-version-bc.service';
 import { AiModelService } from 'src/components/manage-project/ai-model/ai-model.service';
 import { VersionStatus } from './enum/version-status.enum';
 import { ProjectBcService } from '../project/project-bc.service';
+import { UserService } from 'src/components/app-user/user/user.service';
 
 @Injectable()
 export class ProjectVersionService {
@@ -18,7 +19,8 @@ export class ProjectVersionService {
         private readonly projectService: ProjectService,
         @Inject(forwardRef(() => VersionBcService)) private readonly versionBcService: VersionBcService,
         @Inject(forwardRef(() => AiModelService)) private readonly aiModelService: AiModelService,
-        @Inject(forwardRef(() => ProjectBcService)) private readonly projectBcService: ProjectBcService
+        @Inject(forwardRef(() => ProjectBcService)) private readonly projectBcService: ProjectBcService,
+        private readonly userService: UserService
     ) {}
 
     async addNewVersion(req: Request, projectId: string, newVersionDto: AddVersionDto): Promise<IProjectVersion> {
@@ -31,6 +33,7 @@ export class ProjectVersionService {
         if (!isVersionUnique) throw new ConflictException(MANAGE_PROJECT_CONSTANT.PROJECT_VERSION_CONFLICT);
 
         const version = new this.versionModel(newVersionDto);
+
         version.createdBy = user;
         version.project = project._id;
 
@@ -38,12 +41,12 @@ export class ProjectVersionService {
 
         await project.save();
         const newVersion = await version.save();
-        await this.aiModelService.getAllExperiment(req, newVersion._id);
+        await this.aiModelService.getAllOracleDataBcHash(req, newVersion._id);
         return newVersion;
     }
 
     async isVersionUnique(name: string, projectId: string): Promise<boolean> {
-        const version = await this.versionModel.findOne({ versionName: { $regex: name, $options: 'i' }, projectId });
+        const version = await this.versionModel.findOne({ versionName: { $regex: name, $options: 'i' }, project: projectId });
         if (version) {
             return false;
         }
@@ -64,7 +67,7 @@ export class ProjectVersionService {
         }
 
         const updatedVersion = await this.versionModel.findOneAndUpdate({ _id: version._id }, updateVersion, { new: true });
-        await this.aiModelService.getLogExperiment(req, updatedVersion._id);
+        await this.versionBcService.createBcProjectVersion(req, updatedVersion);
 
         return updatedVersion;
     }
@@ -146,5 +149,17 @@ export class ProjectVersionService {
             }
         }
         return versionData;
+    }
+
+    async getDefaultBucketUrl(req: Request, projectId: string): Promise<string> {
+        const userId = req['user']._id;
+
+        const project = await this.projectService.getProjectById(projectId, req);
+        const user = await this.userService.getUserBcInfoDefaultChannel(userId);
+
+        const bucketUrl = user.company[0].staffingId[0]['bucketUrl'];
+        const defaultBucketUrl = bucketUrl + `/${project.name}`;
+
+        return defaultBucketUrl;
     }
 }

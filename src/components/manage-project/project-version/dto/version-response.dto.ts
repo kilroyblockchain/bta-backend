@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IUser } from 'src/components/app-user/user/interfaces/user.interface';
 import { IProject } from 'src/components/manage-project/project/interfaces/project.interface';
-import { VersionStatus } from '../enum/version-status.enum';
+import { OracleBucketDataStatus, VersionStatus } from '../enum/version-status.enum';
+import { IOracleBucketDataStatus } from '../interfaces/project-version.interface';
 
 export class VersionResponseDto {
     @ApiProperty({
@@ -26,18 +27,13 @@ export class VersionResponseDto {
     logFilePath: string;
 
     @ApiProperty({
-        example: 'V1',
-        description: 'Version of log file',
-        format: 'string'
+        example: {
+            code: OracleBucketDataStatus.FETCHING
+        },
+        description: 'Status for log file data while getting data from oracle bucket',
+        format: 'object'
     })
-    logFileVersion: string;
-
-    @ApiProperty({
-        example: 'http://ml.oracle.com/model/',
-        description: 'Version model URL',
-        format: 'string'
-    })
-    versionModel: string;
+    logFileStatus: IOracleBucketDataStatus;
 
     @ApiProperty({
         example: '1.7',
@@ -54,6 +50,15 @@ export class VersionResponseDto {
     trainDataSets: string;
 
     @ApiProperty({
+        example: {
+            code: OracleBucketDataStatus.FETCHED
+        },
+        description: 'Status for train data sets while getting data from oracle bucket',
+        format: 'object'
+    })
+    trainDatasetStatus: IOracleBucketDataStatus;
+
+    @ApiProperty({
         example: 'http://ml.oracle.com/testdataset/',
         description: 'URL of test data sets',
         format: 'string'
@@ -61,11 +66,30 @@ export class VersionResponseDto {
     testDataSets: string;
 
     @ApiProperty({
-        example: 'http://ml.oracle.com/artificats/',
-        description: 'URL of artifacts',
+        example: {
+            message: 'This object is not available of ds1-bucket',
+            code: OracleBucketDataStatus.ERROR
+        },
+        description: 'Status for test data sets while getting data from oracle bucket',
+        format: 'object'
+    })
+    testDatasetStatus: IOracleBucketDataStatus;
+
+    @ApiProperty({
+        example: 'http://ml.oracle.com/aiModel/',
+        description: 'URL of aiModel',
         format: 'string'
     })
-    artifacts: string;
+    aiModel: string;
+
+    @ApiProperty({
+        example: {
+            code: OracleBucketDataStatus.FETCHING
+        },
+        description: 'Status for ai model data while getting data from oracle bucket',
+        format: 'object'
+    })
+    aiModelStatus: IOracleBucketDataStatus;
 
     @ApiProperty({
         example: 'http://git.com/michael/project-name/',
@@ -152,20 +176,6 @@ export class VersionInfoResponseDto {
     logFilePath: string;
 
     @ApiProperty({
-        example: 'V1',
-        description: 'Version of log file',
-        format: 'string'
-    })
-    logFileVersion: string;
-
-    @ApiProperty({
-        example: 'http://ml.oracle.com/model/',
-        description: 'Version model URL',
-        format: 'string'
-    })
-    versionModel: string;
-
-    @ApiProperty({
         example: '1.7',
         description: 'Version of notebook',
         format: 'string'
@@ -187,11 +197,11 @@ export class VersionInfoResponseDto {
     testDataSets: string;
 
     @ApiProperty({
-        example: 'http://ml.oracle.com/artificats/',
-        description: 'URL of artifacts',
+        example: 'http://ml.oracle.com/aiModel/',
+        description: 'URL of aiModel',
         format: 'string'
     })
-    artifacts: string;
+    aiModel: string;
 
     @ApiProperty({
         example: 'http://git.com/michael/project-name/',

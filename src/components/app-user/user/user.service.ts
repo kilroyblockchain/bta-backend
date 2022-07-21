@@ -2200,7 +2200,7 @@ export class UserService {
             .select('bcSalt company.staffingId')
             .populate({
                 path: 'company.staffingId',
-                select: '_id',
+                select: '_id bucketUrl',
                 populate: [
                     {
                         path: 'bcNodeInfo',

@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose';
 import * as mongoose from 'mongoose';
-import { VersionStatus } from '../enum/version-status.enum';
+import { OracleBucketDataStatus, VersionStatus } from '../enum/version-status.enum';
 
 mongoose.set('strictPopulate', false);
 
@@ -15,16 +15,16 @@ export const ProjectVersionSchema = new Schema(
             minlength: 2,
             required: true
         },
-        logFileVersion: {
-            type: String,
-            required: true
-        },
         logFileBCHash: {
             type: String
         },
-        versionModel: {
-            type: String,
-            required: true
+        logFileStatus: {
+            message: { type: String },
+            code: {
+                type: String,
+                enum: Object.values(OracleBucketDataStatus),
+                default: OracleBucketDataStatus.FETCHING
+            }
         },
         noteBookVersion: {
             type: String,
@@ -33,6 +33,14 @@ export const ProjectVersionSchema = new Schema(
         testDataSets: {
             type: String,
             required: true
+        },
+        testDatasetStatus: {
+            message: { type: String },
+            code: {
+                type: String,
+                enum: Object.values(OracleBucketDataStatus),
+                default: OracleBucketDataStatus.FETCHING
+            }
         },
         testDatasetBCHash: {
             type: String
@@ -43,11 +51,27 @@ export const ProjectVersionSchema = new Schema(
         trainDatasetBCHash: {
             type: String
         },
+        trainDatasetStatus: {
+            message: { type: String },
+            code: {
+                type: String,
+                enum: Object.values(OracleBucketDataStatus),
+                default: OracleBucketDataStatus.FETCHING
+            }
+        },
         aiModel: {
             type: String
         },
         aiModelBcHash: {
             type: String
+        },
+        aiModelStatus: {
+            message: { type: String },
+            code: {
+                type: String,
+                enum: Object.values(OracleBucketDataStatus),
+                default: OracleBucketDataStatus.FETCHING
+            }
         },
         codeVersion: {
             type: String,
