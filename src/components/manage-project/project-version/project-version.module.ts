@@ -10,7 +10,7 @@ import { ProjectVersionService } from './project-version.service';
 import { ProjectVersionSchema } from './schemas/project-version.schema';
 
 @Module({
-    imports: [MongooseModule.forFeature([{ name: 'project-version', schema: ProjectVersionSchema }]), forwardRef(() => ProjectModule), UserModule, BcConnectionModule, forwardRef(() => AiModelModule)],
+    imports: [MongooseModule.forFeature([{ name: 'project-version', schema: ProjectVersionSchema }]), forwardRef(() => ProjectModule), UserModule, BcConnectionModule, forwardRef(() => AiModelModule), UserModule],
     controllers: [ProjectVersionController],
     providers: [ProjectVersionService, VersionBcService],
     exports: [ProjectVersionService, VersionBcService]

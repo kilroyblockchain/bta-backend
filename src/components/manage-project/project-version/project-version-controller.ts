@@ -220,4 +220,30 @@ export class ProjectVersionController {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_SUBMIT_MODEL_VERSION, err);
         }
     }
+
+    @Get('default-bucket-url/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Permission(ACCESS_TYPE.WRITE, ACCESS_TYPE.UPDATE)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Get Default Oracle bucket url', description: 'Get default oracle bucket url from staffing unit of logged in user' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiParam({ name: 'id', required: true, description: 'project Id' })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_FETCH_DEFAULT_ORACLE_BUCKET_URL })
+    @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: 'http://oraclebucketurl.com/' } }, description: MANAGE_PROJECT_CONSTANT.DEFAULT_ORACLE_BUCKET_URL_FETCHED_SUCCESS })
+    async getDefaultBucketUrl(@Param('id') projectId: string, @Req() req: Request): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.DEFAULT_ORACLE_BUCKET_URL_FETCHED_SUCCESS]).setSuccessData(await this.versionService.getDefaultBucketUrl(req, projectId)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_FETCH_DEFAULT_ORACLE_BUCKET_URL, err);
+        }
+    }
 }

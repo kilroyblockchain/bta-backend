@@ -135,8 +135,7 @@ export class ProjectService {
             project.purpose.docName = '';
             project.purpose.docURL = '';
         }
-
-        project.purpose.text = purpose.purpose ? purpose.purpose : project.purpose.text;
+        project.purpose.text = purpose.purpose;
 
         return await project.save();
     }

@@ -9,3 +9,9 @@ export enum VersionStatus {
     COMPLETE = 'Complete',
     DRAFT = 'Draft'
 }
+
+export enum OracleBucketDataStatus {
+    FETCHING = 'Fetching',
+    FETCHED = 'Fetched',
+    ERROR = 'Error'
+}
