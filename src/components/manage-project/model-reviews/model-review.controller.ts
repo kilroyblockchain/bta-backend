@@ -6,19 +6,21 @@ import { ModelReviewService } from './model-review.service';
 import { Response as FLOResponse } from 'src/@core/response';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, MANAGE_PROJECT_CONSTANT, ROLE } from 'src/@core/constants';
 import { Request } from 'express';
-import { AddModelReviewDto, ModelAllReviewResponseDto, ModelReviewResponseDto, ReviewModelResponseDto } from './dto';
+import { AddModelReviewDto, BcModelReviewDetailsResponseDto, BcModelReviewHistoryResponseDto, ModelAllReviewResponseDto, ModelReviewResponseDto, ReviewModelResponseDto } from './dto';
 import { PermissionGuard, RolesGuard } from 'src/components/auth/guards';
 import { Feature, Permission, Roles } from 'src/components/auth/decorators';
 import { ApiBearerAuth, ApiConsumes, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { COMMON_ERROR } from 'src/@core/constants/api-error-constants';
 import { ProjectVersionService } from 'src/components/manage-project/project-version/project-version.service';
 import { AddReviewModelDto } from 'src/components/manage-project/project-version/dto';
+import { MANAGE_PROJECT_BC_CONSTANT } from 'src/@core/constants/bc-constants/bc-manage-project.constant';
+import { ModelReviewBcService } from './bc-model-review.service';
 
 @ApiTags('Model Reviews')
 @UseGuards(RolesGuard)
 @Controller('model-reviews')
 export class ModelReviewController {
-    constructor(private readonly modelReviewService: ModelReviewService, private readonly versionService: ProjectVersionService) {}
+    constructor(private readonly modelReviewService: ModelReviewService, private readonly versionService: ProjectVersionService, private readonly modelReviewBcService: ModelReviewBcService) {}
 
     @Post(':id')
     @HttpCode(HttpStatus.CREATED)
@@ -105,6 +107,58 @@ export class ModelReviewController {
             return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.REVIEW_MODEL_ADDED_SUCCESS]).setSuccessData(await this.versionService.addReviewModel(req, projectId, newVersion)).setStatus(HttpStatus.CREATED);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_ADD_REVIEW_MODEL, err);
+        }
+    }
+
+    @Get('bc-details/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_REVIEWS)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Get model reviews blockchain details' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiParam({ name: 'id', required: true, description: 'version Id' })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_GET_MODEL_REVIEW_BC_DETAILS })
+    @ApiResponse({ status: HttpStatus.OK, type: BcModelReviewDetailsResponseDto, description: MANAGE_PROJECT_BC_CONSTANT.MODEL_REVIEW_BC_DETAILS_RETRIEVED_SUCCESS })
+    async getModelReviewBcDetails(@Param('id') versionId: string, @Req() req: Request): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.MODEL_REVIEW_BC_DETAILS_RETRIEVED_SUCCESS]).setSuccessData(await this.modelReviewBcService.getModelReviewBcDetails(versionId, req)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_GET_MODEL_REVIEW_BC_DETAILS, err);
+        }
+    }
+
+    @Get('bc-history/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_REVIEWS)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Get model reviews blockchain history' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiParam({ name: 'id', required: true, description: 'version Id' })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_REVIEW_BC_HISTORY })
+    @ApiResponse({ status: HttpStatus.OK, type: BcModelReviewHistoryResponseDto, isArray: true, description: MANAGE_PROJECT_BC_CONSTANT.MODEL_REVIEW_BC_HISTORY_FETCHED_SUCCESS })
+    async getModelReviewBcHistory(@Param('id') versionId: string, @Req() req: Request): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.MODEL_REVIEW_BC_HISTORY_FETCHED_SUCCESS]).setSuccessData(await this.modelReviewBcService.getModelReviewBcHistory(versionId, req)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_REVIEW_BC_HISTORY, err);
         }
     }
 }

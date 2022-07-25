@@ -11,6 +11,9 @@ import { AiModelService } from 'src/components/manage-project/ai-model/ai-model.
 import { VersionStatus } from './enum/version-status.enum';
 import { ProjectBcService } from '../project/project-bc.service';
 import { UserService } from 'src/components/app-user/user/user.service';
+import { ModelReviewBcService } from '../model-reviews/bc-model-review.service';
+import { REVIEW_MODEL_ALL_ORACLE_BC_HASHES } from 'src/@utils/events/constants/events.constants';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class ProjectVersionService {
@@ -20,7 +23,9 @@ export class ProjectVersionService {
         @Inject(forwardRef(() => VersionBcService)) private readonly versionBcService: VersionBcService,
         @Inject(forwardRef(() => AiModelService)) private readonly aiModelService: AiModelService,
         @Inject(forwardRef(() => ProjectBcService)) private readonly projectBcService: ProjectBcService,
-        private readonly userService: UserService
+        private readonly userService: UserService,
+        private readonly modelReviewBcService: ModelReviewBcService,
+        private eventEmitter: EventEmitter2
     ) {}
 
     async addNewVersion(req: Request, projectId: string, newVersionDto: AddVersionDto): Promise<IProjectVersion> {
@@ -108,7 +113,14 @@ export class ProjectVersionService {
         version.createdBy = user;
         version.project = project._id;
 
-        return await version.save();
+        const reviewModel = await version.save();
+
+        this.eventEmitter.emit(REVIEW_MODEL_ALL_ORACLE_BC_HASHES, {
+            reviewModel,
+            req
+        });
+
+        return reviewModel;
     }
 
     async submitModelVersion(req: Request, versionId: string): Promise<IProjectVersion> {
@@ -133,6 +145,7 @@ export class ProjectVersionService {
         }
         await this.versionBcService.createBcProjectVersion(req, updatedVersion);
         await this.projectBcService.createBcProject(req, project);
+        await this.modelReviewBcService.createBcPendingVersion(req, updatedVersion);
         return updatedVersion;
     }
 

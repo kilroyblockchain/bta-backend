@@ -54,7 +54,7 @@ export class BCProjectResponseDto {
         description: 'list of project version model',
         format: 'array'
     })
-    projectVersion: IBcProjectVersion[];
+    modelVersions: IBcProjectVersion[];
 
     @ApiProperty({
         example: 'John',

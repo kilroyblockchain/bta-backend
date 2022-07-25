@@ -18,8 +18,14 @@ export class VersionBcHashesEventService {
         await this.getLogFileBcHash(version);
         await this.getTestDataSetsBCHash(version);
         await this.getTrainDataSetsBcHash(version);
-        this.getAiModelBcHash(version);
-        await this.versionBcService.createBcProjectVersion(req, version);
+        await this.getAiModelBcHash(version);
+        this.versionBcService.createBcProjectVersion(req, version);
+    }
+
+    async modelReviewedBcHashesEvent(version: IProjectVersion, req: Request): Promise<void> {
+        await this.getLogFileBcHash(version);
+        await this.getTestDataSetsBCHash(version);
+        this.versionBcService.createBcProjectVersion(req, version);
     }
 
     async getLogFileBcHash(version: IProjectVersion): Promise<void> {

@@ -2200,11 +2200,15 @@ export class UserService {
             .select('bcSalt company.staffingId')
             .populate({
                 path: 'company.staffingId',
-                select: '_id bucketUrl',
+                select: '_id bucketUrl staffingName',
                 populate: [
                     {
                         path: 'bcNodeInfo',
                         select: 'orgName nodeUrl authorizationToken'
+                    },
+                    {
+                        path: 'organizationUnitId',
+                        select: 'unitName'
                     },
                     {
                         path: 'channels',
