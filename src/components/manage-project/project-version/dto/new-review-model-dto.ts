@@ -24,26 +24,6 @@ export class AddReviewModelDto {
     logFilePath: string;
 
     @ApiProperty({
-        example: 'V1',
-        description: 'Version of log file',
-        format: 'string',
-        required: true
-    })
-    @IsNotEmpty()
-    @IsString()
-    logFileVersion: string;
-
-    @ApiProperty({
-        example: 'http://ml.oracle.com/model/',
-        description: 'Version model URL',
-        format: 'string',
-        required: true
-    })
-    @IsNotEmpty()
-    @IsString()
-    versionModel: string;
-
-    @ApiProperty({
         example: '1.7',
         description: 'Version of notebook',
         format: 'string',

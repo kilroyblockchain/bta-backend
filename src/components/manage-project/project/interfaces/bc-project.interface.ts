@@ -5,7 +5,7 @@ export interface IBcProject {
     members: string[];
     domain: string;
     status: boolean;
-    projectVersions: IBcProjectVersion[];
+    modelVersions: IBcProjectVersion[];
     entryUser: string;
 }
 

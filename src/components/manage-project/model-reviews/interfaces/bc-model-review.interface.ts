@@ -7,11 +7,11 @@ export interface IBcModelReview {
     deployedUrl: string;
     deploymentInstruction: string;
     productionURL: string;
-    reviewSupportingDocument: IReviewSupportingDocument[];
+    reviewDocuments: IReviewSupportingDocument[];
 }
 
 export interface IReviewSupportingDocument {
-    docURL: string;
+    docUrl: string;
     docName: string;
 }
 
@@ -19,4 +19,10 @@ export interface IEntryUserBcDetail {
     entryUser: string;
     organizationUnit: string;
     staffing: string;
+}
+
+export interface IBcVersionSubmitReview {
+    id: string;
+    reviewStatus: string;
+    entryUserDetail: IEntryUserBcDetail;
 }

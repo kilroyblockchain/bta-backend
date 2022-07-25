@@ -8,3 +8,4 @@ export const USER_ACCEPTED = 'user.accepted';
 export const ORGANIZATION_CREATED = 'organization.created';
 export const COMPANY_ADMIN_ORGANIZATION_CREATED = 'company_admin_organization.created';
 export const VERSION_ALL_ORACLE_BC_HASHES = 'version_all_oracle_bc_hashes.created';
+export const REVIEW_MODEL_ALL_ORACLE_BC_HASHES = 'review_model_all_oracle_bc_hashes.created';

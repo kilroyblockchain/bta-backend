@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Request } from 'express';
 import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
 import { BC_CONNECTION_API } from 'src/@core/constants/bc-constants/bc-connection.api.constant';
@@ -8,12 +8,13 @@ import { UserService } from 'src/components/app-user/user/user.service';
 import { BcConnectionService } from 'src/components/blockchain/bc-connection/bc-connection.service';
 import { BcAuthenticationDto, BcConnectionDto } from 'src/components/blockchain/bc-connection/dto';
 import { ProjectVersionService } from 'src/components/manage-project/project-version/project-version.service';
-import { IBcModelReview } from './interfaces/bc-model-review.interface';
+import { IProjectVersion } from '../project-version/interfaces/project-version.interface';
+import { IBcModelReview, IBcVersionSubmitReview } from './interfaces/bc-model-review.interface';
 import { IModelReview } from './interfaces/model-review.interface';
 
 @Injectable()
 export class ModelReviewBcService {
-    constructor(private readonly bcConnectionService: BcConnectionService, private readonly userService: UserService, private readonly modeVersionService: ProjectVersionService) {}
+    constructor(private readonly bcConnectionService: BcConnectionService, private readonly userService: UserService, @Inject(forwardRef(() => ProjectVersionService)) private readonly modeVersionService: ProjectVersionService) {}
 
     async createBcVersionReview(req: Request, modelReview: IModelReview): Promise<BcConnectionDto> {
         const logger = new Logger(ModelReviewBcService.name + '-createBcVersionReview');
@@ -21,9 +22,19 @@ export class ModelReviewBcService {
             const userId = req['user']._id;
             const entryUser = await this.userService.getUserEmail(userId);
             const version = await this.modeVersionService.getVersionById(modelReview.version);
-
             const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
             const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.MODEL_VERSION_BC);
+
+            const reviewDocuments = [];
+            for (const doc of modelReview.documents) {
+                const documents = {
+                    docUrl: doc.docURL,
+                    docName: doc.docName
+                };
+
+                reviewDocuments.push(documents);
+            }
+
             const reviewModelDto: IBcModelReview = {
                 id: version._id,
                 reviewStatus: version.versionStatus,
@@ -37,7 +48,35 @@ export class ModelReviewBcService {
                 deployedUrl: modelReview.deployedModelURL,
                 deploymentInstruction: modelReview.deployedModelInstruction,
                 productionURL: modelReview.productionURL,
-                reviewSupportingDocument: modelReview.documents
+                reviewDocuments: reviewDocuments
+            };
+
+            return await this.bcConnectionService.invoke(reviewModelDto, blockChainAuthDto);
+        } catch (err) {
+            logger.error(err);
+            if (err.statusCode) {
+                throw err;
+            }
+        }
+    }
+
+    async createBcPendingVersion(req: Request, version: IProjectVersion): Promise<BcConnectionDto> {
+        const logger = new Logger(ModelReviewBcService.name + '-createBcPendingVersion');
+        try {
+            const userId = req['user']._id;
+            const entryUser = await this.userService.getUserEmail(userId);
+
+            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+            const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.MODEL_VERSION_BC);
+
+            const reviewModelDto: IBcVersionSubmitReview = {
+                id: version._id,
+                reviewStatus: version.versionStatus,
+                entryUserDetail: {
+                    entryUser: entryUser['email'],
+                    organizationUnit: userData.company[0].staffingId[0]['organizationUnitId'].unitName,
+                    staffing: userData.company[0].staffingId[0]['staffingName']
+                }
             };
 
             return await this.bcConnectionService.invoke(reviewModelDto, blockChainAuthDto);

@@ -34,7 +34,7 @@ export class ProjectBcService {
                 members: <string[]>projectMembers,
                 domain: project.domain,
                 status: project.status,
-                projectVersions: modelVersion,
+                modelVersions: modelVersion,
                 entryUser: entryUser['email']
             };
             return await this.bcConnectionService.invoke(projectDto, blockChainAuthDto);

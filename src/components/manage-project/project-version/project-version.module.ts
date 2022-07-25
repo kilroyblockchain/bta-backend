@@ -8,9 +8,10 @@ import { VersionBcService } from './project-version-bc.service';
 import { ProjectVersionController } from './project-version-controller';
 import { ProjectVersionService } from './project-version.service';
 import { ProjectVersionSchema } from './schemas/project-version.schema';
+import { ModelReviewModule } from 'src/components/manage-project/model-reviews/model-review.module';
 
 @Module({
-    imports: [MongooseModule.forFeature([{ name: 'project-version', schema: ProjectVersionSchema }]), forwardRef(() => ProjectModule), UserModule, BcConnectionModule, forwardRef(() => AiModelModule), UserModule],
+    imports: [MongooseModule.forFeature([{ name: 'project-version', schema: ProjectVersionSchema }]), forwardRef(() => ProjectModule), UserModule, BcConnectionModule, forwardRef(() => AiModelModule), UserModule, ModelReviewModule],
     controllers: [ProjectVersionController],
     providers: [ProjectVersionService, VersionBcService],
     exports: [ProjectVersionService, VersionBcService]

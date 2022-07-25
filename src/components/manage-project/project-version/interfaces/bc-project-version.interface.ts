@@ -9,7 +9,7 @@ export interface IBcProjectVersion {
     trainDataSetsUrl: string;
     trainDatasetBCHash: string;
     aiModelUrl: string;
-    aiModelBcHash: string;
+    aiModelBCHash: string;
     codeVersion: string;
     codeRepo: string;
     comment: string;

@@ -39,7 +39,7 @@ export class VersionBcService {
                 trainDataSetsUrl: version.trainDataSets,
                 trainDatasetBCHash: version.trainDatasetBCHash,
                 aiModelUrl: version.aiModel,
-                aiModelBcHash: version.aiModelBcHash,
+                aiModelBCHash: version.aiModelBcHash,
                 codeVersion: version.codeVersion,
                 codeRepo: version.codeRepo,
                 comment: version.comment,
