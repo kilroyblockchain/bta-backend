@@ -48,6 +48,21 @@ export class AiModelService {
         return data;
     }
 
+    async getAllExperimentDetails(versionId: string): Promise<IAiModelExp[]> {
+        const version = await this.versionService.getVersionById(versionId);
+        if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+
+        const allExperimentDetails = [];
+        const getAllExperiments = await this.aiModel.find({ version: versionId });
+        for (const exp of getAllExperiments) {
+            const experimentDetails = await this.getExperimentDetails(exp._id);
+            if (!experimentDetails) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND);
+            allExperimentDetails.push(experimentDetails);
+        }
+
+        return allExperimentDetails;
+    }
+
     async getExperimentInfo(id: string): Promise<IAiModel> {
         const experimentInfo = await this.aiModel.findOne({ _id: id }).populate('version').populate('project', 'name');
         if (!experimentInfo) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND);

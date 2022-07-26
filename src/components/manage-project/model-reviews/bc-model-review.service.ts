@@ -40,6 +40,7 @@ export class ModelReviewBcService {
                 reviewStatus: version.versionStatus,
                 comment: modelReview.comment,
                 ratings: String(modelReview.rating),
+                reviewedModelVersionId: modelReview.reviewModel,
                 entryUserDetail: {
                     entryUser: entryUser['email'],
                     organizationUnit: userData.company[0].staffingId[0]['organizationUnitId'].unitName,
