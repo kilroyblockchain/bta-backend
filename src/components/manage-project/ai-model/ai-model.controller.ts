@@ -224,4 +224,40 @@ export class AiModelController {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ALL_EXPERIMENT_DETAILS, err);
         }
     }
+
+    @Get('logs-oracle-bc-hash/:id')
+    async getLogFileOracleBcHash(@Param('id') versionId: string): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ALL_EXPERIMENT_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.getLogFileOracleBcHash(versionId)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ALL_EXPERIMENT_DETAILS, err);
+        }
+    }
+
+    @Get('test-data-oracle-bc-hash/:id')
+    async getTestDataOracleBcHash(@Param('id') versionId: string): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ALL_EXPERIMENT_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.getTestDataOracleBcHash(versionId)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ALL_EXPERIMENT_DETAILS, err);
+        }
+    }
+
+    @Get('train-data-oracle-bc-hash/:id')
+    async getTrainDataOracleBcHash(@Param('id') versionId: string): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ALL_EXPERIMENT_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.getTrainDataOracleBcHash(versionId)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ALL_EXPERIMENT_DETAILS, err);
+        }
+    }
+
+    @Get('ai-model-oracle-bc-hash/:id')
+    async getAIModelOracleBcHash(@Param('id') versionId: string): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ALL_EXPERIMENT_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.getAIModelOracleBcHash(versionId)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ALL_EXPERIMENT_DETAILS, err);
+        }
+    }
 }
