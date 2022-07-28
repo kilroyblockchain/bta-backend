@@ -68,6 +68,7 @@ import { BcConnectionService } from 'src/components/blockchain/bc-connection/bc-
 import { VerifyBcKeyDto } from './dto/verify-bc-key.dto';
 import { BcUserAuthenticationDto } from 'src/components/blockchain/dto/bc-user-authentication.dto';
 import { BC_ERROR_RESPONSE } from 'src/@core/constants/bc-constants/bc-error-response.constants';
+import { OCUserService } from 'src/components/oracle/oc-user/oc-user.service';
 
 @Injectable()
 export class UserService {
@@ -89,7 +90,8 @@ export class UserService {
         private eventEmitter: EventEmitter2,
         private readonly userBcService: UserBcService,
         private readonly bcNodeInfoService: BcNodeInfoService,
-        private readonly bcConnectionService: BcConnectionService
+        private readonly bcConnectionService: BcConnectionService,
+        private readonly ocUserService: OCUserService
     ) {}
 
     async register(req: Request, logoName: string, registerUserDto: RegisterUserDto): Promise<IUserWithBlockchain> {
@@ -195,6 +197,16 @@ export class UserService {
 
             const registerUserResponse = await this.userBcService.registerUser(new RegisterBcUserDto(user._id, user.email), new BcTransactionInfoDto(key, parentUser.bcSalt, channelName), bcNodeInfoId);
             user.bcSalt = registerUserResponse.salt;
+
+            const ocUserRegisterDto = {
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                password: 'Test@1234'
+            };
+
+            await this.ocUserService.registerUser(ocUserRegisterDto);
+
             await user.save();
             this.eventEmitter.emit(
                 USER_REGISTERED,
@@ -213,6 +225,7 @@ export class UserService {
                     )
                 })
             );
+
             return userDetail;
         } catch (err) {
             logger.error(err);
@@ -395,6 +408,18 @@ export class UserService {
 
                 registrationResponse = await this.userBcService.registerSuperAdminToMultiOrg(new RegisterBcUserDto(verifyEmailDto.userId, user.email));
                 user.bcSalt = registrationResponse.salt;
+
+                const ocUserRegisterDto = {
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.email,
+                    password: 'Test@1234'
+                };
+
+                /*    const userRegisterInOracle =  */
+                await this.ocUserService.registerUser(ocUserRegisterDto);
+                // if (!userRegisterInOracle) throw new ConflictException(['User with the same email already exists']);
+
                 await user.save();
             } catch (error) {
                 throw new Error(USER_CONSTANT.GENERATED_PASSWORD_FAILED_TO_SAVE);

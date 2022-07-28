@@ -16,6 +16,7 @@ import { RefreshTokenSchema } from 'src/components/auth/schemas/refresh-token.sc
 import { UserBcService } from './user-bc.service';
 import { BcConnectionModule } from 'src/components/blockchain/bc-connection/bc-connection.module';
 import { BcNodeInfoModule } from 'src/components/blockchain/bc-node-info/bc-node-info.module';
+import { OCUserModule } from 'src/components/oracle/oc-user/oc-user.module';
 
 @Module({
     imports: [
@@ -32,7 +33,8 @@ import { BcNodeInfoModule } from 'src/components/blockchain/bc-node-info/bc-node
         ChannelDetailModule,
         UserRejectInfoModule,
         BcConnectionModule,
-        BcNodeInfoModule
+        BcNodeInfoModule,
+        OCUserModule
     ],
     controllers: [UserController],
     providers: [UserService, UserBcService],
