@@ -304,4 +304,21 @@ export class AiModelService {
             }
         }
     }
+
+    async getExperimentOracleBcHash(expId: string): Promise<string> {
+        const experiment = await this.aiModel.findOne({ _id: expId }).populate('version', 'logFilePath');
+        if (!experiment) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND);
+
+        const logFileURL = `${experiment.version['logFilePath']}/log_${experiment.expNo}.json`;
+        const { data } = await firstValueFrom(this.httpService.get(logFileURL));
+
+        return await sha256Hash(JSON.stringify(data));
+    }
+
+    async downloadExperimentLogFile(expId: string): Promise<string> {
+        const experiment = await this.aiModel.findOne({ _id: expId }).populate('version', 'logFilePath');
+        if (!experiment) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND);
+
+        return `${experiment.version['logFilePath']}/log_${experiment.expNo}.json`;
+    }
 }

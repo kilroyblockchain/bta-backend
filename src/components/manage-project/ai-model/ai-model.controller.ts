@@ -260,4 +260,22 @@ export class AiModelController {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ALL_EXPERIMENT_DETAILS, err);
         }
     }
+
+    @Get('log-experiment-oracle-bc-hash/:id')
+    async getExperimentOracleBcHash(@Param('id') experimentId: string): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ALL_EXPERIMENT_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.getExperimentOracleBcHash(experimentId)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ALL_EXPERIMENT_DETAILS, err);
+        }
+    }
+
+    @Get('download-experiment-log/:id')
+    async downloadExperimentLogFile(@Param('id') experimentId: string): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ALL_EXPERIMENT_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.downloadExperimentLogFile(experimentId)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ALL_EXPERIMENT_DETAILS, err);
+        }
+    }
 }
