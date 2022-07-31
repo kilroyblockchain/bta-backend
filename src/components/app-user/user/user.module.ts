@@ -1,6 +1,6 @@
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from './schemas/user.schema';
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { AuthModule } from 'src/components/auth/auth.module';
@@ -34,7 +34,7 @@ import { OCUserModule } from 'src/components/oracle/oc-user/oc-user.module';
         UserRejectInfoModule,
         BcConnectionModule,
         BcNodeInfoModule,
-        OCUserModule
+        forwardRef(() => OCUserModule)
     ],
     controllers: [UserController],
     providers: [UserService, UserBcService],

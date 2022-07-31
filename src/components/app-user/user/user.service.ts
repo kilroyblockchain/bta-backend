@@ -206,7 +206,6 @@ export class UserService {
             };
 
             await this.ocUserService.registerUser(ocUserRegisterDto);
-
             await user.save();
             this.eventEmitter.emit(
                 USER_REGISTERED,
@@ -2259,5 +2258,13 @@ export class UserService {
         } else {
             return await this.UserModel.findById(userId).select('email');
         }
+    }
+
+    async getUserOracleGroupName(email: string): Promise<IUser> {
+        const oracleGroupName = this.uModel.findOne({ email: email }).populate({
+            path: 'company.staffingId',
+            select: '_id oracleGroupName'
+        });
+        return oracleGroupName;
     }
 }
