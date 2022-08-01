@@ -24,6 +24,15 @@ export class CreateStaffingDto {
     readonly staffingName: string;
 
     @ApiProperty({
+        example: 'ai-engineer-1',
+        description: 'Name of bucket group ',
+        format: 'string'
+    })
+    @IsNotEmpty()
+    @IsString()
+    readonly oracleGroupName: string;
+
+    @ApiProperty({
         description: 'Assigned feature List and their access types',
         example: [{ featureId: '0211ce17b48770a285a8aca', accessType: ['READ'] }],
         format: 'array'

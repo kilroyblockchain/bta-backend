@@ -182,6 +182,7 @@ export class OrganizationStaffingService {
             staffingResponse.bcNodeInfo = staffDocument.bcNodeInfo;
             staffingResponse.channels = staffDocument.channels;
             staffingResponse.bucketUrl = staffDocument.bucketUrl;
+            staffingResponse.oracleGroupName = staffDocument.oracleGroupName;
 
             return staffingResponse;
         } else {

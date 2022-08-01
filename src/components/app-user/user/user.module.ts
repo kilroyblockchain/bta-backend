@@ -1,6 +1,6 @@
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from './schemas/user.schema';
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { AuthModule } from 'src/components/auth/auth.module';
@@ -16,6 +16,7 @@ import { RefreshTokenSchema } from 'src/components/auth/schemas/refresh-token.sc
 import { UserBcService } from './user-bc.service';
 import { BcConnectionModule } from 'src/components/blockchain/bc-connection/bc-connection.module';
 import { BcNodeInfoModule } from 'src/components/blockchain/bc-node-info/bc-node-info.module';
+import { OCUserModule } from 'src/components/oracle/oc-user/oc-user.module';
 
 @Module({
     imports: [
@@ -32,7 +33,8 @@ import { BcNodeInfoModule } from 'src/components/blockchain/bc-node-info/bc-node
         ChannelDetailModule,
         UserRejectInfoModule,
         BcConnectionModule,
-        BcNodeInfoModule
+        BcNodeInfoModule,
+        forwardRef(() => OCUserModule)
     ],
     controllers: [UserController],
     providers: [UserService, UserBcService],

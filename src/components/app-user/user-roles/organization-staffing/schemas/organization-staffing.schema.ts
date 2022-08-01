@@ -12,6 +12,10 @@ export const StaffingSchema = new Schema(
             type: String,
             required: true
         },
+        oracleGroupName: {
+            type: String,
+            required: true
+        },
         featureAndAccess: [
             {
                 featureId: {
@@ -45,5 +49,6 @@ export const StaffingSchema = new Schema(
         timestamps: true
     }
 );
+
 StaffingSchema.index({ organizationUnitId: 1, staffingName: 1 }, { unique: true });
 StaffingSchema.plugin(mongoosePaginate);

@@ -150,7 +150,8 @@ export class OrganizationEventService {
                 status: true,
                 bcNodeInfo: BC_NODE_INFO_ID,
                 channels: [CHANNELS_DETAILS_ID],
-                bucketUrl: ORACLE_BUCKET_URL
+                bucketUrl: ORACLE_BUCKET_URL,
+                oracleGroupName: staffingUnit.staffingName.toLowerCase().replace(' ', '-')
             }));
 
             for (const staffingUnit of STATIC_STAFFING_UNIT) {
@@ -268,7 +269,8 @@ export class OrganizationEventService {
                 status: true,
                 bcNodeInfo: payload.bcNodeInfo,
                 channels: payload.channels,
-                bucketUrl: payload.bucketUrl
+                bucketUrl: payload.bucketUrl,
+                oracleGroupName: payload.organizationName + ' - ' + 'Admin'.toLowerCase().replace(' ', '-')
             };
 
             const staffingUnitDto = new CreateStaffingDto(COMPANY_ADMIN_STAFFING_UNIT);
