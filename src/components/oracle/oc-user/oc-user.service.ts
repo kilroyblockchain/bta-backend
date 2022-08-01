@@ -1,4 +1,5 @@
 import { BadRequestException, ConflictException, forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { OC_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { OC_CONNECTION_API } from 'src/@core/constants/bc-constants/oc-connection.api.constant';
 import { UserService } from 'src/components/app-user/user/user.service';
 import { OCConnectorService } from '../oc-connector/oc-connector.service';
@@ -14,19 +15,22 @@ export class OCUserService {
             ocUserRegisterDto.password = 'Test@1234';
             const userRegister = await this.ocConnectorService.post(ocUserRegisterDto, OC_CONNECTION_API.REGISTER_USER);
             if (!userRegister) {
-                throw new BadRequestException(['Unable to register user in oracle bucket cloud']);
+                throw new BadRequestException([OC_CONSTANT.UNABLE_TO_REGISTER_USER_IN_OC]);
             }
-
             const userOracleGroupName = await this.userService.getUserOracleGroupName(ocUserRegisterDto.email);
+
+            const allOracleGroup = await this.ocGroupService.getAllGroupList();
+            const group = allOracleGroup.find((f) => f.displayName === userOracleGroupName.company[0].staffingId[0]['oracleGroupName']);
+
             const oracleGroupDto = {
-                groupId: userOracleGroupName.company[0].staffingId[0]['oracleGroupName'],
+                groupId: group.id,
                 email: ocUserRegisterDto.email
             };
 
             await this.ocGroupService.addUserToGroup(oracleGroupDto);
         } catch (err) {
             if (err.status == HttpStatus.CONFLICT) {
-                throw new ConflictException(['User with the same email already exists']);
+                throw new ConflictException([OC_CONSTANT.USER_ALREADY_REGISTERED_WITH_THIS_EMAIL]);
             }
         }
     }

@@ -415,9 +415,7 @@ export class UserService {
                     password: 'Test@1234'
                 };
 
-                /*    const userRegisterInOracle =  */
                 await this.ocUserService.registerUser(ocUserRegisterDto);
-                // if (!userRegisterInOracle) throw new ConflictException(['User with the same email already exists']);
 
                 await user.save();
             } catch (error) {
