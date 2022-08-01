@@ -356,11 +356,32 @@ export class AiModelController {
     }
 
     @Get('download-experiment-log/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Get single experiment latest oracle bc hash' })
+    @ApiParam({ name: 'id', required: true, description: 'version Id' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_DOWNLOAD_LOG_FILE })
+    @ApiResponse({
+        status: HttpStatus.OK,
+        schema: { example: { data: 'https://objectstorage.us-phoenix-1.oraclecloud.com' } },
+        description: MANAGE_PROJECT_CONSTANT.LOG_FILE_DOWNLOAD_SUCCESS
+    })
     async downloadExperimentLogFile(@Param('id') experimentId: string): Promise<FLOResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ALL_EXPERIMENT_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.downloadExperimentLogFile(experimentId)).setStatus(HttpStatus.OK);
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.LOG_FILE_DOWNLOAD_SUCCESS]).setSuccessData(await this.aiModelService.downloadExperimentLogFile(experimentId)).setStatus(HttpStatus.OK);
         } catch (err) {
-            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ALL_EXPERIMENT_DETAILS, err);
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_DOWNLOAD_LOG_FILE, err);
         }
     }
 }
