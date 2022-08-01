@@ -245,4 +245,80 @@ export class AiModelService {
             }
         }
     }
+
+    async getLogFileOracleBcHash(versionId: string): Promise<string> {
+        const version = await this.versionService.getVersionById(versionId);
+        if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+
+        let i = 0;
+        const logFileBCHash = [];
+        try {
+            while (true) {
+                const { data } = await firstValueFrom(this.httpService.get(version.logFilePath + `/log_exp_${i}.json`));
+                if (!data) break;
+
+                i++;
+                const logFileDataBCHash = await sha256Hash(JSON.stringify(data));
+                logFileBCHash.push(logFileDataBCHash);
+            }
+        } catch (err) {
+            if (logFileBCHash.length) {
+                return await sha256Hash(JSON.stringify(logFileBCHash));
+            }
+        }
+    }
+
+    async getTestDataOracleBcHash(versionId: string): Promise<string> {
+        const version = await this.versionService.getVersionById(versionId);
+        if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+
+        const { data } = await firstValueFrom(this.httpService.get(version.testDataSets));
+        return await sha256Hash(JSON.stringify(data));
+    }
+
+    async getTrainDataOracleBcHash(versionId: string): Promise<string> {
+        const version = await this.versionService.getVersionById(versionId);
+        if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+
+        const { data } = await firstValueFrom(this.httpService.get(version.trainDataSets));
+        return await sha256Hash(JSON.stringify(data));
+    }
+
+    async getAIModelOracleBcHash(versionId: string): Promise<string> {
+        const version = await this.versionService.getVersionInfo(versionId);
+        if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+
+        let i = 0;
+        const aiModelBcHash = [];
+
+        try {
+            while (true) {
+                const { data } = await firstValueFrom(this.httpService.get(version.aiModel + `/${version.project['name'].toLowerCase()}_model_${i}.pkl`));
+                if (!data) break;
+                i++;
+                aiModelBcHash.push(await sha256Hash(JSON.stringify(data)));
+            }
+        } catch (err) {
+            if (aiModelBcHash.length) {
+                return await sha256Hash(JSON.stringify(aiModelBcHash));
+            }
+        }
+    }
+
+    async getExperimentOracleBcHash(expId: string): Promise<string> {
+        const experiment = await this.aiModel.findOne({ _id: expId }).populate('version', 'logFilePath');
+        if (!experiment) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND);
+
+        const logFileURL = `${experiment.version['logFilePath']}/log_${experiment.expNo}.json`;
+        const { data } = await firstValueFrom(this.httpService.get(logFileURL));
+
+        return await sha256Hash(JSON.stringify(data));
+    }
+
+    async downloadExperimentLogFile(expId: string): Promise<string> {
+        const experiment = await this.aiModel.findOne({ _id: expId }).populate('version', 'logFilePath');
+        if (!experiment) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND);
+
+        return `${experiment.version['logFilePath']}/log_${experiment.expNo}.json`;
+    }
 }
