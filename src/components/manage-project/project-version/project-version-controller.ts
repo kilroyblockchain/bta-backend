@@ -224,7 +224,7 @@ export class ProjectVersionController {
     @Get('default-bucket-url/:id')
     @HttpCode(HttpStatus.OK)
     @UseGuards(PermissionGuard)
-    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION, FEATURE_IDENTIFIER.MODEL_REVIEWS)
     @Permission(ACCESS_TYPE.WRITE, ACCESS_TYPE.UPDATE)
     @Roles(ROLE.STAFF, ROLE.OTHER)
     @ApiBearerAuth()

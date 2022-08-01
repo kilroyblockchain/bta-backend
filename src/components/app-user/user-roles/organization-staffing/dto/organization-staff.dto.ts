@@ -58,6 +58,12 @@ export class OrganizationStaffResponse extends TimestampDto {
         example: 'https://orcalebucket.org'
     })
     bucketUrl: string;
+
+    @ApiProperty({
+        description: 'Oracle group name',
+        example: 'ai-engineer-1'
+    })
+    oracleGroupName: string;
 }
 
 export class DeletedOrganizationStaffResponse extends OrganizationStaffResponse {

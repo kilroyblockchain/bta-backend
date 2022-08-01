@@ -6,6 +6,7 @@ import { OCGroupService } from './oc-group.service';
 @Module({
     imports: [],
     controllers: [OCGroupController],
-    providers: [OCGroupService, OCConnectorService]
+    providers: [OCGroupService, OCConnectorService],
+    exports: [OCGroupService]
 })
 export class OCGroupModule {}

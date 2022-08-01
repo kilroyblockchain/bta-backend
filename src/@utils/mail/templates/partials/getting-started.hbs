@@ -1,25 +1,31 @@
-<div class="content">
-    <div class="welcome">
-        <h2>Welcome to {{appName}}</h2>
-        <p>We are excited for you to get started. First, you need to log in using the following credentials:</p>
-        <a href="{{clientAppURL}}/#/auth/login">Log In</a>
+<div class='content'>
+    <div class='welcome'>
+        <h2>Welcome to {{appName}}!</h2>
+        <p>We are excited for having you in the {{appName}} project. Please use following credentials and instructions to login into {{appName}} web application</p>
     </div>
-    <div class="credential-group">
-        <div class="input-field">
-            <label for="subscriptionType">Subscription</label>
-            <span id="subscriptionType">{{subscriptionType}}</span>
+    <div class='credential-group'>
+        <div class='input-field'>
+            <label for='subscriptionType'>Subscription</label>
+            <span id='subscriptionType'>{{subscriptionType}}</span>
         </div>
-        <div class="input-field">
-            <label for="email">Email</label>
-            <span id="email">{{email}}</span>
+        <div class='input-field'>
+            <label for='email'>Email</label>
+            <span id='email' class='email'>{{email}}</span>
         </div>
-        <div class="input-field">
-            <label for="password">Password</label>
-            <span id="password">{{password}}</span>
+        <div class='input-field'>
+            <label for='password'>Password</label>
+            <span id='password'>{{password}}</span>
         </div>
-        <div class="input-field">
-            <label for="loginKey">Key</label>
-            <span id="loginKey">{{bcKey}}</span>
+        <div class='input-field'>
+            <label for='loginKey'>Blockchain Key</label>
+            <span id='loginKey'>{{bcKey}}</span>
+        </div>
+        <div class='login'>
+            <a href='{{clientAppURL}}/#/auth/login'>Log In</a>
+            <div>
+                Since your are going to use Oracle Cloud for AI tasks, your credentials has been created in the cloud and sent to your email id
+                <span class='email'>{{email}}</span>. Please activate your oracle account as well.
+            </div>
         </div>
     </div>
 </div>

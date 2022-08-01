@@ -5,6 +5,7 @@ import { IOrganizationUnitInterface } from 'src/components/app-user/user-roles/o
 export interface StaffingInterface extends Document, IDocumentTimestamp {
     organizationUnitId: string;
     staffingName: string;
+    oracleGroupName: string;
     featureAndAccess?: {
         featureId?: string | IFeature;
         accessType?: string[];
