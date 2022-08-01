@@ -304,11 +304,28 @@ export class AiModelController {
     }
 
     @Get('ai-model-oracle-bc-hash/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Get ai model latest oracle bc hash' })
+    @ApiParam({ name: 'id', required: true, description: 'version Id' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_AI_MODEL_ORACLE_BC_HASH })
+    @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: '1905182e52b6b2da25cbeef11cd38e75349aa072bc2a2ddb934e0eca50d61acb' } }, description: MANAGE_PROJECT_CONSTANT.GOT_AI_MODEL_ORACLE_BC_HASH_SUCCESS })
     async getAIModelOracleBcHash(@Param('id') versionId: string): Promise<FLOResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ALL_EXPERIMENT_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.getAIModelOracleBcHash(versionId)).setStatus(HttpStatus.OK);
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_AI_MODEL_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getAIModelOracleBcHash(versionId)).setStatus(HttpStatus.OK);
         } catch (err) {
-            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ALL_EXPERIMENT_DETAILS, err);
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_AI_MODEL_ORACLE_BC_HASH, err);
         }
     }
 
