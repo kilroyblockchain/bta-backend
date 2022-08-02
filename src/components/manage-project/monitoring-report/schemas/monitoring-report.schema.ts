@@ -6,14 +6,13 @@ export const MonitoringReportSchema = new Schema(
     {
         subject: {
             type: String,
-            minlength: 2,
-            maxlength: 40,
             required: true
         },
         description: {
-            type: String,
-            minlength: 2,
-            maxlength: 255
+            type: String
+        },
+        monitoringToolLink: {
+            type: String
         },
         documents: [
             {
@@ -34,7 +33,7 @@ export const MonitoringReportSchema = new Schema(
         },
         status: {
             type: mongoose.Types.ObjectId,
-            ref: 'monitoring-statuses'
+            ref: 'monitoring-status'
         },
         otherStatus: {
             type: String

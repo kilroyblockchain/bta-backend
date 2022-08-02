@@ -4,6 +4,7 @@ export interface IMonitoringReport extends Document {
     _id: string;
     subject: string;
     description: string;
+    monitoringToolLink: string;
     documents: Array<IReportDocs>;
     updatedAt: Date;
     createdAt: Date;
