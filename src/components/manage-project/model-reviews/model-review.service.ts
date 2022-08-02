@@ -8,6 +8,7 @@ import { ProjectVersionService } from '../project-version/project-version.servic
 import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
 import { UserService } from 'src/components/app-user/user/user.service';
 import { ModelReviewBcService } from './bc-model-review.service';
+import { VersionStatus } from '../project-version/enum/version-status.enum';
 
 @Injectable()
 export class ModelReviewService {
@@ -33,8 +34,20 @@ export class ModelReviewService {
         review.version = version._id;
         review.rating = Number(newReview.rating);
         version.versionStatus = newReview.status;
+
+        if (newReview.status === VersionStatus.DEPLOYED || newReview.status === VersionStatus.QA_STATUS) {
+            version.isQAStatus = true;
+        } else {
+            version.isQAStatus = false;
+        }
         review.staffing = staffing.join();
 
+        if (newReview.status === VersionStatus.REVIEW) {
+            version.reviewedDate = new Date();
+        }
+        if (newReview.status === VersionStatus.PRODUCTION) {
+            version.productionDate = new Date();
+        }
         await version.save();
         const reviewModel = await review.save();
 

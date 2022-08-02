@@ -94,6 +94,10 @@ export const ProjectVersionSchema = new Schema(
             type: Boolean,
             default: true
         },
+        isQAStatus: {
+            type: Boolean,
+            default: false
+        },
         submittedDate: {
             type: Date
         },
