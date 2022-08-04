@@ -29,6 +29,7 @@ export interface IProjectVersion extends Document {
     productionDate: Date;
     createdBy: string;
     project: string;
+    isQAStatus: boolean;
 }
 
 export interface IOracleBucketDataStatus {

@@ -7,7 +7,10 @@ export enum VersionStatus {
     DEPLOYED = 'Deployed',
     MONITORING = 'Monitoring',
     COMPLETE = 'Complete',
-    DRAFT = 'Draft'
+    DRAFT = 'Draft',
+    QA_STATUS = 'Quality Assurance',
+    DECLINED = 'Declined',
+    MLOPS_REVIEW = 'MLOPs Review'
 }
 
 export enum OracleBucketDataStatus {

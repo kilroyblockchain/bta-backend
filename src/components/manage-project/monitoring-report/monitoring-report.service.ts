@@ -47,7 +47,7 @@ export class MonitoringReportService {
         const options = {
             populate: [
                 { path: 'createdBy', select: 'firstName lastName' },
-                { path: 'statuses', select: 'name' }
+                { path: 'status', select: 'name' }
             ],
             lean: true,
             limit: Number(limit),

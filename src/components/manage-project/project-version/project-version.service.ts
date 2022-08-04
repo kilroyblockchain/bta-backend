@@ -112,7 +112,7 @@ export class ProjectVersionService {
         const version = new this.versionModel(newVersion);
         version.createdBy = user;
         version.project = project._id;
-
+        version.versionStatus = VersionStatus.MLOPS_REVIEW;
         const reviewModel = await version.save();
 
         this.eventEmitter.emit(REVIEW_MODEL_ALL_ORACLE_BC_HASHES, {

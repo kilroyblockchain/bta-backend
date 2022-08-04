@@ -5,8 +5,6 @@ export class AddReportDto {
     @ApiProperty({
         example: 'New Issue',
         description: 'Subject or title of the report',
-        maxLength: 40,
-        minLength: 2,
         required: true
     })
     @IsNotEmpty()
@@ -16,13 +14,20 @@ export class AddReportDto {
     @ApiProperty({
         example: 'New Traffic image is not working as per expectation',
         description: 'Details of the report',
-        maxLength: 255,
-        minLength: 2,
         required: true
     })
     @IsNotEmpty()
     @IsString()
     description: string;
+
+    @ApiProperty({
+        example: 'http://monitoring-tools.com',
+        description: 'Link of tool which is used for monitoring',
+        format: 'string'
+    })
+    @IsOptional()
+    @IsString()
+    monitoringToolLink: string;
 
     @IsOptional()
     @ApiProperty({

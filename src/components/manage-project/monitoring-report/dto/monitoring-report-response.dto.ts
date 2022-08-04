@@ -18,6 +18,13 @@ export class MonitoringReportResponseDto {
     subject: string;
 
     @ApiProperty({
+        example: 'http://monitoring-tools.com',
+        description: 'Link of tool which is used for monitoring',
+        format: 'string'
+    })
+    monitoringToolLink: string;
+
+    @ApiProperty({
         example: 'New Traffic image is not working as per expectation',
         description: 'Details of the report',
         format: 'string'
