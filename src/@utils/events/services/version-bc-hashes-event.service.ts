@@ -72,28 +72,6 @@ export class VersionBcHashesEventService {
         }
     }
 
-    /*  async getTestDataSetsBCHash(version: IProjectVersion): Promise<void> {
-        try {
-            const { data } = await firstValueFrom(this.httpService.get(version.testDataSets));
-
-            version.testDatasetBCHash = await sha256Hash(JSON.stringify(data));
-            version.testDatasetStatus.code = OracleBucketDataStatus.FETCHED;
-
-            await version.save();
-        } catch (err) {
-            const errorStatus = err.response.data.code;
-            const errorMessage = err.response.data.message;
-
-            if (errorStatus) {
-                version.testDatasetStatus.code = OracleBucketDataStatus.ERROR;
-                version.testDatasetStatus.message = errorMessage;
-
-                await version.save();
-            }
-        }
-    }
- */
-
     async getTestDataSetsBCHash(version: IProjectVersion): Promise<void> {
         const fileName = `ai-model-data-test-data-sets.txt`;
 
@@ -152,28 +130,6 @@ export class VersionBcHashesEventService {
             }
         });
     }
-
-    /*
-    async getTrainDataSetsBcHash(version: IProjectVersion): Promise<void> {
-        try {
-            const { data } = await firstValueFrom(this.httpService.get(version.trainDataSets));
-
-            version.trainDatasetBCHash = await sha256Hash(JSON.stringify(data));
-            version.trainDatasetStatus.code = OracleBucketDataStatus.FETCHED;
-            await version.save();
-        } catch (err) {
-            const errorStatus = err.response.data.code;
-            const errorMessage = err.response.data.message;
-
-            if (errorStatus) {
-                version.trainDatasetStatus.code = OracleBucketDataStatus.ERROR;
-                version.trainDatasetStatus.message = errorMessage;
-
-                await version.save();
-            }
-        }
-    }
-    */
 
     async getTrainDataSetsBcHash(version: IProjectVersion): Promise<void> {
         const fileName = `ai-model-data-train-data-sets.txt`;
