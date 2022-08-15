@@ -6,21 +6,28 @@ import { Request } from 'express';
 import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, PaginateModel } from 'mongoose';
-import { IAiModel } from 'src/components/manage-project/ai-model/Interfaces/ai-model.interface';
+import { Model } from 'mongoose';
+import { IAiModel } from 'src/components/manage-project/ai-model/interfaces/ai-model.interface';
 import { OracleBucketDataStatus } from 'src/components/manage-project/project-version/enum/version-status.enum';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
-import { IAiArtifactsModel } from 'src/components/manage-project/ai-model/Interfaces/ai-artifacts-model.interface';
+import { IAiArtifactsModel } from 'src/components/manage-project/ai-model/interfaces/ai-artifacts-model.interface';
+import { AIModelBcService } from 'src/components/manage-project/ai-model/ai-model-bc.service';
 
 const pathName = process.cwd() + `/uploads/oracle-ai-model-data`;
 
 @Injectable()
 export class VersionBcHashesEventService {
-    constructor(@InjectModel('ai-model') private readonly aiModel: PaginateModel<IAiModel>, @InjectModel('ai-artifacts-model') private readonly aiArtifactsModel: Model<IAiArtifactsModel>, private readonly versionBcService: VersionBcService, private readonly httpService: HttpService) {}
+    constructor(
+        @InjectModel('ai-model') private readonly aiModel: Model<IAiModel>,
+        @InjectModel('ai-artifacts-model') private readonly aiArtifactsModel: Model<IAiArtifactsModel>,
+        private readonly versionBcService: VersionBcService,
+        private readonly httpService: HttpService,
+        private readonly aiModelBcService: AIModelBcService
+    ) {}
 
     async versionAllBcHashesEvent(version: IProjectVersion, req: Request): Promise<void> {
-        await this.getLogFileBcHash(version);
+        await this.getLogFileBcHash(version, req);
         await this.getTestDataSetsBCHash(version);
         await this.getTrainDataSetsBcHash(version);
         await this.getAiModelBcHash(version);
@@ -28,12 +35,12 @@ export class VersionBcHashesEventService {
     }
 
     async modelReviewedBcHashesEvent(version: IProjectVersion, req: Request): Promise<void> {
-        await this.getLogFileBcHash(version);
+        await this.getLogFileBcHash(version, req);
         await this.getTestDataSetsBCHash(version);
         this.versionBcService.createBcProjectVersion(req, version);
     }
 
-    async getLogFileBcHash(version: IProjectVersion): Promise<void> {
+    async getLogFileBcHash(version: IProjectVersion, req: Request): Promise<void> {
         let i = 0;
         let counter = 0;
 
@@ -52,7 +59,8 @@ export class VersionBcHashesEventService {
                 expData.project = version.project['_id'];
                 expData.experimentBcHash = await sha256Hash(JSON.stringify(data));
                 logFileBCHash.push(expData.experimentBcHash);
-                await expData.save();
+                const experiment = await expData.save();
+                await this.aiModelBcService.createBcExperiment(req, experiment);
             }
         } catch (err) {
             const errorStatus = err.response.data.code;

@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ProjectVersionService } from 'src/components/manage-project/project-version/project-version.service';
 import { Model, PaginateModel, PaginateResult } from 'mongoose';
-import { IAiModel, IAiModelExp } from './Interfaces/ai-model.interface';
+import { IAiModel, IAiModelExp } from './interfaces/ai-model.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { HttpService } from '@nestjs/axios';
 import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
@@ -13,10 +13,11 @@ import { IProjectVersion } from '../project-version/interfaces/project-version.i
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { VERSION_ALL_ORACLE_BC_HASHES } from 'src/@utils/events/constants/events.constants';
 import { OracleBucketDataStatus } from '../project-version/enum/version-status.enum';
-import { IAIModelTempHash } from './Interfaces/ai-model-temp-hash.interface';
-import { IAiArtifactsModel } from './Interfaces/ai-artifacts-model.interface';
+import { IAIModelTempHash } from './interfaces/ai-model-temp-hash.interface';
+import { IAiArtifactsModel } from './interfaces/ai-artifacts-model.interface';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
+import { AIModelBcService } from './ai-model-bc.service';
 
 @Injectable()
 export class AiModelService {
@@ -27,7 +28,8 @@ export class AiModelService {
         private readonly httpService: HttpService,
         private eventEmitter: EventEmitter2,
         @Inject(forwardRef(() => ProjectVersionService)) private readonly versionService: ProjectVersionService,
-        @Inject(forwardRef(() => VersionBcService)) private readonly versionBcService: VersionBcService
+        @Inject(forwardRef(() => VersionBcService)) private readonly versionBcService: VersionBcService,
+        private readonly aiModelBcService: AIModelBcService
     ) {}
 
     async getAllExperiment(req: Request, versionId: string): Promise<PaginateResult<IAiModel>> {
@@ -134,7 +136,8 @@ export class AiModelService {
                 expData.project = version.project['_id'];
                 expData.experimentBcHash = await sha256Hash(JSON.stringify(data));
                 logFileBcHash.push(expData.experimentBcHash);
-                await expData.save();
+                const experiment = await expData.save();
+                await this.aiModelBcService.createBcExperiment(req, experiment);
             }
         } catch (err) {
             const errorStatus = err.response.data.code;
@@ -653,5 +656,9 @@ export class AiModelService {
 
     async deleteTempOracleDataHash(hashId: string): Promise<IAIModelTempHash> {
         return await this.aiModelTempHash.findOneAndDelete({ _id: hashId });
+    }
+
+    async getExperimentById(expId: string): Promise<IAiModel> {
+        return await this.aiModel.findOne({ _id: expId });
     }
 }
