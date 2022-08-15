@@ -155,3 +155,29 @@ export class LogExperimentInfoResponseDto {
     })
     updatedAt: Date;
 }
+
+export class DeleteTempOracleDataHashDto {
+    @ApiProperty({
+        example: '62f33214dee9e736a402285a',
+        description: 'Id of hash'
+    })
+    _id: string;
+
+    @ApiProperty({
+        example: '4dc9b1ae052430c635a8d2eef22b602e44472f19e87981f81c27bcab39f00020',
+        description: 'Hash of oracle data'
+    })
+    hash: string;
+
+    @ApiProperty({
+        example: new Date(),
+        description: 'Hash created date'
+    })
+    createdAt: Date;
+
+    @ApiProperty({
+        example: new Date(),
+        description: 'Hash updated date'
+    })
+    updatedAt: Date;
+}

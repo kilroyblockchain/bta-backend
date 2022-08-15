@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Get, HttpCode, HttpStatus, Param, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Controller, Delete, Get, HttpCode, HttpStatus, Param, Req, UseGuards } from '@nestjs/common';
 import { AiModelService } from './ai-model.service';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PermissionGuard, RolesGuard } from 'src/components/auth/guards';
@@ -7,7 +7,7 @@ import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
 import { Response as FLOResponse } from 'src/@core/response';
 import { Request } from 'express';
 import { COMMON_ERROR, MANAGE_PROJECT_CONSTANT } from 'src/@core/constants/api-error-constants';
-import { VersionLogAllExpResponseDto, LogExperimentDetailsResponseDto, LogExperimentInfoResponseDto } from './dto';
+import { VersionLogAllExpResponseDto, LogExperimentDetailsResponseDto, LogExperimentInfoResponseDto, DeleteTempOracleDataHashDto } from './dto';
 import { VersionResponseDto } from '../project-version/dto';
 
 @ApiTags('AI Model')
@@ -242,7 +242,7 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_LOG_FILE_ORACLE_BC_HASH })
-    @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: '6416ff97b7d18b402f3697ad0bbc43a67a2c5961f7b7909e906ed0a118c7b840' } }, description: MANAGE_PROJECT_CONSTANT.GOT_LOG_FILE_ORACLE_BC_HASH_SUCCESS })
+    @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: 'c0cff8630bc46102a242bba2d31db07ac17af28142a7cb608610badf8ec5cd07' } }, description: MANAGE_PROJECT_CONSTANT.GOT_LOG_FILE_ORACLE_BC_HASH_SUCCESS })
     async getLogFileOracleBcHash(@Param('id') versionId: string): Promise<FLOResponse> {
         try {
             return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_LOG_FILE_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getLogFileOracleBcHash(versionId)).setStatus(HttpStatus.OK);
@@ -268,7 +268,7 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_TEST_DATA_SET_ORACLE_BC_HASH })
-    @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: '507b9c26c9fc5a631fefabafb58e068e227dc7fa509a7f17baa8d40dea4f6723' } }, description: MANAGE_PROJECT_CONSTANT.GOT_TEST_DATA_SET_ORACLE_BC_HASH_SUCCESS })
+    @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: '62efd37ef24e4b26ff79c760' } }, description: MANAGE_PROJECT_CONSTANT.GOT_TEST_DATA_SET_ORACLE_BC_HASH_SUCCESS })
     async getTestDataOracleBcHash(@Param('id') versionId: string): Promise<FLOResponse> {
         try {
             return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ALL_EXPERIMENT_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.getTestDataOracleBcHash(versionId)).setStatus(HttpStatus.OK);
@@ -294,7 +294,7 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_TRAIN_DATA_SET_ORACLE_BC_HASH })
-    @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: '507b9c26c9fc5a631fefabafb58e068e227dc7fa509a7f17baa8d40dea4f6723' } }, description: MANAGE_PROJECT_CONSTANT.GOT_TRAIN_DATA_SET_ORACLE_BC_HASH_SUCCESS })
+    @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: '62efd1a9f24e4b26ff79c566' } }, description: MANAGE_PROJECT_CONSTANT.GOT_TRAIN_DATA_SET_ORACLE_BC_HASH_SUCCESS })
     async getTrainDataOracleBcHash(@Param('id') versionId: string): Promise<FLOResponse> {
         try {
             return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_TRAIN_DATA_SET_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getTrainDataOracleBcHash(versionId)).setStatus(HttpStatus.OK);
@@ -320,7 +320,7 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_AI_MODEL_ORACLE_BC_HASH })
-    @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: '1905182e52b6b2da25cbeef11cd38e75349aa072bc2a2ddb934e0eca50d61acb' } }, description: MANAGE_PROJECT_CONSTANT.GOT_AI_MODEL_ORACLE_BC_HASH_SUCCESS })
+    @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: '62efd37ef24e4b26ff79c760' } }, description: MANAGE_PROJECT_CONSTANT.GOT_AI_MODEL_ORACLE_BC_HASH_SUCCESS })
     async getAIModelOracleBcHash(@Param('id') versionId: string): Promise<FLOResponse> {
         try {
             return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_AI_MODEL_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getAIModelOracleBcHash(versionId)).setStatus(HttpStatus.OK);
@@ -382,6 +382,58 @@ export class AiModelController {
             return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.LOG_FILE_DOWNLOAD_SUCCESS]).setSuccessData(await this.aiModelService.downloadExperimentLogFile(experimentId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_DOWNLOAD_LOG_FILE, err);
+        }
+    }
+
+    @Get('get-oracle-data-hash/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Get Oracle Data Hash' })
+    @ApiParam({ name: 'id', required: true, description: 'hash Id' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.ORACLE_HASH_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ORACLE_HASH })
+    @ApiResponse({ status: HttpStatus.OK, type: DeleteTempOracleDataHashDto, description: MANAGE_PROJECT_CONSTANT.GOT_ORACLE_HASH_SUCCESS })
+    async getOracleDataHash(@Param('id') hashId: string): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ORACLE_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getOracleDataHash(hashId)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ORACLE_HASH, err);
+        }
+    }
+
+    @Delete('delete-temp-oracle-data/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Delete temp Oracle Data Hash' })
+    @ApiParam({ name: 'id', required: true, description: 'hash Id' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.ORACLE_HASH_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_DELETE_ORACLE_HASH })
+    @ApiResponse({ status: HttpStatus.OK, type: DeleteTempOracleDataHashDto, description: MANAGE_PROJECT_CONSTANT.DELETED_ORACLE_HASH_SUCCESS })
+    async deleteTempOracleDataHash(@Param('id') hashId: string): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.DELETED_ORACLE_HASH_SUCCESS]).setSuccessData(await this.aiModelService.deleteTempOracleDataHash(hashId)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_DELETE_ORACLE_HASH, err);
         }
     }
 }

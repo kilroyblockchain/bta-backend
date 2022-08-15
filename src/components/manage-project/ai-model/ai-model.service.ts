@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ProjectVersionService } from 'src/components/manage-project/project-version/project-version.service';
-import { PaginateModel, PaginateResult } from 'mongoose';
+import { Model, PaginateModel, PaginateResult } from 'mongoose';
 import { IAiModel, IAiModelExp } from './Interfaces/ai-model.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { HttpService } from '@nestjs/axios';
@@ -13,11 +13,17 @@ import { IProjectVersion } from '../project-version/interfaces/project-version.i
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { VERSION_ALL_ORACLE_BC_HASHES } from 'src/@utils/events/constants/events.constants';
 import { OracleBucketDataStatus } from '../project-version/enum/version-status.enum';
+import { IAIModelTempHash } from './Interfaces/ai-model-temp-hash.interface';
+import { IAiArtifactsModel } from './Interfaces/ai-artifacts-model.interface';
+import * as fs from 'fs';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AiModelService {
     constructor(
         @InjectModel('ai-model') private readonly aiModel: PaginateModel<IAiModel>,
+        @InjectModel('ai-model-temp-hash') private readonly aiModelTempHash: PaginateModel<IAIModelTempHash>,
+        @InjectModel('ai-artifacts-model') private readonly aiArtifactsModel: Model<IAiArtifactsModel>,
         private readonly httpService: HttpService,
         private eventEmitter: EventEmitter2,
         @Inject(forwardRef(() => ProjectVersionService)) private readonly versionService: ProjectVersionService,
@@ -150,100 +156,272 @@ export class AiModelService {
         }
     }
 
-    async getTestDataBcHash(versionId: string, req: Request): Promise<IProjectVersion> {
+    async getTestDataBcHash(versionId: string, req: Request): Promise<void> {
         const version = await this.versionService.getVersionInfo(versionId);
         if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
 
         version.testDatasetStatus.code = OracleBucketDataStatus.FETCHING;
         await version.save();
 
+        const randomName = crypto.randomUUID();
+
+        const pathName = process.cwd() + `/uploads/oracle-ai-model-data/test-data-sets`;
+        const fileName = `ai-model-data-test-data-sets-${randomName}.txt`;
+
+        if (!fs.existsSync(pathName)) {
+            fs.mkdirSync(pathName, { recursive: true });
+        }
+
         try {
-            const { data } = await firstValueFrom(this.httpService.get(version.testDataSets));
+            const { data } = await firstValueFrom(
+                this.httpService.get(version.testDataSets, {
+                    responseType: 'stream'
+                })
+            );
 
-            version.testDatasetBCHash = await sha256Hash(JSON.stringify(data));
-            version.testDatasetStatus.code = OracleBucketDataStatus.FETCHED;
+            const writer = data.pipe(
+                fs.createWriteStream(pathName + '/' + fileName, {
+                    flags: 'a'
+                })
+            );
 
-            await this.versionBcService.createBcProjectVersion(req, version);
-            return await version.save();
+            writer.on('finish', async () => {
+                await this.getTestDataSetBcHash(pathName, fileName, version, req);
+            });
         } catch (err) {
-            const errorStatus = err.response.data.code;
-            const errorMessage = err.response.data.message;
+            let streamString = '';
+            err.response.data.setEncoding('utf8');
+            err.response.data
+                .on('data', (utf8Chunk) => {
+                    streamString += utf8Chunk;
+                })
+                .on('end', async () => {
+                    version.testDatasetStatus.code = OracleBucketDataStatus.ERROR;
+                    version.testDatasetStatus.message = JSON.parse(streamString).message;
 
-            if (errorStatus) {
-                version.testDatasetStatus.code = OracleBucketDataStatus.ERROR;
-                version.testDatasetStatus.message = errorMessage;
-
-                return await version.save();
-            }
+                    await version.save();
+                });
         }
     }
 
-    async getTrainDataSetsBcHash(versionId: string, req: Request): Promise<IProjectVersion> {
+    async getTestDataSetBcHash(pathName: string, fileName: string, version: IProjectVersion, req: Request): Promise<void> {
+        const readStream = fs.createReadStream(pathName + '/' + fileName);
+
+        const hash = crypto.createHash('sha256');
+        hash.setEncoding('hex');
+
+        readStream.pipe(hash);
+
+        readStream.on('end', async () => {
+            hash.end();
+            version.testDatasetBCHash = hash.read();
+            version.testDatasetStatus.code = OracleBucketDataStatus.FETCHED;
+
+            await version.save();
+            await this.versionBcService.createBcProjectVersion(req, version);
+            if (fs.existsSync(pathName)) {
+                fs.unlinkSync(pathName + '/' + fileName);
+            }
+        });
+    }
+
+    async getTrainDataSetsBcHash(versionId: string, req: Request): Promise<void> {
         const version = await this.versionService.getVersionInfo(versionId);
         if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
 
         version.trainDatasetStatus.code = OracleBucketDataStatus.FETCHING;
         await version.save();
 
+        const randomName = crypto.randomUUID();
+
+        const pathName = process.cwd() + `/uploads/oracle-ai-model-data/train-data-sets`;
+        const fileName = `ai-model-data-train-data-sets-${randomName}.txt`;
+
+        if (!fs.existsSync(pathName)) {
+            fs.mkdirSync(pathName, { recursive: true });
+        }
+
         try {
-            const { data } = await firstValueFrom(this.httpService.get(version.trainDataSets));
+            const { data } = await firstValueFrom(
+                this.httpService.get(version.trainDataSets, {
+                    responseType: 'stream'
+                })
+            );
 
-            version.trainDatasetBCHash = await sha256Hash(JSON.stringify(data));
-            version.trainDatasetStatus.code = OracleBucketDataStatus.FETCHED;
+            const writer = data.pipe(
+                fs.createWriteStream(pathName + '/' + fileName, {
+                    flags: 'a'
+                })
+            );
 
-            await this.versionBcService.createBcProjectVersion(req, version);
-            return await version.save();
+            writer.on('finish', async () => {
+                await this.getTrainDataSetBcHash(pathName, fileName, version, req);
+            });
         } catch (err) {
-            const errorStatus = err.response.data.code;
-            const errorMessage = err.response.data.message;
+            let streamString = '';
+            err.response.data.setEncoding('utf8');
+            err.response.data
+                .on('data', (utf8Chunk) => {
+                    streamString += utf8Chunk;
+                })
+                .on('end', async () => {
+                    version.trainDatasetStatus.code = OracleBucketDataStatus.ERROR;
+                    version.trainDatasetStatus.message = JSON.parse(streamString).message;
 
-            if (errorStatus) {
-                version.trainDatasetStatus.code = OracleBucketDataStatus.ERROR;
-                version.trainDatasetStatus.message = errorMessage;
-
-                return await version.save();
-            }
+                    await version.save();
+                });
         }
     }
 
-    async getAiModelBcHash(versionId: string, req: Request): Promise<IProjectVersion> {
+    async getTrainDataSetBcHash(pathName: string, fileName: string, version: IProjectVersion, req: Request): Promise<void> {
+        const readStream = fs.createReadStream(pathName + '/' + fileName);
+
+        const hash = crypto.createHash('sha256');
+        hash.setEncoding('hex');
+
+        readStream.pipe(hash);
+
+        readStream.on('end', async () => {
+            hash.end();
+            version.trainDatasetBCHash = hash.read();
+            version.trainDatasetStatus.code = OracleBucketDataStatus.FETCHED;
+
+            await version.save();
+            await this.versionBcService.createBcProjectVersion(req, version);
+            if (fs.existsSync(pathName)) {
+                fs.unlinkSync(pathName + '/' + fileName);
+            }
+        });
+    }
+
+    async getAiModelBcHash(versionId: string, req: Request): Promise<void> {
         const version = await this.versionService.getVersionInfo(versionId);
         if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+
+        await this.aiArtifactsModel.deleteMany({ version: version._id });
 
         version.aiModelStatus.code = OracleBucketDataStatus.FETCHING;
         await version.save();
 
-        let i = 0;
-        let counter = 0;
-        const aiModelBcHash = [];
+        const randomName = crypto.randomUUID();
 
-        try {
-            while (true) {
-                const { data } = await firstValueFrom(this.httpService.get(version.aiModel + `/${version.project['name'].toLowerCase()}_model_${i}.pkl`));
-                if (!data) break;
-                i++;
-                counter++;
-                aiModelBcHash.push(await sha256Hash(JSON.stringify(data)));
-            }
-        } catch (err) {
-            const errorStatus = err.response.data.code;
-            const errorMessage = err.response.data.message;
+        const pathName = process.cwd() + `/uploads/oracle-ai-model-data/artifacts-model`;
+        const fileName = `ai-model-data-${randomName}.pkl`;
 
-            if (aiModelBcHash.length) {
-                version.aiModelBcHash = await sha256Hash(JSON.stringify(aiModelBcHash));
-                version.aiModelStatus.code = OracleBucketDataStatus.FETCHED;
-
-                await this.versionBcService.createBcProjectVersion(req, version);
-                return await version.save();
-            }
-
-            if (!counter && errorStatus) {
-                version.aiModelStatus.code = OracleBucketDataStatus.ERROR;
-                version.aiModelStatus.message = errorMessage;
-
-                return await version.save();
-            }
+        if (!fs.existsSync(pathName)) {
+            fs.mkdirSync(pathName, { recursive: true });
         }
+
+        const getAIModel = async (counter = 0): Promise<void> => {
+            try {
+                const { data } = await firstValueFrom(
+                    this.httpService.get(version.aiModel + `/${version.project['name'].toLowerCase()}_model_${counter}.pkl`, {
+                        responseType: 'stream'
+                    })
+                );
+
+                const writer = data.pipe(
+                    fs.createWriteStream(pathName + '/' + fileName, {
+                        flags: 'a'
+                    })
+                );
+
+                writer.on('finish', async () => {
+                    await this.aiArtifactsModelBcHash(version, counter);
+                    counter++;
+                    getAIModel(counter);
+                });
+            } catch (err) {
+                if (!counter) {
+                    let streamString = '';
+                    err.response.data.setEncoding('utf8');
+                    err.response.data
+                        .on('data', (utf8Chunk) => {
+                            streamString += utf8Chunk;
+                        })
+                        .on('end', async () => {
+                            version.aiModelStatus.code = OracleBucketDataStatus.ERROR;
+                            version.aiModelStatus.message = JSON.parse(streamString).message;
+
+                            await version.save();
+                        });
+                } else {
+                    this.getAIModelBcHash(pathName, fileName, version, req);
+                }
+            }
+        };
+
+        getAIModel();
+    }
+
+    async getAIModelBcHash(pathName: string, fileName: string, version: IProjectVersion, req: Request): Promise<void> {
+        const readStream = fs.createReadStream(pathName + '/' + fileName);
+
+        const hash = crypto.createHash('sha256');
+        hash.setEncoding('hex');
+
+        readStream.pipe(hash);
+
+        readStream.on('end', async () => {
+            hash.end();
+            version.aiModelBcHash = hash.read();
+            version.aiModelStatus.code = OracleBucketDataStatus.FETCHED;
+
+            await version.save();
+            await this.versionBcService.createBcProjectVersion(req, version);
+            if (fs.existsSync(pathName)) {
+                fs.unlinkSync(pathName + '/' + fileName);
+            }
+        });
+    }
+
+    async aiArtifactsModelBcHash(version: IProjectVersion, counter: number): Promise<void> {
+        const pathName = process.cwd() + `/uploads/oracle-ai-model-data/artifacts-model`;
+        const fileName = `ai-model-data-${counter}.pkl`;
+
+        if (!fs.existsSync(pathName)) {
+            fs.mkdirSync(pathName, { recursive: true });
+        }
+        const { data } = await firstValueFrom(
+            this.httpService.get(version.aiModel + `/${version.project['name'].toLowerCase()}_model_${counter}.pkl`, {
+                responseType: 'stream'
+            })
+        );
+
+        const writer = data.pipe(
+            fs.createWriteStream(pathName + '/' + fileName, {
+                flags: 'a'
+            })
+        );
+
+        writer.on('finish', () => {
+            this.getOracleHash(pathName, fileName, counter, version);
+        });
+    }
+
+    async getOracleHash(pathName: string, fileName: string, counter: number, version: IProjectVersion): Promise<void> {
+        const readStream = fs.createReadStream(pathName + '/' + fileName);
+
+        const hash = crypto.createHash('sha256');
+        hash.setEncoding('hex');
+
+        readStream.pipe(hash);
+
+        readStream.on('end', async () => {
+            hash.end();
+
+            const aiArtifactsModelData = new this.aiArtifactsModel({
+                modelBcHash: hash.read(),
+                modelNo: `${version.project['name'].toLowerCase()}_model_${counter}`,
+                version: version._id,
+                project: version.project['_id']
+            });
+            await aiArtifactsModelData.save();
+
+            if (fs.existsSync(pathName)) {
+                fs.unlinkSync(pathName + '/' + fileName);
+            }
+        });
     }
 
     async getLogFileOracleBcHash(versionId: string): Promise<string> {
@@ -271,38 +449,181 @@ export class AiModelService {
     async getTestDataOracleBcHash(versionId: string): Promise<string> {
         const version = await this.versionService.getVersionById(versionId);
         if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+        const randomName = crypto.randomUUID();
 
-        const { data } = await firstValueFrom(this.httpService.get(version.testDataSets));
-        return await sha256Hash(JSON.stringify(data));
+        const pathName = process.cwd() + `/uploads/oracle-ai-model-data`;
+        const fileName = `ai-model-test-data-set-${randomName}.txt`;
+
+        const tempHash = await new this.aiModelTempHash().save();
+
+        if (!fs.existsSync(pathName)) {
+            fs.mkdirSync(pathName, { recursive: true });
+        }
+
+        const getTestDataHash = async (): Promise<void> => {
+            try {
+                const { data } = await firstValueFrom(
+                    this.httpService.get(version.testDataSets, {
+                        responseType: 'stream'
+                    })
+                );
+
+                const writer = data.pipe(
+                    fs.createWriteStream(pathName + '/' + fileName, {
+                        flags: 'a'
+                    })
+                );
+
+                writer.on('finish', async () => {
+                    this.createOracleDataHash(pathName, fileName, tempHash._id);
+                });
+            } catch (err) {
+                let streamString = '';
+                err.response.data.setEncoding('utf8');
+                err.response.data
+                    .on('data', (utf8Chunk) => {
+                        streamString += utf8Chunk;
+                    })
+                    .on('end', async () => {
+                        version.testDatasetStatus.code = OracleBucketDataStatus.ERROR;
+                        version.testDatasetStatus.message = JSON.parse(streamString).message;
+
+                        await version.save();
+                    });
+            }
+        };
+        getTestDataHash();
+        return tempHash._id;
     }
 
     async getTrainDataOracleBcHash(versionId: string): Promise<string> {
         const version = await this.versionService.getVersionById(versionId);
         if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+        const randomName = crypto.randomUUID();
 
-        const { data } = await firstValueFrom(this.httpService.get(version.trainDataSets));
-        return await sha256Hash(JSON.stringify(data));
+        const pathName = process.cwd() + `/uploads/oracle-ai-model-data`;
+        const fileName = `ai-model-train-data-set-${randomName}.txt`;
+
+        const tempHash = await new this.aiModelTempHash().save();
+
+        if (!fs.existsSync(pathName)) {
+            fs.mkdirSync(pathName, { recursive: true });
+        }
+
+        const getTestDataHash = async (): Promise<void> => {
+            try {
+                const { data } = await firstValueFrom(
+                    this.httpService.get(version.trainDataSets, {
+                        responseType: 'stream'
+                    })
+                );
+
+                const writer = data.pipe(
+                    fs.createWriteStream(pathName + '/' + fileName, {
+                        flags: 'a'
+                    })
+                );
+
+                writer.on('finish', async () => {
+                    this.createOracleDataHash(pathName, fileName, tempHash._id);
+                });
+            } catch (err) {
+                let streamString = '';
+                err.response.data.setEncoding('utf8');
+                err.response.data
+                    .on('data', (utf8Chunk) => {
+                        streamString += utf8Chunk;
+                    })
+                    .on('end', async () => {
+                        version.trainDatasetStatus.code = OracleBucketDataStatus.ERROR;
+                        version.trainDatasetStatus.message = JSON.parse(streamString).message;
+
+                        await version.save();
+                    });
+            }
+        };
+        getTestDataHash();
+        return tempHash._id;
     }
 
     async getAIModelOracleBcHash(versionId: string): Promise<string> {
         const version = await this.versionService.getVersionInfo(versionId);
         if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+        const randomName = crypto.randomUUID();
 
-        let i = 0;
-        const aiModelBcHash = [];
+        const pathName = process.cwd() + `/uploads/oracle-ai-model-data`;
+        const fileName = `ai-model-data-${randomName}.pkl`;
 
-        try {
-            while (true) {
-                const { data } = await firstValueFrom(this.httpService.get(version.aiModel + `/${version.project['name'].toLowerCase()}_model_${i}.pkl`));
-                if (!data) break;
-                i++;
-                aiModelBcHash.push(await sha256Hash(JSON.stringify(data)));
-            }
-        } catch (err) {
-            if (aiModelBcHash.length) {
-                return await sha256Hash(JSON.stringify(aiModelBcHash));
-            }
+        const tempHash = await new this.aiModelTempHash().save();
+
+        if (!fs.existsSync(pathName)) {
+            fs.mkdirSync(pathName, { recursive: true });
         }
+
+        const getAIModel = async (counter = 0): Promise<void> => {
+            try {
+                const { data } = await firstValueFrom(
+                    this.httpService.get(version.aiModel + `/${version.project['name'].toLowerCase()}_model_${counter}.pkl`, {
+                        responseType: 'stream'
+                    })
+                );
+
+                const writer = data.pipe(
+                    fs.createWriteStream(pathName + '/' + fileName, {
+                        flags: 'a'
+                    })
+                );
+
+                writer.on('finish', () => {
+                    counter++;
+                    getAIModel(counter);
+                });
+            } catch (err) {
+                if (!counter) {
+                    let streamString = '';
+                    err.response.data.setEncoding('utf8');
+                    err.response.data
+                        .on('data', (utf8Chunk) => {
+                            streamString += utf8Chunk;
+                        })
+                        .on('end', async () => {
+                            version.aiModelStatus.code = OracleBucketDataStatus.ERROR;
+                            version.aiModelStatus.message = JSON.parse(streamString).message;
+
+                            await version.save();
+                        });
+                } else {
+                    this.createOracleDataHash(pathName, fileName, tempHash._id);
+                }
+            }
+        };
+
+        getAIModel();
+
+        return tempHash._id;
+    }
+
+    createOracleDataHash(pathName: string, fileName: string, tempHashId: string): void {
+        const readStream = fs.createReadStream(pathName + '/' + fileName);
+
+        const hash = crypto.createHash('sha256');
+        hash.setEncoding('hex');
+
+        readStream.pipe(hash);
+
+        readStream.on('end', async () => {
+            hash.end();
+
+            const tempHash = await this.aiModelTempHash.findById(tempHashId);
+            if (!tempHash) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.ORACLE_HASH_RECORD_NOT_FOUND);
+
+            tempHash.hash = hash.read();
+            await tempHash.save();
+
+            if (fs.existsSync(pathName)) {
+                fs.unlinkSync(pathName + '/' + fileName);
+            }
+        });
     }
 
     async getExperimentOracleBcHash(expId: string): Promise<string> {
@@ -320,5 +641,17 @@ export class AiModelService {
         if (!experiment) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND);
 
         return `${experiment.version['logFilePath']}/log_${experiment.expNo}.json`;
+    }
+
+    async getOracleDataHash(hashId: string): Promise<IAIModelTempHash> {
+        const hash = await this.aiModelTempHash.findOne({ _id: hashId });
+
+        if (!hash) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.ORACLE_HASH_RECORD_NOT_FOUND);
+
+        return hash;
+    }
+
+    async deleteTempOracleDataHash(hashId: string): Promise<IAIModelTempHash> {
+        return await this.aiModelTempHash.findOneAndDelete({ _id: hashId });
     }
 }
