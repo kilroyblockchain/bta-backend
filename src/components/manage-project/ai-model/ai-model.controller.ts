@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Delete, Get, HttpCode, HttpStatus, Param, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Req, UseGuards } from '@nestjs/common';
 import { AiModelService } from './ai-model.service';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PermissionGuard, RolesGuard } from 'src/components/auth/guards';
@@ -7,14 +7,16 @@ import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
 import { Response as FLOResponse } from 'src/@core/response';
 import { Request } from 'express';
 import { COMMON_ERROR, MANAGE_PROJECT_CONSTANT } from 'src/@core/constants/api-error-constants';
-import { VersionLogAllExpResponseDto, LogExperimentDetailsResponseDto, LogExperimentInfoResponseDto, DeleteTempOracleDataHashDto } from './dto';
+import { VersionLogAllExpResponseDto, LogExperimentDetailsResponseDto, LogExperimentInfoResponseDto, DeleteTempOracleDataHashDto, BcModelExperimentDetailsDto, BcModelExperimentHistoryDto } from './dto';
 import { VersionResponseDto } from '../project-version/dto';
+import { MANAGE_PROJECT_BC_CONSTANT } from 'src/@core/constants/bc-constants/bc-manage-project.constant';
+import { AIModelBcService } from './ai-model-bc.service';
 
 @ApiTags('AI Model')
 @UseGuards(RolesGuard)
 @Controller('ai-model')
 export class AiModelController {
-    constructor(private readonly aiModelService: AiModelService) {}
+    constructor(private readonly aiModelService: AiModelService, private readonly aiModelBcService: AIModelBcService) {}
 
     @Get('all/:id')
     @HttpCode(HttpStatus.OK)
@@ -434,6 +436,58 @@ export class AiModelController {
             return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.DELETED_ORACLE_HASH_SUCCESS]).setSuccessData(await this.aiModelService.deleteTempOracleDataHash(hashId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_DELETE_ORACLE_HASH, err);
+        }
+    }
+
+    @Get('experiment-bc-details/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Get experiment blockchain details' })
+    @ApiParam({ name: 'id', required: true, description: 'Experiment Id' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_EXPERIMENT_BC_DETAILS })
+    @ApiResponse({ status: HttpStatus.OK, type: BcModelExperimentDetailsDto, description: MANAGE_PROJECT_BC_CONSTANT.MODEL_EXPERIMENT_BC_DETAILS_RETRIEVED_SUCCESS })
+    async getExperimentBcDetails(@Param('id') experimentId: string, @Req() req: Request): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.MODEL_EXPERIMENT_BC_DETAILS_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelBcService.getExperimentBcDetails(experimentId, req)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new NotFoundException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_EXPERIMENT_BC_DETAILS, err);
+        }
+    }
+
+    @Get('experiment-bc-history/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Get experiment blockchain history' })
+    @ApiParam({ name: 'id', required: true, description: 'Experiment Id' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_EXPERIMENT_BC_HISTORY })
+    @ApiResponse({ status: HttpStatus.OK, type: BcModelExperimentHistoryDto, isArray: true, description: MANAGE_PROJECT_BC_CONSTANT.MODEL_EXPERIMENT_BC_HISTORY_RETRIEVED_SUCCESS })
+    async getExperimentBcHistory(@Param('id') experimentId: string, @Req() req: Request): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.MODEL_EXPERIMENT_BC_HISTORY_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelBcService.getExperimentBcHistory(experimentId, req)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new NotFoundException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_EXPERIMENT_BC_HISTORY, err);
         }
     }
 }

@@ -1,7 +1,9 @@
 import { HttpModule } from '@nestjs/axios';
 import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { UserModule } from 'src/components/app-user/user/user.module';
 import { ProjectVersionModule } from 'src/components/manage-project/project-version/project-version.module';
+import { AIModelBcService } from './ai-model-bc.service';
 import { AiModelController } from './ai-model.controller';
 import { AiModelService } from './ai-model.service';
 import { AiArtifactsModel } from './schemas/ai-artifacts-model.schema';
@@ -16,10 +18,11 @@ import { AiModelTempHashSchema } from './schemas/ai-model-temp-hash..schema';
             { name: 'ai-artifacts-model', schema: AiArtifactsModel }
         ]),
         HttpModule,
-        forwardRef(() => ProjectVersionModule)
+        forwardRef(() => ProjectVersionModule),
+        UserModule
     ],
     controllers: [AiModelController],
-    providers: [AiModelService],
-    exports: [AiModelService]
+    providers: [AiModelService, AIModelBcService],
+    exports: [AiModelService, AIModelBcService]
 })
 export class AiModelModule {}

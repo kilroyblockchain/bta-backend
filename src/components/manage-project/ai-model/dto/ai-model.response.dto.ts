@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IProjectVersion } from '../../project-version/interfaces/project-version.interface';
 import { IProject } from '../../project/interfaces/project.interface';
-import { IExp } from '../Interfaces/ai-model.interface';
+import { IExp } from '../interfaces/ai-model.interface';
 
 export class VersionLogAllExpResponseDto {
     @ApiProperty({
