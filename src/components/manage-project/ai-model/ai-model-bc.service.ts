@@ -10,6 +10,7 @@ import { BcAuthenticationDto } from 'src/components/blockchain/bc-connection/dto
 import { BcConnectionDto } from 'src/components/blockchain/bc-connection/dto';
 import { ProjectVersionService } from 'src/components/manage-project/project-version/project-version.service';
 import { AiModelService } from './ai-model.service';
+import { IAiArtifactsModel } from './interfaces/ai-artifacts-model.interface';
 import { IBcExperiment, IGetBcExperiment } from './interfaces/ai-model-bc-experiment.interface';
 import { IAiModel } from './interfaces/ai-model.interface';
 
@@ -133,5 +134,72 @@ export class AIModelBcService {
         };
 
         return blockChainAuthDto;
+    }
+
+    async createBcArtifactsModel(req: Request, artifactsModel: IAiArtifactsModel): Promise<BcConnectionDto> {
+        const logger = new Logger(AIModelBcService.name + '-createBcArtifactsModel');
+
+        try {
+            const userId = req['user']._id;
+            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+            const entryUser = await this.userService.getUserEmail(userId);
+
+            const version = await this.versionService.getVersionInfo(artifactsModel.version);
+
+            const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.STORE_ARTIFACT_MODEL_BC);
+
+            const artifactModelDto = {
+                modelArtifactName: artifactsModel.modelNo,
+                modelArtifactBcHash: artifactsModel.modelBcHash,
+                modelVersion: {
+                    id: version._id,
+                    versionName: version.versionName
+                },
+                project: {
+                    id: version.project['_id'],
+                    projectName: version.project['name']
+                },
+                entryUser: entryUser['email']
+            };
+
+            return await this.bcConnectionService.invoke(artifactModelDto, blockChainAuthDto);
+        } catch (err) {
+            logger.error(err);
+            if (err.statusCode) {
+                throw err;
+            }
+        }
+    }
+
+    async getArtifactModelBcHistory(modelId: string, req: Request): Promise<BcConnectionDto> {
+        const logger = new Logger(AIModelBcService.name + '-getArtifactModelBcHistory');
+        try {
+            const artifactsModel = await this.aiModelService.getArtifactModel(modelId);
+            if (!artifactsModel) throw new NotFoundException('Artifacts model record not found');
+
+            const userId = req['user']._id;
+            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+
+            const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.GET_ARTIFACT_MODEL_BC_HISTORY);
+
+            const artifactModelDto = {
+                modelArtifactName: artifactsModel.modelNo,
+                modelArtifactBcHash: artifactsModel.modelBcHash,
+                modelVersion: {
+                    id: artifactsModel.version
+                },
+                project: {
+                    id: artifactsModel.project
+                }
+            };
+
+            return await this.bcConnectionService.invoke(artifactModelDto, blockChainAuthDto);
+        } catch (err) {
+            logger.error(err);
+            if (err.statusCode) {
+                throw err;
+            }
+            throw new BadRequestException(['Unable to Fetched artifacts model Bc History'], err);
+        }
     }
 }

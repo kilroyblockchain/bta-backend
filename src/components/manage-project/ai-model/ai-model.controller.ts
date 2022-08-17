@@ -490,4 +490,42 @@ export class AiModelController {
             throw new NotFoundException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_EXPERIMENT_BC_HISTORY, err);
         }
     }
+
+    @Get('artifact-model-bc-history/:id')
+    @HttpCode(HttpStatus.OK)
+    async getArtifactModelBcHistory(@Param('id') modelId: string, @Req() req: Request): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.MODEL_EXPERIMENT_BC_HISTORY_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelBcService.getArtifactModelBcHistory(modelId, req)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_EXPERIMENT_BC_HISTORY, err);
+        }
+    }
+
+    @Get('all-artifacts-model/:id')
+    @HttpCode(HttpStatus.OK)
+    async getAllArtifactModel(@Param('id') versionId: string, @Req() req: Request): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.MODEL_EXPERIMENT_BC_HISTORY_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelService.getAllArtifactModel(versionId, req)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_EXPERIMENT_BC_HISTORY, err);
+        }
+    }
+
+    @Get('artifact-model-oracle-hash/:id')
+    async getArtifactModelOracleBcHash(@Param('id') expId: string): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.MODEL_EXPERIMENT_BC_HISTORY_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelService.getArtifactModelOracleBcHash(expId)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_EXPERIMENT_BC_HISTORY, err);
+        }
+    }
+
+    @Get('artifact-model-details/:id')
+    async getArtifactModelDetails(@Param('id') expId: string): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, ['Got artifact model details success']).setSuccessData(await this.aiModelService.getArtifactModelDetails(expId)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException('Unable to get artifact model details', err);
+        }
+    }
 }

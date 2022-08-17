@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose';
+import * as mongoosePaginate from 'mongoose-paginate';
 
 export const AiArtifactsModel = new mongoose.Schema(
     {
@@ -22,3 +23,5 @@ export const AiArtifactsModel = new mongoose.Schema(
         versionKey: false
     }
 );
+
+AiArtifactsModel.plugin(mongoosePaginate);

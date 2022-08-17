@@ -30,7 +30,7 @@ export class VersionBcHashesEventService {
         await this.getLogFileBcHash(version, req);
         await this.getTestDataSetsBCHash(version);
         await this.getTrainDataSetsBcHash(version);
-        await this.getAiModelBcHash(version);
+        await this.getAiModelBcHash(version, req);
         this.versionBcService.createBcProjectVersion(req, version);
     }
 
@@ -198,7 +198,7 @@ export class VersionBcHashesEventService {
         });
     }
 
-    async getAiModelBcHash(version: IProjectVersion): Promise<void> {
+    async getAiModelBcHash(version: IProjectVersion, req: Request): Promise<void> {
         const fileName = 'ai-model-data.pkl';
 
         if (!fs.existsSync(pathName)) {
@@ -220,7 +220,7 @@ export class VersionBcHashesEventService {
                 );
 
                 writer.on('finish', async () => {
-                    await this.aiArtifactsModelBcHash(version, counter);
+                    await this.aiArtifactsModelBcHash(version, counter, req);
                     counter++;
                     getAIModel(counter);
                 });
@@ -267,7 +267,7 @@ export class VersionBcHashesEventService {
         });
     }
 
-    async aiArtifactsModelBcHash(version: IProjectVersion, counter: number): Promise<void> {
+    async aiArtifactsModelBcHash(version: IProjectVersion, counter: number, req: Request): Promise<void> {
         const pathName = process.cwd() + `/uploads/oracle-ai-model-data/artifacts-model`;
         const fileName = `ai-model-data-${counter}.pkl`;
 
@@ -287,11 +287,11 @@ export class VersionBcHashesEventService {
         );
 
         writer.on('finish', () => {
-            this.getOracleDataHash(pathName, fileName, counter, version);
+            this.getOracleDataHash(pathName, fileName, counter, version, req);
         });
     }
 
-    async getOracleDataHash(pathName: string, fileName: string, counter: number, version: IProjectVersion): Promise<void> {
+    async getOracleDataHash(pathName: string, fileName: string, counter: number, version: IProjectVersion, req: Request): Promise<void> {
         const readStream = fs.createReadStream(pathName + '/' + fileName);
 
         const hash = crypto.createHash('sha256');
@@ -308,7 +308,8 @@ export class VersionBcHashesEventService {
                 version: version._id,
                 project: version.project['_id']
             });
-            await aiArtifactsModelData.save();
+            const aiArtifactsModel = await aiArtifactsModelData.save();
+            this.aiModelBcService.createBcArtifactsModel(req, aiArtifactsModel);
 
             if (fs.existsSync(pathName)) {
                 fs.unlinkSync(pathName + '/' + fileName);

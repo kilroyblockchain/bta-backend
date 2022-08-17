@@ -15,5 +15,7 @@ export const BC_CONNECTION_API = {
     MODEL_VERSION_BC_HISTORY: '/api/v1/model-review/history',
     STORE_MODEL_EXPERIMENT_BC: '/api/v1/model-experiment',
     GET_MODEL_BC_EXPERIMENT_DETAILS: '/api/v1/model-experiment/get',
-    GET_MODEL_BC_EXPERIMENT_HISTORY: '/api/v1/model-experiment/history'
+    GET_MODEL_BC_EXPERIMENT_HISTORY: '/api/v1/model-experiment/history',
+    STORE_ARTIFACT_MODEL_BC: '/api/v1/model-artifact',
+    GET_ARTIFACT_MODEL_BC_HISTORY: '/api/v1/model-artifact/history'
 };
