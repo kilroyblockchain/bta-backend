@@ -21,8 +21,10 @@ export class ChannelDetailService {
      * @returns {Promise<IChannelDetail>} - Returns Promise of IChannel Detail
      *
      **/
-    async addChannelDetail(channelDetailDto: ChannelDetailDto): Promise<IChannelDetail> {
+    async addChannelDetail(channelDetailDto: ChannelDetailDto, req: Request): Promise<IChannelDetail> {
         const logger = new Logger('AddChannelDetail');
+        const userId = req['user']._id;
+
         const channelDetail = await this.ChannelDetailModel.findOne({
             channelName: channelDetailDto.channelName
         });
@@ -38,6 +40,7 @@ export class ChannelDetailService {
             throw new ConflictException(CHANNEL_DETAIL.DEFAULT_CHANNEL_DETAIL_ALREADY_EXISTS);
         }
         const channelDetailSaved = new this.ChannelDetailModel(channelDetailDto);
+        channelDetailSaved.createdBy = userId;
         return await channelDetailSaved.save();
     }
 

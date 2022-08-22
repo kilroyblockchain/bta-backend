@@ -6,4 +6,8 @@ export interface IChannelDetail extends Document {
     connectionProfileName: string;
     status: boolean;
     isDefault: boolean;
+    createdBy: string;
+    isCompanyChannel: boolean;
+    updatedAt: Date;
+    createdAt: Date;
 }

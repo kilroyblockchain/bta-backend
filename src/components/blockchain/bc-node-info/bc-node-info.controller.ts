@@ -22,7 +22,7 @@ export class BcNodeInfoController {
     @UseGuards(AuthGuard('jwt'), PermissionGuard)
     @Permission(ACCESS_TYPE.WRITE)
     @Feature(FEATURE_IDENTIFIER.BC_NODE_INFO)
-    @Roles(ROLE.SUPER_ADMIN)
+    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF)
     @ApiBearerAuth()
     @ApiHeader({
         name: 'Bearer',
@@ -63,7 +63,7 @@ export class BcNodeInfoController {
     @UseGuards(AuthGuard('jwt'), PermissionGuard)
     @Permission(ACCESS_TYPE.UPDATE)
     @Feature(FEATURE_IDENTIFIER.BC_NODE_INFO)
-    @Roles(ROLE.SUPER_ADMIN)
+    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF)
     @ApiBearerAuth()
     @ApiHeader({
         name: 'Bearer',

@@ -33,9 +33,9 @@ export class OrganizationStaffingController {
     })
     @ApiOperation({ summary: 'Create New Organization Staffing' })
     @ApiCreatedAppResponseWithModel(OrganizationStaffResponse)
-    async createNewStaffing(@Body() newStaff: CreateStaffingDto): Promise<AppResponseDto<OrganizationStaffResponse>> {
+    async createNewStaffing(@Body() newStaff: CreateStaffingDto, @Req() req: Request): Promise<AppResponseDto<OrganizationStaffResponse>> {
         try {
-            const staff = await this.staffingService.createNewStaffing(newStaff);
+            const staff = await this.staffingService.createNewStaffing(newStaff, req);
             return new AppResponseDto<OrganizationStaffResponse>(true, [ORGANIZATION_STAFFING_CONSTANT.NEW_STAFFING_CREATED]).setSuccessData(staff).setStatus(HttpStatus.CREATED);
         } catch (err) {
             throw new BadRequestException(ORGANIZATION_STAFFING_CONSTANT.STAFFING_NOT_CREATED, err);

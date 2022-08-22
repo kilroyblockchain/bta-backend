@@ -13,8 +13,7 @@ export const StaffingSchema = new Schema(
             required: true
         },
         oracleGroupName: {
-            type: String,
-            required: true
+            type: String
         },
         featureAndAccess: [
             {

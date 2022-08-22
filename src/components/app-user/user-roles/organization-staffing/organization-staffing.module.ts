@@ -4,9 +4,10 @@ import { OrganizationStaffingController } from './organization-staffing.controll
 import { OrganizationStaffingService } from './organization-staffing.service';
 import { forwardRef, Module } from '@nestjs/common';
 import { OrganizationUnitModule } from '../organization-unit/organization-unit.module';
+import { UserModule } from 'src/components/app-user/user/user.module';
 
 @Module({
-    imports: [MongooseModule.forFeature([{ name: 'Staffing', schema: StaffingSchema }]), forwardRef(() => OrganizationUnitModule)],
+    imports: [MongooseModule.forFeature([{ name: 'Staffing', schema: StaffingSchema }]), forwardRef(() => OrganizationUnitModule), forwardRef(() => UserModule)],
     controllers: [OrganizationStaffingController],
     providers: [OrganizationStaffingService],
     exports: [OrganizationStaffingService]

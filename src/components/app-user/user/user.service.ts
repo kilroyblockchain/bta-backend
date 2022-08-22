@@ -2209,12 +2209,33 @@ export class UserService {
         const bcNodeInfoId = user.company[0].staffingId[0]['bcNodeInfo'].toString();
         const bcNodeInfo = await this.bcNodeInfoService.getBcNodeInfoById(bcNodeInfoId);
         try {
-            await this.bcConnectionService.checkBcNodeConnection(bcNodeInfo, new BcUserAuthenticationDto(verifyBcKeyDto.bcKey, user.bcSalt));
+            await this.bcConnectionService.verifyBcAuthentication(bcNodeInfo, new BcUserAuthenticationDto(verifyBcKeyDto.bcKey, user.bcSalt));
             const encryptedKey = await encryptKey(verifyBcKeyDto.bcKey);
             return new VerifyBcKeyDto(encryptedKey);
         } catch (err) {
             throw new UnauthorizedException([BC_ERROR_RESPONSE.INVALID_BC_KEY]);
         }
+    }
+
+    async getUserEmail(userId: string | string[]): Promise<string[] | { _id: string; email: string }> {
+        const userEmail = [];
+        if (userId.length) {
+            for (const id of userId) {
+                const user = await this.UserModel.findById(id).select('email');
+                userEmail.push(user.email);
+            }
+            return userEmail;
+        } else {
+            return await this.UserModel.findById(userId).select('email');
+        }
+    }
+
+    async getUserOracleGroupName(email: string): Promise<IUser> {
+        const oracleGroupName = this.uModel.findOne({ email: email }).populate({
+            path: 'company.staffingId',
+            select: '_id oracleGroupName'
+        });
+        return oracleGroupName;
     }
 
     async getUserBcInfoDefaultChannel(userId: string): Promise<IUser> {
@@ -2245,24 +2266,40 @@ export class UserService {
         return userData;
     }
 
-    async getUserEmail(userId: string | string[]): Promise<string[] | { _id: string; email: string }> {
-        const userEmail = [];
-        if (userId.length) {
-            for (const id of userId) {
-                const user = await this.UserModel.findById(id).select('email');
-                userEmail.push(user.email);
-            }
-            return userEmail;
-        } else {
-            return await this.UserModel.findById(userId).select('email');
-        }
+    async getUserBcInfoAndChannelDetails(req: Request, query: { isCompanyChannel: boolean; isDefault: boolean }): Promise<IUser> {
+        const userId = req['user']._id;
+        const userData = await this.UserModel.findOne({ _id: userId })
+            .select('bcSalt company.staffingId')
+            .populate({
+                path: 'company.staffingId',
+                select: '_id bucketUrl staffingName',
+                populate: [
+                    {
+                        path: 'bcNodeInfo',
+                        select: 'orgName nodeUrl authorizationToken'
+                    },
+                    {
+                        path: 'organizationUnitId',
+                        select: 'unitName'
+                    },
+                    {
+                        path: 'channels',
+                        match: query,
+                        select: 'channelName'
+                    }
+                ]
+            });
+
+        return userData;
     }
 
-    async getUserOracleGroupName(email: string): Promise<IUser> {
-        const oracleGroupName = this.uModel.findOne({ email: email }).populate({
-            path: 'company.staffingId',
-            select: '_id oracleGroupName'
-        });
-        return oracleGroupName;
+    async isSuperAdminUser(req: Request): Promise<boolean> {
+        const userId = req['user']._id;
+
+        const user = await this.UserModel.findOne({ _id: userId });
+        if (user.company[0].subscriptionType === ROLE.SUPER_ADMIN) {
+            return true;
+        }
+        return false;
     }
 }

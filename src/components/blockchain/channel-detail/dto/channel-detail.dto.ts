@@ -25,4 +25,8 @@ export class ChannelDetailDto {
     @IsOptional()
     @IsBoolean()
     isDefault: boolean;
+
+    @IsNotEmpty()
+    @IsBoolean()
+    isCompanyChannel: boolean;
 }
