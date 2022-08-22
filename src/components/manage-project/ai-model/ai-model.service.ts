@@ -664,7 +664,7 @@ export class AiModelService {
     }
 
     async getArtifactModel(modelId: string): Promise<IAiArtifactsModel> {
-        return await this.aiArtifactsModel.findOne({ _id: modelId });
+        return await this.aiArtifactsModel.findOne({ _id: modelId }).populate('version', '_id versionStatus');
     }
 
     async getAllArtifactModel(versionId: string, req: Request): Promise<PaginateResult<IAiArtifactsModel>> {
@@ -731,5 +731,19 @@ export class AiModelService {
         if (!artifactModel) throw new NotFoundException('Artifact model record not found');
 
         return artifactModel._id;
+    }
+
+    async getAllExperimentIds(versionId: string): Promise<IAiModel[]> {
+        const experimentIds = await this.aiModel.find({ version: versionId }).select('_id');
+        if (!experimentIds.length) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND);
+
+        return experimentIds;
+    }
+
+    async getAllArtifactModelIds(versionId: string): Promise<IAiArtifactsModel[]> {
+        const artifactModel = await this.aiArtifactsModel.find({ version: versionId }).select('_id');
+        if (!artifactModel.length) throw new NotFoundException('Model Version Artifact model record not found');
+
+        return artifactModel;
     }
 }
