@@ -728,7 +728,7 @@ export class AiModelService {
             version: experiment.version
         });
 
-        if (!artifactModel) throw new NotFoundException('Artifact model record not found');
+        if (!artifactModel) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND);
 
         return artifactModel._id;
     }
@@ -742,7 +742,7 @@ export class AiModelService {
 
     async getAllArtifactModelIds(versionId: string): Promise<IAiArtifactsModel[]> {
         const artifactModel = await this.aiArtifactsModel.find({ version: versionId }).select('_id');
-        if (!artifactModel.length) throw new NotFoundException('Model Version Artifact model record not found');
+        if (!artifactModel.length) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND);
 
         return artifactModel;
     }

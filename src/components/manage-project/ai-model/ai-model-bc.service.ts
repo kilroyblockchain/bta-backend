@@ -200,7 +200,7 @@ export class AIModelBcService {
 
         try {
             const artifactsModel = await this.aiModelService.getArtifactModel(modelId);
-            if (!artifactsModel) throw new NotFoundException('Artifacts model record not found');
+            if (!artifactsModel) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND);
 
             let query: { isCompanyChannel: boolean; isDefault: boolean };
             if (artifactsModel.version['versionStatus'] === VersionStatus.DRAFT) {
@@ -227,7 +227,7 @@ export class AIModelBcService {
             if (err.statusCode) {
                 throw err;
             }
-            throw new BadRequestException(['Unable to fetched artifact model bc details'], err);
+            throw new BadRequestException([MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_ARTIFACT_MODEL_BC_DETAILS], err);
         }
     }
 
@@ -235,7 +235,7 @@ export class AIModelBcService {
         const logger = new Logger(AIModelBcService.name + '-getArtifactModelBcHistory');
         try {
             const artifactsModel = await this.aiModelService.getArtifactModel(modelId);
-            if (!artifactsModel) throw new NotFoundException('Artifacts model record not found');
+            if (!artifactsModel) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND);
 
             const query = { isCompanyChannel: false, isDefault: false };
             const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
@@ -257,7 +257,7 @@ export class AIModelBcService {
             if (err.statusCode) {
                 throw err;
             }
-            throw new BadRequestException(['Unable to Fetched artifacts model Bc History'], err);
+            throw new BadRequestException([MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_ARTIFACT_MODEL_BC_HISTORY], err);
         }
     }
 
