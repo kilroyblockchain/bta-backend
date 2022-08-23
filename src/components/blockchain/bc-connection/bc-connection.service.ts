@@ -146,10 +146,28 @@ export class BcConnectionService {
         }
     }
 
-    async checkBcNodeConnection(bcNodeInfo: CreateBcNodeInfoDto, bcUserAuthenticationDto: BcUserAuthenticationDto): Promise<BcConnectionDto> {
+    async checkBcNodeConnection(bcNodeInfo: CreateBcNodeInfoDto): Promise<BcConnectionDto> {
         const logger = new Logger('CheckBcNodeConnection');
         try {
             const response = await axios.get(bcNodeInfo.nodeUrl + BC_CONNECTION_API.CHECK_BC_NODE_CONNECTION, {
+                headers: {
+                    authorization: 'Basic ' + bcNodeInfo.authorizationToken
+                },
+                timeout: 2000
+            });
+            return new BcConnectionDto(response.data);
+        } catch (error) {
+            logger.error(error);
+            const err = error as AxiosError;
+            logger.error(err.response ? JSON.stringify(err.response.data) : err);
+            throw err;
+        }
+    }
+
+    async verifyBcAuthentication(bcNodeInfo: CreateBcNodeInfoDto, bcUserAuthenticationDto: BcUserAuthenticationDto): Promise<BcConnectionDto> {
+        const logger = new Logger('verifyBcAuthentication');
+        try {
+            const response = await axios.get(bcNodeInfo.nodeUrl + BC_CONNECTION_API.CHECK_BC_NODE_AUTHENTICATION, {
                 headers: {
                     authorization: 'Basic ' + bcNodeInfo.authorizationToken,
                     key: bcUserAuthenticationDto.key,

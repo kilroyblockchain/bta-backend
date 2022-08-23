@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ProjectVersionService } from 'src/components/manage-project/project-version/project-version.service';
-import { Model, PaginateModel, PaginateResult } from 'mongoose';
+import { PaginateModel, PaginateResult } from 'mongoose';
 import { IAiModel, IAiModelExp } from './interfaces/ai-model.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { HttpService } from '@nestjs/axios';
@@ -24,7 +24,7 @@ export class AiModelService {
     constructor(
         @InjectModel('ai-model') private readonly aiModel: PaginateModel<IAiModel>,
         @InjectModel('ai-model-temp-hash') private readonly aiModelTempHash: PaginateModel<IAIModelTempHash>,
-        @InjectModel('ai-artifacts-model') private readonly aiArtifactsModel: Model<IAiArtifactsModel>,
+        @InjectModel('ai-artifacts-model') private readonly aiArtifactsModel: PaginateModel<IAiArtifactsModel>,
         private readonly httpService: HttpService,
         private eventEmitter: EventEmitter2,
         @Inject(forwardRef(() => ProjectVersionService)) private readonly versionService: ProjectVersionService,
@@ -380,7 +380,8 @@ export class AiModelService {
 
     async aiArtifactsModelBcHash(version: IProjectVersion, counter: number): Promise<void> {
         const pathName = process.cwd() + `/uploads/oracle-ai-model-data/artifacts-model`;
-        const fileName = `ai-model-data-${counter}.pkl`;
+        const randomName = crypto.randomUUID();
+        const fileName = `ai-model-data-${randomName}-${counter}.pkl`;
 
         if (!fs.existsSync(pathName)) {
             fs.mkdirSync(pathName, { recursive: true });
@@ -659,6 +660,90 @@ export class AiModelService {
     }
 
     async getExperimentById(expId: string): Promise<IAiModel> {
-        return await this.aiModel.findOne({ _id: expId });
+        return await this.aiModel.findOne({ _id: expId }).populate('version', '_id versionStatus');
+    }
+
+    async getArtifactModel(modelId: string): Promise<IAiArtifactsModel> {
+        return await this.aiArtifactsModel.findOne({ _id: modelId }).populate('version', '_id versionStatus');
+    }
+
+    async getAllArtifactModel(versionId: string, req: Request): Promise<PaginateResult<IAiArtifactsModel>> {
+        const version = await this.versionService.getVersionInfo(versionId);
+        if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+
+        const { page = 1, limit = 10 } = req.query;
+        const options = {
+            lean: true,
+            limit: Number(limit),
+            page: Number(page)
+        };
+
+        return await this.aiArtifactsModel.paginate({ version: version._id }, options);
+    }
+
+    async getArtifactModelOracleBcHash(modelId: string): Promise<string> {
+        const artifactModel = await this.aiArtifactsModel.findOne({ _id: modelId }).populate('version', 'versionName aiModel').populate('project', 'name');
+
+        const randomName = crypto.randomUUID();
+
+        const pathName = process.cwd() + `/uploads/oracle-ai-model-data`;
+        const fileName = `ai-model-data-${randomName}.pkl`;
+
+        const tempHash = await new this.aiModelTempHash().save();
+
+        if (!fs.existsSync(pathName)) {
+            fs.mkdirSync(pathName, { recursive: true });
+        }
+
+        const getArtifactModelHash = async (): Promise<void> => {
+            const { data } = await firstValueFrom(
+                this.httpService.get(artifactModel.version['aiModel'] + `/${artifactModel.modelNo}.pkl`, {
+                    responseType: 'stream'
+                })
+            );
+
+            const writer = data.pipe(
+                fs.createWriteStream(pathName + '/' + fileName, {
+                    flags: 'a'
+                })
+            );
+
+            writer.on('finish', async () => {
+                this.createOracleDataHash(pathName, fileName, tempHash._id);
+            });
+        };
+
+        getArtifactModelHash();
+        return tempHash._id;
+    }
+
+    async getArtifactModelDetails(expId: string): Promise<string> {
+        const experiment = await this.aiModel.findOne({ _id: expId });
+        if (!experiment) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND);
+
+        const experimentNo = experiment.expNo.split('_')[1];
+
+        const artifactModel = await this.aiArtifactsModel.findOne({
+            modelNo: `tsd_model_${experimentNo}`,
+            version: experiment.version
+        });
+
+        if (!artifactModel) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND);
+
+        return artifactModel._id;
+    }
+
+    async getAllExperimentIds(versionId: string): Promise<IAiModel[]> {
+        const experimentIds = await this.aiModel.find({ version: versionId }).select('_id');
+        if (!experimentIds.length) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND);
+
+        return experimentIds;
+    }
+
+    async getAllArtifactModelIds(versionId: string): Promise<IAiArtifactsModel[]> {
+        const artifactModel = await this.aiArtifactsModel.find({ version: versionId }).select('_id');
+        if (!artifactModel.length) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND);
+
+        return artifactModel;
     }
 }

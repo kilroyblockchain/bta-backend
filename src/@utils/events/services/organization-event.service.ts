@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Request } from 'express';
 import { ROLE } from 'src/@core/constants';
 import { CreateStaffingDto } from 'src/components/app-user/user-roles/organization-staffing/dto';
 import { OrganizationStaffingService } from 'src/components/app-user/user-roles/organization-staffing/organization-staffing.service';
@@ -31,12 +32,11 @@ import {
     ORGANIZATION_STAFFING_STAFFING_ID
 } from '../constants/organization.constants';
 import { ICompanyAdminOrganizationPayload } from '../interfaces';
-
 @Injectable()
 export class OrganizationEventService {
     constructor(private readonly organizationService: OrganizationUnitService, private readonly organizationStaffingService: OrganizationStaffingService, private readonly userService: UserService) {}
 
-    async createOrganizationUnit(payload: { companyId: string }): Promise<void> {
+    async createOrganizationUnit(payload: { companyId: string }, req: Request): Promise<void> {
         const logger = new Logger(OrganizationEventService.name + ' - createOrganizationUnit');
 
         const DEFAULT_ORGANIZATION_UNIT = {
@@ -51,7 +51,6 @@ export class OrganizationEventService {
         const organizationUnitDto = new CreateOrganizationUnitDto(DEFAULT_ORGANIZATION_UNIT);
         try {
             const organizationUnit = await this.organizationService.createNewOrganizationUnit(organizationUnitDto);
-
             const STATIC_STAFFING_UNIT = [
                 {
                     staffingName: AI_ENGINEER,
@@ -157,7 +156,7 @@ export class OrganizationEventService {
             for (const staffingUnit of STATIC_STAFFING_UNIT) {
                 const staffingUnitDto = new CreateStaffingDto(staffingUnit);
                 try {
-                    await this.organizationStaffingService.createNewStaffing(staffingUnitDto);
+                    await this.organizationStaffingService.createNewStaffing(staffingUnitDto, req);
                 } catch (error) {
                     logger.error(`Fail to create staffing units`, error);
                 }
@@ -167,7 +166,7 @@ export class OrganizationEventService {
         }
     }
 
-    async createCompanyAdminOrganization(payload: ICompanyAdminOrganizationPayload): Promise<void> {
+    async createCompanyAdminOrganization(payload: ICompanyAdminOrganizationPayload, req: Request): Promise<void> {
         const logger = new Logger(OrganizationEventService.name + ' - Create company organization unit');
 
         const DEFAULT_ORGANIZATION_UNIT = {
@@ -275,7 +274,7 @@ export class OrganizationEventService {
 
             const staffingUnitDto = new CreateStaffingDto(COMPANY_ADMIN_STAFFING_UNIT);
             try {
-                const staffingUnit = await this.organizationStaffingService.createNewStaffing(staffingUnitDto);
+                const staffingUnit = await this.organizationStaffingService.createNewStaffing(staffingUnitDto, req);
                 try {
                     await this.userService.addStaffingId(payload.userId, payload.companyId, staffingUnit._id);
                 } catch (error) {

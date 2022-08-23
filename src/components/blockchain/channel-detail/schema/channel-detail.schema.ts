@@ -19,6 +19,14 @@ export const ChannelDetailSchema = new Schema(
         isDefault: {
             type: Boolean,
             default: false
+        },
+        isCompanyChannel: {
+            type: Boolean,
+            default: false
+        },
+        createdBy: {
+            type: Schema.Types.ObjectId,
+            ref: 'User'
         }
     },
     {

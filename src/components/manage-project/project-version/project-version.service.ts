@@ -14,6 +14,7 @@ import { UserService } from 'src/components/app-user/user/user.service';
 import { ModelReviewBcService } from '../model-reviews/bc-model-review.service';
 import { REVIEW_MODEL_ALL_ORACLE_BC_HASHES } from 'src/@utils/events/constants/events.constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AIModelBcService } from 'src/components/manage-project/ai-model/ai-model-bc.service';
 
 @Injectable()
 export class ProjectVersionService {
@@ -25,7 +26,8 @@ export class ProjectVersionService {
         @Inject(forwardRef(() => ProjectBcService)) private readonly projectBcService: ProjectBcService,
         private readonly userService: UserService,
         private readonly modelReviewBcService: ModelReviewBcService,
-        private eventEmitter: EventEmitter2
+        private eventEmitter: EventEmitter2,
+        private readonly aiModelBcService: AIModelBcService
     ) {}
 
     async addNewVersion(req: Request, projectId: string, newVersionDto: AddVersionDto): Promise<IProjectVersion> {
@@ -136,16 +138,32 @@ export class ProjectVersionService {
 
         version.versionStatus = VersionStatus.PENDING;
         version.submittedDate = new Date();
+        const versionBcDetails = await this.versionBcService.getProjectVersionDetails(version._id, req);
 
-        const updatedVersion = await version.save();
-
-        const project = await this.projectService.getProjectById(updatedVersion.project, req);
+        const project = await this.projectService.getProjectById(version.project, req);
         if (!project) {
             throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
         }
-        await this.versionBcService.createBcProjectVersion(req, updatedVersion);
+
+        await this.versionBcService.channelTransferModelVersion(versionBcDetails.data, req);
         await this.projectBcService.createBcProject(req, project);
+
+        const allExperimentIds = await this.aiModelService.getAllExperimentIds(versionBcDetails.data.id);
+        for (const experimentId of allExperimentIds) {
+            const experimentBcDetails = await this.aiModelBcService.getExperimentBcDetails(experimentId._id, req);
+
+            await this.aiModelBcService.channelTransferExperiment(experimentBcDetails.data.data, req);
+        }
+
+        const allArtifactModelIds = await this.aiModelService.getAllArtifactModelIds(versionBcDetails.data.id);
+        for (const artifactModelId of allArtifactModelIds) {
+            const artifactModelBcDetails = await this.aiModelBcService.getArtifactModelBcDetails(artifactModelId._id, req);
+            await this.aiModelBcService.channelTransferArtifactModel(artifactModelBcDetails.data.data, req);
+        }
+
+        const updatedVersion = await version.save();
         await this.modelReviewBcService.createBcPendingVersion(req, updatedVersion);
+
         return updatedVersion;
     }
 
@@ -165,12 +183,12 @@ export class ProjectVersionService {
     }
 
     async getDefaultBucketUrl(req: Request, projectId: string): Promise<string> {
-        const userId = req['user']._id;
-
         const project = await this.projectService.getProjectById(projectId, req);
-        const user = await this.userService.getUserBcInfoDefaultChannel(userId);
 
-        const bucketUrl = user.company[0].staffingId[0]['bucketUrl'];
+        const query = { isCompanyChannel: false, isDefault: false };
+        const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
+
+        const bucketUrl = userData.company[0].staffingId[0]['bucketUrl'];
         const defaultBucketUrl = bucketUrl + `/${project.name}`;
 
         return defaultBucketUrl;

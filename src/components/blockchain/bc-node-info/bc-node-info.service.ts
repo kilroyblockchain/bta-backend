@@ -1,24 +1,24 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Request } from 'express';
 import { PaginateModel, PaginateResult } from 'mongoose';
 import { BC_NODE_INFO_CONSTANT } from 'src/@core/constants/api-error-constants/bc-node-info-constant';
 import { getSearchFilterWithRegexAll } from 'src/@core/utils/query-filter.utils';
+import { RegisterBcUserDto } from 'src/components/app-user/user/dto/register-bc-user.dto';
+import { UserService } from 'src/components/app-user/user/user.service';
 import { BcConnectionService } from '../bc-connection/bc-connection.service';
-import { BcUserAuthenticationDto } from '../dto/bc-user-authentication.dto';
 import { CreateBcNodeInfoDto } from './dto/create-bc-node-info.dto';
 import { IBcNodeInfo } from './interfaces/bc-node-info.interface';
 
 @Injectable()
 export class BcNodeInfoService {
-    constructor(@InjectModel('BcNodeInfo') private readonly bcNodeInfoModel: PaginateModel<IBcNodeInfo>, private readonly bcConnectionService: BcConnectionService) {}
+    constructor(@InjectModel('BcNodeInfo') private readonly bcNodeInfoModel: PaginateModel<IBcNodeInfo>, private readonly bcConnectionService: BcConnectionService, @Inject(forwardRef(() => UserService)) private readonly userService: UserService) {}
 
     async addBcNodeInfo(createBcNodeInfoDto: CreateBcNodeInfoDto, req: Request): Promise<IBcNodeInfo> {
-        const user = req['user']._id;
-        // Static key and salt fetched from Env file. Needs to load dynamically from user details later.
-        const key = process.env.KEY;
-        const salt = process.env.SALT;
-        const connectionValid = await this.checkValidBcNodeInfo(createBcNodeInfoDto, new BcUserAuthenticationDto(key, salt));
+        const userId = req['user']._id;
+        const userEmail = await this.userService.getUserEmail(userId);
+
+        const connectionValid = await this.checkValidBcNodeInfo(createBcNodeInfoDto);
         if (!connectionValid) throw new BadRequestException([BC_NODE_INFO_CONSTANT.INCORRECT_BC_NODE_INFO]);
 
         const bcNodeInfoExists = await this.checkBcNodeInfoExists(createBcNodeInfoDto.orgName);
@@ -26,8 +26,12 @@ export class BcNodeInfoService {
             throw new ConflictException([BC_NODE_INFO_CONSTANT.BC_NODE_INFO_ALREADY_EXISTS]);
         }
         const bcNodeInfo = new this.bcNodeInfoModel(createBcNodeInfoDto);
-        bcNodeInfo.addedBy = user;
-        return await bcNodeInfo.save();
+        bcNodeInfo.addedBy = userId;
+
+        const bcNodeInfoSaved = await bcNodeInfo.save();
+        await this.bcConnectionService.registerSuperAdminUser(new RegisterBcUserDto(userId, userEmail['email']), bcNodeInfoSaved);
+
+        return bcNodeInfoSaved;
     }
 
     async getBcNodeInfoById(id: string): Promise<IBcNodeInfo> {
@@ -63,11 +67,7 @@ export class BcNodeInfoService {
     }
 
     async updateBcNodeInfo(id: string, updateBcNodeInfoDto: CreateBcNodeInfoDto): Promise<IBcNodeInfo> {
-        // Static key and salt fetched from Env file. Needs to load dynamically from user details later.
-        const key = process.env.KEY;
-        const salt = process.env.SALT;
-
-        const connectionValid = await this.checkValidBcNodeInfo(updateBcNodeInfoDto, new BcUserAuthenticationDto(key, salt));
+        const connectionValid = await this.checkValidBcNodeInfo(updateBcNodeInfoDto);
         if (!connectionValid) throw new BadRequestException([BC_NODE_INFO_CONSTANT.INCORRECT_BC_NODE_INFO]);
 
         const bcNodeInfo = await this.getBcNodeInfoById(id);
@@ -92,9 +92,9 @@ export class BcNodeInfoService {
         return false;
     }
 
-    private async checkValidBcNodeInfo(bcNodeInfo: CreateBcNodeInfoDto, bcUserAuthenticationDto: BcUserAuthenticationDto): Promise<boolean> {
+    private async checkValidBcNodeInfo(bcNodeInfo: CreateBcNodeInfoDto): Promise<boolean> {
         try {
-            await this.bcConnectionService.checkBcNodeConnection(bcNodeInfo, bcUserAuthenticationDto);
+            await this.bcConnectionService.checkBcNodeConnection(bcNodeInfo);
             return true;
         } catch (err) {
             return false;

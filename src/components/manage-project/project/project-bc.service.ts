@@ -23,7 +23,9 @@ export class ProjectBcService {
             const userId = req['user']._id;
             const entryUser = await this.userService.getUserEmail(userId);
             const projectMembers = await this.userService.getUserEmail(project.members);
-            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+
+            const query = { isCompanyChannel: true, isDefault: false };
+            const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
             const modelVersion = await this.versionService.getVersionData(project.projectVersions);
 
             const blockChainAuthDto = this.getBcBcAuthentication(req, userData, BC_CONNECTION_API.PROJECT_BC);
@@ -49,14 +51,13 @@ export class ProjectBcService {
     async getProjectBcDetails(projectId: string, req: Request): Promise<BcConnectionDto> {
         const logger = new Logger(ProjectBcService.name + '-getProjectBcDetails');
         try {
-            const userId = req['user']._id;
-
             const project = await this.projectService.getProjectById(projectId, req);
             if (!project) {
                 throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
             }
 
-            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+            const query = { isCompanyChannel: true, isDefault: false };
+            const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
             const blockChainAuthDto = this.getBcBcAuthentication(req, userData, BC_CONNECTION_API.PROJECT_BC);
 
             return await this.bcConnectionService.query(blockChainAuthDto, project._id);
@@ -72,14 +73,13 @@ export class ProjectBcService {
     async getProjectBcHistory(projectId: string, req: Request): Promise<BcConnectionDto> {
         const logger = new Logger(ProjectBcService.name + '-getProjectBcHistory');
         try {
-            const userId = req['user']._id;
-
             const project = await this.projectService.getProjectById(projectId, req);
             if (!project) {
                 throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
             }
 
-            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+            const query = { isCompanyChannel: true, isDefault: false };
+            const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
             const blockChainAuthDto = this.getBcBcAuthentication(req, userData, BC_CONNECTION_API.GET_PROJECT_BC_HISTORY);
 
             return await this.bcConnectionService.query(blockChainAuthDto, project._id);
