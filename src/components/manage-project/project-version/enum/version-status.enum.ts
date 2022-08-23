@@ -10,7 +10,8 @@ export enum VersionStatus {
     DRAFT = 'Draft',
     QA_STATUS = 'Quality Assurance',
     DECLINED = 'Declined',
-    MLOPS_REVIEW = 'MLOPs Review'
+    MLOPS_REVIEW = 'MLOPs Review',
+    SUBMITTED = 'Submitted'
 }
 
 export enum OracleBucketDataStatus {

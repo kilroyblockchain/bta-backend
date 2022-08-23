@@ -10,6 +10,7 @@ import { Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionGuard } from 'src/components/auth/guards/permission.guard';
 import { RolesGuard } from 'src/components/auth/guards/roles.guard';
+import { BlockchainGuard } from 'src/components/auth/guards';
 
 @Controller('channel-detail')
 @ApiTags('Channel Detail api')
@@ -18,7 +19,7 @@ export class ChannelDetailController {
     constructor(private readonly channelDetailService: ChannelDetailService) {}
 
     @Post()
-    @UseGuards(AuthGuard('jwt'), PermissionGuard)
+    @UseGuards(AuthGuard('jwt'), PermissionGuard, BlockchainGuard)
     @HttpCode(HttpStatus.OK)
     @ApiHeader({
         name: 'Bearer',
@@ -32,9 +33,9 @@ export class ChannelDetailController {
         description: 'Unauthorized.'
     })
     @Permission(ACCESS_TYPE.WRITE)
-    @Roles(ROLE.SUPER_ADMIN)
-    async addChannelDetails(@Body() channelDetailDto: ChannelDetailDto): Promise<Response> {
-        return new Response(true, [CHANNEL_DETAIL.SUCCESSFULLY_ADDED_CHANNEL_DETAIL]).setSuccessData(await this.channelDetailService.addChannelDetail(channelDetailDto)).setStatus(HttpStatus.OK);
+    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF)
+    async addChannelDetails(@Body() channelDetailDto: ChannelDetailDto, @Req() req: Request): Promise<Response> {
+        return new Response(true, [CHANNEL_DETAIL.SUCCESSFULLY_ADDED_CHANNEL_DETAIL]).setSuccessData(await this.channelDetailService.addChannelDetail(channelDetailDto, req)).setStatus(HttpStatus.OK);
     }
 
     @Put('/:channelDetailId')

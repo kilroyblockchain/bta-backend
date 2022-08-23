@@ -7,7 +7,7 @@ import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
 import { Response as FLOResponse } from 'src/@core/response';
 import { Request } from 'express';
 import { COMMON_ERROR, MANAGE_PROJECT_CONSTANT } from 'src/@core/constants/api-error-constants';
-import { VersionLogAllExpResponseDto, LogExperimentDetailsResponseDto, LogExperimentInfoResponseDto, DeleteTempOracleDataHashDto, BcModelExperimentDetailsDto, BcModelExperimentHistoryDto } from './dto';
+import { VersionLogAllExpResponseDto, LogExperimentDetailsResponseDto, LogExperimentInfoResponseDto, DeleteTempOracleDataHashDto, BcModelExperimentDetailsDto, BcModelExperimentHistoryDto, BcArtifactModelDetailsDto, BcArtifactModelHistoryDto, ArtifactModelResponseDto } from './dto';
 import { VersionResponseDto } from '../project-version/dto';
 import { MANAGE_PROJECT_BC_CONSTANT } from 'src/@core/constants/bc-constants/bc-manage-project.constant';
 import { AIModelBcService } from './ai-model-bc.service';
@@ -491,41 +491,133 @@ export class AiModelController {
         }
     }
 
+    @Get('artifact-model-bc-details/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Get artifact model blockchain details' })
+    @ApiParam({ name: 'id', required: true, description: 'artifact model Id' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_ARTIFACT_MODEL_BC_DETAILS })
+    @ApiResponse({ status: HttpStatus.OK, type: BcArtifactModelDetailsDto, description: MANAGE_PROJECT_BC_CONSTANT.ARTIFACT_MODEL_BC_DETAILS_RETRIEVED_SUCCESS })
+    async getArtifactModelBcDetails(@Param('id') modelId: string, @Req() req: Request): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.ARTIFACT_MODEL_BC_DETAILS_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelBcService.getArtifactModelBcDetails(modelId, req)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new NotFoundException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_ARTIFACT_MODEL_BC_DETAILS, err);
+        }
+    }
+
     @Get('artifact-model-bc-history/:id')
     @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Get artifact model blockchain details' })
+    @ApiParam({ name: 'id', required: true, description: 'artifact model Id' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_ARTIFACT_MODEL_BC_HISTORY })
+    @ApiResponse({ status: HttpStatus.OK, type: BcArtifactModelHistoryDto, isArray: true, description: MANAGE_PROJECT_BC_CONSTANT.ARTIFACT_MODEL_BC_HISTORY_RETRIEVED_SUCCESS })
     async getArtifactModelBcHistory(@Param('id') modelId: string, @Req() req: Request): Promise<FLOResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.MODEL_EXPERIMENT_BC_HISTORY_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelBcService.getArtifactModelBcHistory(modelId, req)).setStatus(HttpStatus.OK);
+            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.ARTIFACT_MODEL_BC_HISTORY_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelBcService.getArtifactModelBcHistory(modelId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
-            throw new BadRequestException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_EXPERIMENT_BC_HISTORY, err);
+            throw new BadRequestException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_ARTIFACT_MODEL_BC_HISTORY, err);
         }
     }
 
     @Get('all-artifacts-model/:id')
     @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Get all AI artifact model of the version' })
+    @ApiParam({ name: 'id', required: true, description: 'Version Id' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_ARTIFICT_MODEL })
+    @ApiResponse({ status: HttpStatus.OK, type: ArtifactModelResponseDto, isArray: true, description: MANAGE_PROJECT_CONSTANT.ALL_ARTIFACT_MODEL_RETRIEVED })
     async getAllArtifactModel(@Param('id') versionId: string, @Req() req: Request): Promise<FLOResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.MODEL_EXPERIMENT_BC_HISTORY_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelService.getAllArtifactModel(versionId, req)).setStatus(HttpStatus.OK);
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.ALL_ARTIFACT_MODEL_RETRIEVED]).setSuccessData(await this.aiModelService.getAllArtifactModel(versionId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
-            throw new BadRequestException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_EXPERIMENT_BC_HISTORY, err);
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_ARTIFICT_MODEL, err);
         }
     }
 
     @Get('artifact-model-oracle-hash/:id')
-    async getArtifactModelOracleBcHash(@Param('id') expId: string): Promise<FLOResponse> {
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Get ai artifact model latest oracle bc hash' })
+    @ApiParam({ name: 'id', required: true, description: 'model Id' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_AI_MODEL_ORACLE_BC_HASH })
+    @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: '62efd37ef24e4b26ff79c760' } }, description: MANAGE_PROJECT_CONSTANT.GOT_ARTIFACT_MODEL_ORACLE_HASH_SUCCESS })
+    async getArtifactModelOracleBcHash(@Param('id') modelId: string): Promise<FLOResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.MODEL_EXPERIMENT_BC_HISTORY_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelService.getArtifactModelOracleBcHash(expId)).setStatus(HttpStatus.OK);
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ARTIFACT_MODEL_ORACLE_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getArtifactModelOracleBcHash(modelId)).setStatus(HttpStatus.OK);
         } catch (err) {
-            throw new BadRequestException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_EXPERIMENT_BC_HISTORY, err);
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ARTIFACT_MODEL_ORACLE_HASH, err);
         }
     }
 
     @Get('artifact-model-details/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_VERSION)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiParam({ name: 'id', required: true, description: 'expriment Id' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_AI_MODEL_ORACLE_BC_HASH })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ARTIFACT_MODEL_DETAILS })
+    @ApiResponse({ status: HttpStatus.OK, type: ArtifactModelResponseDto, description: MANAGE_PROJECT_CONSTANT.ALL_ARTIFACT_MODEL_RETRIEVED })
     async getArtifactModelDetails(@Param('id') expId: string): Promise<FLOResponse> {
         try {
-            return new FLOResponse(true, ['Got artifact model details success']).setSuccessData(await this.aiModelService.getArtifactModelDetails(expId)).setStatus(HttpStatus.OK);
+            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ARTIFACT_MODEL_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.getArtifactModelDetails(expId)).setStatus(HttpStatus.OK);
         } catch (err) {
-            throw new BadRequestException('Unable to get artifact model details', err);
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ARTIFACT_MODEL_DETAILS, err);
         }
     }
 }

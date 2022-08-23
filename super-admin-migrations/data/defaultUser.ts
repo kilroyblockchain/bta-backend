@@ -35,7 +35,7 @@ export const admin =
         blockExpires: new Date(),
         verification: 'ff2fc9c8-b8e8-484d-8e0d-b053d1945ebe',
         resetLink: '',
-        bcSalt: process.env.SUPER_ADMIN_BC_SALT
+        bcSalt: null
     };
 
 export const adminCompany = {

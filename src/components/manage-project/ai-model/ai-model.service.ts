@@ -380,7 +380,8 @@ export class AiModelService {
 
     async aiArtifactsModelBcHash(version: IProjectVersion, counter: number, req: Request): Promise<void> {
         const pathName = process.cwd() + `/uploads/oracle-ai-model-data/artifacts-model`;
-        const fileName = `ai-model-data-${counter}.pkl`;
+        const randomName = crypto.randomUUID();
+        const fileName = `ai-model-data-${randomName}-${counter}.pkl`;
 
         if (!fs.existsSync(pathName)) {
             fs.mkdirSync(pathName, { recursive: true });
@@ -660,11 +661,11 @@ export class AiModelService {
     }
 
     async getExperimentById(expId: string): Promise<IAiModel> {
-        return await this.aiModel.findOne({ _id: expId });
+        return await this.aiModel.findOne({ _id: expId }).populate('version', '_id versionStatus');
     }
 
     async getArtifactModel(modelId: string): Promise<IAiArtifactsModel> {
-        return await this.aiArtifactsModel.findOne({ _id: modelId });
+        return await this.aiArtifactsModel.findOne({ _id: modelId }).populate('version', '_id versionStatus');
     }
 
     async getAllArtifactModel(versionId: string, req: Request): Promise<PaginateResult<IAiArtifactsModel>> {
@@ -683,6 +684,8 @@ export class AiModelService {
 
     async getArtifactModelOracleBcHash(modelId: string): Promise<string> {
         const artifactModel = await this.aiArtifactsModel.findOne({ _id: modelId }).populate('version', 'versionName aiModel').populate('project', 'name');
+
+        if (!artifactModel) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND);
 
         const randomName = crypto.randomUUID();
 
@@ -728,8 +731,22 @@ export class AiModelService {
             version: experiment.version
         });
 
-        if (!artifactModel) throw new NotFoundException('Artifact model record not found');
+        if (!artifactModel) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND);
 
         return artifactModel._id;
+    }
+
+    async getAllExperimentIds(versionId: string): Promise<IAiModel[]> {
+        const experimentIds = await this.aiModel.find({ version: versionId }).select('_id');
+        if (!experimentIds.length) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND);
+
+        return experimentIds;
+    }
+
+    async getAllArtifactModelIds(versionId: string): Promise<IAiArtifactsModel[]> {
+        const artifactModel = await this.aiArtifactsModel.find({ version: versionId }).select('_id');
+        if (!artifactModel.length) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND);
+
+        return artifactModel;
     }
 }

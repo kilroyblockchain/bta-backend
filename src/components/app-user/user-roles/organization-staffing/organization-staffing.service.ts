@@ -7,6 +7,7 @@ import { OrganizationUnitService } from '../organization-unit/organization-unit.
 import { ORGANIZATION_STAFFING_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { OrganizationStaffResponse, CreateStaffingDto } from './dto';
 import { PaginatedDto } from 'src/@core/response/dto';
+import { UserService } from 'src/components/app-user/user/user.service';
 
 @Injectable()
 export class OrganizationStaffingService {
@@ -14,13 +15,25 @@ export class OrganizationStaffingService {
         @InjectModel('Staffing')
         private readonly StaffModel: PaginateModel<StaffingInterface>,
         @Inject(forwardRef(() => OrganizationUnitService))
-        private unitService: OrganizationUnitService
+        private unitService: OrganizationUnitService,
+        @Inject(forwardRef(() => UserService))
+        private readonly userService: UserService
     ) {}
 
-    async createNewStaffing(newStaff: CreateStaffingDto): Promise<OrganizationStaffResponse> {
+    async createNewStaffing(newStaff: CreateStaffingDto, req: Request): Promise<OrganizationStaffResponse> {
         const logger = new Logger(OrganizationStaffingService.name + '-createNewStaffing');
         try {
-            const staff = await new this.StaffModel(newStaff).save();
+            const staff = new this.StaffModel(newStaff);
+            const isSuperAdminUser = await this.userService.isSuperAdminUser(req);
+            if (!isSuperAdminUser) {
+                const query = { isCompanyChannel: true, isDefault: false };
+
+                const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
+                const userIsCompanyChannel = userData.company[0].staffingId[0]['channels'][0]._id;
+                staff.channels.push(userIsCompanyChannel);
+            }
+
+            await staff.save();
             return this.buildStaffingResponse(staff);
         } catch (err) {
             logger.error(err);

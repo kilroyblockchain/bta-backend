@@ -8,6 +8,7 @@ import { UserService } from 'src/components/app-user/user/user.service';
 import { BcConnectionService } from 'src/components/blockchain/bc-connection/bc-connection.service';
 import { BcAuthenticationDto, BcConnectionDto } from 'src/components/blockchain/bc-connection/dto';
 import { ProjectService } from 'src/components/manage-project/project/project.service';
+import { VersionStatus } from './enum/version-status.enum';
 import { IBcProject, IBcProjectVersion } from './interfaces/bc-project-version.interface';
 import { IProjectVersion } from './interfaces/project-version.interface';
 import { ProjectVersionService } from './project-version.service';
@@ -26,7 +27,14 @@ export class VersionBcService {
                 projectName: project.name
             };
 
-            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+            let query: { isCompanyChannel: boolean; isDefault: boolean };
+            if (version.versionStatus == VersionStatus.DRAFT) {
+                query = { isCompanyChannel: false, isDefault: false };
+            } else {
+                query = { isCompanyChannel: true, isDefault: false };
+            }
+
+            const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
             const blockChainAuthDto = this.getBcBcAuthentication(req, userData, BC_CONNECTION_API.PROJECT_VERSION_BC);
             const projectVersionDto: IBcProjectVersion = {
                 id: version._id,
@@ -61,13 +69,19 @@ export class VersionBcService {
     async getProjectVersionDetails(versionId: string, req: Request): Promise<BcConnectionDto> {
         const logger = new Logger(VersionBcService.name + '-getProjectVersionDetails');
         try {
-            const userId = req['user']._id;
             const version = await this.projectVersionService.getVersionById(versionId);
             if (!version) {
                 throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
             }
 
-            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+            let query: { isCompanyChannel: boolean; isDefault: boolean };
+            if (version.versionStatus == VersionStatus.DRAFT) {
+                query = { isCompanyChannel: false, isDefault: false };
+            } else {
+                query = { isCompanyChannel: true, isDefault: false };
+            }
+
+            const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
             const blockChainAuthDto = this.getBcBcAuthentication(req, userData, BC_CONNECTION_API.PROJECT_VERSION_BC);
 
             return await this.bcConnectionService.query(blockChainAuthDto, version._id);
@@ -83,13 +97,18 @@ export class VersionBcService {
     async getProjectVersionBcHistory(versionId: string, req: Request): Promise<BcConnectionDto> {
         const logger = new Logger(VersionBcService.name + '-getProjectVersionBcHistory');
         try {
-            const userId = req['user']._id;
             const version = await this.projectVersionService.getVersionById(versionId);
             if (!version) {
                 throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
             }
 
-            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+            let query: { isCompanyChannel: boolean; isDefault: boolean };
+            if (version.versionStatus == VersionStatus.DRAFT) {
+                query = { isCompanyChannel: false, isDefault: false };
+            } else {
+                query = { isCompanyChannel: true, isDefault: false };
+            }
+            const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
             const blockChainAuthDto = this.getBcBcAuthentication(req, userData, BC_CONNECTION_API.PROJECT_VERSION_BC_HISTORY);
 
             return await this.bcConnectionService.query(blockChainAuthDto, version._id);
@@ -112,7 +131,15 @@ export class VersionBcService {
             nodeUrl: userData.company[0].staffingId[0]['bcNodeInfo'].nodeUrl,
             bcConnectionApi
         };
-
         return blockChainAuthDto;
+    }
+
+    async channelTransferModelVersion(versionDto: IBcProjectVersion, req: Request): Promise<BcConnectionDto> {
+        versionDto.versionStatus = VersionStatus.SUBMITTED;
+        const query = { isCompanyChannel: true, isDefault: false };
+        const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
+        const blockChainAuthDto = this.getBcBcAuthentication(req, userData, BC_CONNECTION_API.PROJECT_VERSION_BC);
+
+        return await this.bcConnectionService.invoke(versionDto, blockChainAuthDto);
     }
 }

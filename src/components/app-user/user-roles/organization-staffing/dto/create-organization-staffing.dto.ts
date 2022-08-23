@@ -57,7 +57,7 @@ export class CreateStaffingDto {
         example: ['62bea0296e7a4bfd3ff56268'],
         format: 'array'
     })
-    @IsNotEmpty()
+    @IsOptional()
     @IsArray()
     channels: string[];
 
@@ -66,7 +66,7 @@ export class CreateStaffingDto {
         example: 'https://orcalebucket.org',
         format: 'string'
     })
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
     bucketUrl: string;
 }

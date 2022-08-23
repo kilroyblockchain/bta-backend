@@ -24,7 +24,7 @@ export class BlockchainGuard implements CanActivate {
         const bcNodeInfo = await this.bcNodeInfo.getBcNodeInfoById(user.company[0].staffingId[0].bcNodeInfo.toString());
         try {
             // Check valid bc-key on blockchain
-            await this.bcConnectionService.checkBcNodeConnection(bcNodeInfo, new BcUserAuthenticationDto(await decryptKey(request.headers['bc-key']), user.bcSalt));
+            await this.bcConnectionService.verifyBcAuthentication(bcNodeInfo, new BcUserAuthenticationDto(await decryptKey(request.headers['bc-key']), user.bcSalt));
         } catch (err) {
             logger.error(err);
             throw new UnauthorizedException([BC_ERROR_RESPONSE.INVALID_BC_KEY]);

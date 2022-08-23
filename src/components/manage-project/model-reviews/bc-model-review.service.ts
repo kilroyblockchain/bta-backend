@@ -22,7 +22,9 @@ export class ModelReviewBcService {
             const userId = req['user']._id;
             const entryUser = await this.userService.getUserEmail(userId);
             const version = await this.modeVersionService.getVersionById(modelReview.version);
-            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+
+            const query = { isCompanyChannel: true, isDefault: false };
+            const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
             const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.MODEL_VERSION_BC);
 
             const reviewDocuments = [];
@@ -67,7 +69,9 @@ export class ModelReviewBcService {
             const userId = req['user']._id;
             const entryUser = await this.userService.getUserEmail(userId);
 
-            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+            const query = { isCompanyChannel: true, isDefault: false };
+            const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
+
             const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.MODEL_VERSION_BC);
 
             const reviewModelDto: IBcVersionSubmitReview = {
@@ -92,13 +96,12 @@ export class ModelReviewBcService {
     async getModelReviewBcDetails(versionId: string, req: Request): Promise<BcConnectionDto> {
         const logger = new Logger(ModelReviewBcService.name + '-getModelReviewBcDetails');
         try {
-            const userId = req['user']._id;
-
             const version = await this.modeVersionService.getVersionById(versionId);
             if (!version) {
                 throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
             }
-            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+            const query = { isCompanyChannel: true, isDefault: false };
+            const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
             const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.MODEL_VERSION_BC);
 
             return await this.bcConnectionService.query(blockChainAuthDto, version._id);
@@ -114,13 +117,12 @@ export class ModelReviewBcService {
     async getModelReviewBcHistory(versionId: string, req: Request): Promise<BcConnectionDto> {
         const logger = new Logger(ModelReviewBcService.name + '-getModelReviewBcHistory');
         try {
-            const userId = req['user']._id;
-
             const version = await this.modeVersionService.getVersionById(versionId);
             if (!version) {
                 throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
             }
-            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+            const query = { isCompanyChannel: true, isDefault: false };
+            const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
             const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.MODEL_VERSION_BC_HISTORY);
 
             return await this.bcConnectionService.query(blockChainAuthDto, version._id);

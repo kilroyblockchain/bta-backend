@@ -9,7 +9,9 @@ import { BcConnectionService } from 'src/components/blockchain/bc-connection/bc-
 import { BcAuthenticationDto } from 'src/components/blockchain/bc-connection/dto';
 import { BcConnectionDto } from 'src/components/blockchain/bc-connection/dto';
 import { ProjectVersionService } from 'src/components/manage-project/project-version/project-version.service';
+import { VersionStatus } from '../project-version/enum/version-status.enum';
 import { AiModelService } from './ai-model.service';
+import { IBcArtifactModel, IGetBcArtifactModel } from './interfaces/ai-artifacts-bc-model.interface';
 import { IAiArtifactsModel } from './interfaces/ai-artifacts-model.interface';
 import { IBcExperiment, IGetBcExperiment } from './interfaces/ai-model-bc-experiment.interface';
 import { IAiModel } from './interfaces/ai-model.interface';
@@ -28,11 +30,18 @@ export class AIModelBcService {
 
         try {
             const userId = req['user']._id;
-            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
 
             const entryUser = await this.userService.getUserEmail(userId);
             const version = await this.versionService.getVersionInfo(experiment.version);
 
+            let query: { isCompanyChannel: boolean; isDefault: boolean };
+            if (version.versionStatus == VersionStatus.DRAFT) {
+                query = { isCompanyChannel: false, isDefault: false };
+            } else {
+                query = { isCompanyChannel: true, isDefault: false };
+            }
+
+            const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
             const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.STORE_MODEL_EXPERIMENT_BC);
 
             const experimentDto: IBcExperiment = {
@@ -65,15 +74,19 @@ export class AIModelBcService {
             const experiment = await this.aiModelService.getExperimentById(experimentId);
             if (!experiment) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND);
 
-            const userId = req['user']._id;
-            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
-
+            let query: { isCompanyChannel: boolean; isDefault: boolean };
+            if (experiment.version['versionStatus'] === VersionStatus.DRAFT) {
+                query = { isCompanyChannel: false, isDefault: false };
+            } else {
+                query = { isCompanyChannel: true, isDefault: false };
+            }
+            const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
             const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.GET_MODEL_BC_EXPERIMENT_DETAILS);
 
             const experimentDto: IGetBcExperiment = {
                 experimentName: experiment.expNo,
                 modelVersion: {
-                    id: experiment.version
+                    id: experiment.version['_id']
                 },
                 project: {
                     id: experiment.project
@@ -97,15 +110,20 @@ export class AIModelBcService {
             const experiment = await this.aiModelService.getExperimentById(experimentId);
             if (!experiment) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND);
 
-            const userId = req['user']._id;
-            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+            let query: { isCompanyChannel: boolean; isDefault: boolean };
+            if (experiment.version['versionStatus'] === VersionStatus.DRAFT) {
+                query = { isCompanyChannel: false, isDefault: false };
+            } else {
+                query = { isCompanyChannel: true, isDefault: false };
+            }
 
+            const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
             const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.GET_MODEL_BC_EXPERIMENT_HISTORY);
 
             const experimentDto: IGetBcExperiment = {
                 experimentName: experiment.expNo,
                 modelVersion: {
-                    id: experiment.version
+                    id: experiment.version['_id']
                 },
                 project: {
                     id: experiment.project
@@ -132,7 +150,6 @@ export class AIModelBcService {
             nodeUrl: userData.company[0].staffingId[0]['bcNodeInfo'].nodeUrl,
             bcConnectionApi
         };
-
         return blockChainAuthDto;
     }
 
@@ -141,14 +158,21 @@ export class AIModelBcService {
 
         try {
             const userId = req['user']._id;
-            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
             const entryUser = await this.userService.getUserEmail(userId);
 
             const version = await this.versionService.getVersionInfo(artifactsModel.version);
 
+            let query: { isCompanyChannel: boolean; isDefault: boolean };
+            if (version.versionStatus == VersionStatus.DRAFT) {
+                query = { isCompanyChannel: false, isDefault: false };
+            } else {
+                query = { isCompanyChannel: true, isDefault: false };
+            }
+
+            const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
             const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.STORE_ARTIFACT_MODEL_BC);
 
-            const artifactModelDto = {
+            const artifactModelDto: IBcArtifactModel = {
                 modelArtifactName: artifactsModel.modelNo,
                 modelArtifactBcHash: artifactsModel.modelBcHash,
                 modelVersion: {
@@ -171,22 +195,26 @@ export class AIModelBcService {
         }
     }
 
-    async getArtifactModelBcHistory(modelId: string, req: Request): Promise<BcConnectionDto> {
-        const logger = new Logger(AIModelBcService.name + '-getArtifactModelBcHistory');
+    async getArtifactModelBcDetails(modelId: string, req: Request): Promise<BcConnectionDto> {
+        const logger = new Logger(AIModelBcService.name + '-getArtifactModelBcDetails');
+
         try {
             const artifactsModel = await this.aiModelService.getArtifactModel(modelId);
-            if (!artifactsModel) throw new NotFoundException('Artifacts model record not found');
+            if (!artifactsModel) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND);
 
-            const userId = req['user']._id;
-            const userData = await this.userService.getUserBcInfoDefaultChannel(userId);
+            let query: { isCompanyChannel: boolean; isDefault: boolean };
+            if (artifactsModel.version['versionStatus'] === VersionStatus.DRAFT) {
+                query = { isCompanyChannel: false, isDefault: false };
+            } else {
+                query = { isCompanyChannel: true, isDefault: false };
+            }
+            const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
+            const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.GET_ARTIFACT_MODEL_BC_DETAILS);
 
-            const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.GET_ARTIFACT_MODEL_BC_HISTORY);
-
-            const artifactModelDto = {
+            const artifactModelDto: IGetBcArtifactModel = {
                 modelArtifactName: artifactsModel.modelNo,
-                modelArtifactBcHash: artifactsModel.modelBcHash,
                 modelVersion: {
-                    id: artifactsModel.version
+                    id: artifactsModel.version['_id']
                 },
                 project: {
                     id: artifactsModel.project
@@ -199,7 +227,54 @@ export class AIModelBcService {
             if (err.statusCode) {
                 throw err;
             }
-            throw new BadRequestException(['Unable to Fetched artifacts model Bc History'], err);
+            throw new BadRequestException([MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_ARTIFACT_MODEL_BC_DETAILS], err);
         }
+    }
+
+    async getArtifactModelBcHistory(modelId: string, req: Request): Promise<BcConnectionDto> {
+        const logger = new Logger(AIModelBcService.name + '-getArtifactModelBcHistory');
+        try {
+            const artifactsModel = await this.aiModelService.getArtifactModel(modelId);
+            if (!artifactsModel) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND);
+
+            const query = { isCompanyChannel: false, isDefault: false };
+            const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
+            const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.GET_ARTIFACT_MODEL_BC_HISTORY);
+
+            const artifactModelDto: IGetBcArtifactModel = {
+                modelArtifactName: artifactsModel.modelNo,
+                modelVersion: {
+                    id: artifactsModel.version['_id']
+                },
+                project: {
+                    id: artifactsModel.project
+                }
+            };
+
+            return await this.bcConnectionService.invoke(artifactModelDto, blockChainAuthDto);
+        } catch (err) {
+            logger.error(err);
+            if (err.statusCode) {
+                throw err;
+            }
+            throw new BadRequestException([MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_ARTIFACT_MODEL_BC_HISTORY], err);
+        }
+    }
+
+    async channelTransferExperiment(experimentDto: IBcExperiment, req: Request): Promise<BcConnectionDto> {
+        const query = { isCompanyChannel: true, isDefault: false };
+
+        const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
+        const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.STORE_MODEL_EXPERIMENT_BC);
+
+        return await this.bcConnectionService.invoke(experimentDto, blockChainAuthDto);
+    }
+
+    async channelTransferArtifactModel(artifactModelDto: IBcArtifactModel, req: Request): Promise<BcConnectionDto> {
+        const query = { isCompanyChannel: true, isDefault: false };
+        const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
+        const blockChainAuthDto = this.getBcAuthentication(req, userData, BC_CONNECTION_API.STORE_ARTIFACT_MODEL_BC);
+
+        return await this.bcConnectionService.invoke(artifactModelDto, blockChainAuthDto);
     }
 }
