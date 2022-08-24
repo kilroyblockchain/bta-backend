@@ -330,7 +330,7 @@ export class AiModelService {
                 );
 
                 writer.on('finish', async () => {
-                    await this.aiArtifactsModelBcHash(version, counter);
+                    await this.aiArtifactsModelBcHash(version, counter, req);
                     counter++;
                     getAIModel(counter);
                 });
@@ -378,7 +378,7 @@ export class AiModelService {
         });
     }
 
-    async aiArtifactsModelBcHash(version: IProjectVersion, counter: number): Promise<void> {
+    async aiArtifactsModelBcHash(version: IProjectVersion, counter: number, req: Request): Promise<void> {
         const pathName = process.cwd() + `/uploads/oracle-ai-model-data/artifacts-model`;
         const randomName = crypto.randomUUID();
         const fileName = `ai-model-data-${randomName}-${counter}.pkl`;
@@ -399,11 +399,11 @@ export class AiModelService {
         );
 
         writer.on('finish', () => {
-            this.getOracleHash(pathName, fileName, counter, version);
+            this.getArtifactModelOracleHash(pathName, fileName, counter, version, req);
         });
     }
 
-    async getOracleHash(pathName: string, fileName: string, counter: number, version: IProjectVersion): Promise<void> {
+    async getArtifactModelOracleHash(pathName: string, fileName: string, counter: number, version: IProjectVersion, req: Request): Promise<void> {
         const readStream = fs.createReadStream(pathName + '/' + fileName);
 
         const hash = crypto.createHash('sha256');
@@ -420,7 +420,8 @@ export class AiModelService {
                 version: version._id,
                 project: version.project['_id']
             });
-            await aiArtifactsModelData.save();
+            const aiArtifactsModel = await aiArtifactsModelData.save();
+            this.aiModelBcService.createBcArtifactsModel(req, aiArtifactsModel);
 
             if (fs.existsSync(pathName)) {
                 fs.unlinkSync(pathName + '/' + fileName);
@@ -514,7 +515,7 @@ export class AiModelService {
             fs.mkdirSync(pathName, { recursive: true });
         }
 
-        const getTestDataHash = async (): Promise<void> => {
+        const getTrainDataHash = async (): Promise<void> => {
             try {
                 const { data } = await firstValueFrom(
                     this.httpService.get(version.trainDataSets, {
@@ -546,7 +547,7 @@ export class AiModelService {
                     });
             }
         };
-        getTestDataHash();
+        getTrainDataHash();
         return tempHash._id;
     }
 
@@ -683,6 +684,8 @@ export class AiModelService {
 
     async getArtifactModelOracleBcHash(modelId: string): Promise<string> {
         const artifactModel = await this.aiArtifactsModel.findOne({ _id: modelId }).populate('version', 'versionName aiModel').populate('project', 'name');
+
+        if (!artifactModel) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND);
 
         const randomName = crypto.randomUUID();
 
