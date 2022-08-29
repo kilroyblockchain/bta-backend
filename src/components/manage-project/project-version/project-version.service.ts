@@ -146,7 +146,6 @@ export class ProjectVersionService {
         }
 
         await this.versionBcService.channelTransferModelVersion(versionBcDetails.data, req);
-        await this.projectBcService.createBcProject(req, project);
 
         const allExperimentIds = await this.aiModelService.getAllExperimentIds(versionBcDetails.data.id);
         for (const experimentId of allExperimentIds) {
@@ -163,6 +162,7 @@ export class ProjectVersionService {
 
         const updatedVersion = await version.save();
         await this.modelReviewBcService.createBcPendingVersion(req, updatedVersion);
+        await this.projectBcService.createBcProject(req, project);
 
         return updatedVersion;
     }

@@ -211,7 +211,7 @@ export class VersionBcHashesEventService {
         const getAIModel = async (counter = 0): Promise<void> => {
             try {
                 const { data } = await firstValueFrom(
-                    this.httpService.get(version.aiModel + `/${version.project['name'].toLowerCase()}_model_${counter}.pkl`, {
+                    this.httpService.get(version.aiModel + `/${version.project['name']}_model_${counter}.pkl`, {
                         responseType: 'stream'
                     })
                 );
@@ -276,7 +276,7 @@ export class VersionBcHashesEventService {
             fs.mkdirSync(pathName, { recursive: true });
         }
         const { data } = await firstValueFrom(
-            this.httpService.get(version.aiModel + `/${version.project['name'].toLowerCase()}_model_${counter}.pkl`, {
+            this.httpService.get(version.aiModel + `/${version.project['name']}_model_${counter}.pkl`, {
                 responseType: 'stream'
             })
         );
@@ -300,7 +300,7 @@ export class VersionBcHashesEventService {
 
         const aiArtifactsModelData = new this.aiArtifactsModel({
             modelBcHash: hash.read(),
-            modelNo: `${version.project['name'].toLowerCase()}_model_${counter}`,
+            modelNo: `${version.project['name']}_model_${counter}`,
             version: version._id,
             project: version.project['_id']
         });

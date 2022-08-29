@@ -68,7 +68,7 @@ export class OrganizationEventService {
                             featureId: PROJECT_STAFFING_ID
                         },
                         {
-                            accessType: ['R', 'W'],
+                            accessType: ['R', 'W', 'U'],
                             featureId: MODEL_VERSION_STAFFING_ID
                         },
                         {
@@ -166,7 +166,7 @@ export class OrganizationEventService {
         }
     }
 
-    async createCompanyAdminOrganization(payload: ICompanyAdminOrganizationPayload, req: Request): Promise<void> {
+    async createCompanyAdminOrganization(payload: ICompanyAdminOrganizationPayload): Promise<void> {
         const logger = new Logger(OrganizationEventService.name + ' - Create company organization unit');
 
         const DEFAULT_ORGANIZATION_UNIT = {
@@ -252,7 +252,7 @@ export class OrganizationEventService {
                         featureId: PROJECT_PURPOSE_STAFFING_ID
                     },
                     {
-                        accessType: ['R', 'W'],
+                        accessType: ['R', 'W', 'U'],
                         featureId: MODEL_VERSION_STAFFING_ID
                     },
                     {
@@ -274,7 +274,7 @@ export class OrganizationEventService {
 
             const staffingUnitDto = new CreateStaffingDto(COMPANY_ADMIN_STAFFING_UNIT);
             try {
-                const staffingUnit = await this.organizationStaffingService.createNewStaffing(staffingUnitDto, req);
+                const staffingUnit = await this.organizationStaffingService.createNewStaffing(staffingUnitDto, payload.req);
                 try {
                     await this.userService.addStaffingId(payload.userId, payload.companyId, staffingUnit._id);
                 } catch (error) {

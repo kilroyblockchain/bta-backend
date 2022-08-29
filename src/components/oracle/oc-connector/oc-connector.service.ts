@@ -3,7 +3,7 @@ import axios, { AxiosError } from 'axios';
 import { OCConnectorResponseDto } from './dto/oc-connector-response.dto';
 
 const OC_CONNECTION_HOST = process.env.OC_CONNECTION_HOST;
-const AUTHORIZATION_TOKEN = process.env.AUTHORIZATION_TOKEN;
+const OC_AUTHORIZATION_TOKEN = process.env.OC_AUTHORIZATION_TOKEN;
 
 @Injectable()
 export class OCConnectorService {
@@ -12,7 +12,7 @@ export class OCConnectorService {
         try {
             const response = await axios.get(OC_CONNECTION_HOST + api, {
                 headers: {
-                    authorization: 'Basic ' + AUTHORIZATION_TOKEN
+                    authorization: 'Basic ' + OC_AUTHORIZATION_TOKEN
                 }
             });
             return new OCConnectorResponseDto(response.data.message, response.data.data, response.data.statusCode);
@@ -37,7 +37,7 @@ export class OCConnectorService {
             const response = await axios.post(OC_CONNECTION_HOST + api, request, {
                 headers: {
                     'Content-Type': 'application/json',
-                    authorization: 'Basic ' + AUTHORIZATION_TOKEN
+                    authorization: 'Basic ' + OC_AUTHORIZATION_TOKEN
                 }
             });
             return new OCConnectorResponseDto(response.data.message, response.data.data, response.data.statusCode);

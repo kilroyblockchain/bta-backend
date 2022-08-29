@@ -318,7 +318,7 @@ export class AiModelService {
         const getAIModel = async (counter = 0): Promise<void> => {
             try {
                 const { data } = await firstValueFrom(
-                    this.httpService.get(version.aiModel + `/${version.project['name'].toLowerCase()}_model_${counter}.pkl`, {
+                    this.httpService.get(version.aiModel + `/${version.project['name']}_model_${counter}.pkl`, {
                         responseType: 'stream'
                     })
                 );
@@ -387,7 +387,7 @@ export class AiModelService {
             fs.mkdirSync(pathName, { recursive: true });
         }
         const { data } = await firstValueFrom(
-            this.httpService.get(version.aiModel + `/${version.project['name'].toLowerCase()}_model_${counter}.pkl`, {
+            this.httpService.get(version.aiModel + `/${version.project['name']}_model_${counter}.pkl`, {
                 responseType: 'stream'
             })
         );
@@ -416,7 +416,7 @@ export class AiModelService {
 
             const aiArtifactsModelData = new this.aiArtifactsModel({
                 modelBcHash: hash.read(),
-                modelNo: `${version.project['name'].toLowerCase()}_model_${counter}`,
+                modelNo: `${version.project['name']}_model_${counter}`,
                 version: version._id,
                 project: version.project['_id']
             });
@@ -568,7 +568,7 @@ export class AiModelService {
         const getAIModel = async (counter = 0): Promise<void> => {
             try {
                 const { data } = await firstValueFrom(
-                    this.httpService.get(version.aiModel + `/${version.project['name'].toLowerCase()}_model_${counter}.pkl`, {
+                    this.httpService.get(version.aiModel + `/${version.project['name']}_model_${counter}.pkl`, {
                         responseType: 'stream'
                     })
                 );
@@ -721,13 +721,13 @@ export class AiModelService {
     }
 
     async getArtifactModelDetails(expId: string): Promise<string> {
-        const experiment = await this.aiModel.findOne({ _id: expId });
+        const experiment = await this.aiModel.findOne({ _id: expId }).populate('project');
         if (!experiment) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND);
 
         const experimentNo = experiment.expNo.split('_')[1];
 
         const artifactModel = await this.aiArtifactsModel.findOne({
-            modelNo: `tsd_model_${experimentNo}`,
+            modelNo: `${experiment.project['name']}_model_${experimentNo}`,
             version: experiment.version
         });
 

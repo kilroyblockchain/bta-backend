@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { consoleLogWrapper } from 'app-migrations/helper-func';
 import * as mongoose from 'mongoose';
 import { IOrganization } from 'src/components/app-user/organization/interfaces/organization.interface';
@@ -11,6 +12,7 @@ import { IOrganizationUnitInterface } from 'src/components/flo-user/user-roles/o
 import { adminOrganizationUnit } from 'super-admin-migrations/data/default-organization-unit';
 import { adminStaffingUnit } from 'super-admin-migrations/data/default-staffing-unit';
 import { admin, adminCompany } from 'super-admin-migrations/data/defaultUser';
+import axios from 'axios';
 
 /**
  * Make any changes you need to make to the database here
@@ -45,6 +47,18 @@ async function createAdminUser(): Promise<void> {
         const newStaffingUnit = new StaffingUnitModel(adminStaffingUnit);
         await newStaffingUnit.save();
         consoleLogWrapper('Successfully created a staffing unit: ' + newStaffingUnit.staffingName);
+        consoleLogWrapper('Register Super admin user in blockchain');
+        const response = await axios.post(process.env.REGISTER_SUPER_ADMIN_BC, '', {
+            headers: {
+                admin_token: process.env.BC_SUPER_ADMIN_REGISTRATION_TOKEN
+            }
+        });
+        if (response.data) {
+            const key = response.data.data.key;
+            consoleLogWrapper('The super admin Blockchain key is: ' + key);
+
+            consoleLogWrapper('Successfully Registered Super admin user in blockchain');
+        }
     } catch (err) {
         consoleLogWrapper(err);
         throw new Error('Failed to create an admin user, quitting...');
