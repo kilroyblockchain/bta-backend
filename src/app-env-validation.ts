@@ -1,34 +1,20 @@
 import * as Joi from 'joi';
+import 'dotenv/config';
+
+const production = process.env.ENVIRONMENT === 'production' || process.env.ENVIRONMENT === 'beta';
 
 export const envValidationSchema = Joi.object({
-    ENVIRONMENT: Joi.string().required().equal('local', 'test', 'dev', 'prod'),
+    ENVIRONMENT: Joi.string().required().equal('local', 'test', 'dev', 'beta', 'production'),
     APP_NAME: Joi.string().required(),
     CLIENT_APP_URL: Joi.string().required(),
-    /**
-     * Docker
-     */
-    // App
-    APP_PORT: Joi.number().required(),
-    LOCAL_CONTAINER_NAME: Joi.string().required(),
-    DEV_CONTAINER_NAME: Joi.string().required(),
-    PROD_CONTAINER_NAME: Joi.string().required(),
-    // MongoDB
-    MONGO_EXPRESS_UI_PORT: Joi.number().required(),
-    DB_PORT: Joi.number().required(),
-    MONGODB_CONTAINER_NAME: Joi.string().required(),
-    MONGO_EXPRESS_UI_CONTAINER_NAME: Joi.string().required(),
-    DATABASE_VOLUME_MOUNT: Joi.string().required(),
-    // Mail catcher
-    MAILCATCHER_CONTAINER_NAME: Joi.string().required(),
-    MAILCATCHER_PORT: Joi.number().required(),
     /**
      * Database
      */
     APP_DEBUG_PORT: Joi.number().required(),
     MONGO_URI: Joi.string().required(),
     MONGO_HOST: Joi.string().required(),
-    MONGO_USERNAME: Joi.string().required(),
-    MONGO_PASSWORD: Joi.string().required(),
+    MONGO_USERNAME: production ? Joi.string().required() : Joi.string().allow('').optional(),
+    MONGO_PASSWORD: production ? Joi.string().required() : Joi.string().allow('').optional(),
     DATABASE_NAME: Joi.string().required(),
     MONGO_DEBUG: Joi.boolean().required(),
     /**
@@ -36,8 +22,8 @@ export const envValidationSchema = Joi.object({
      */
     EMAIL_HOST: Joi.string().required(),
     EMAIL_PORT: Joi.number().required(),
-    EMAIL_USER: Joi.string().required().email(),
-    EMAIL_PASSWORD: Joi.string().required(),
+    EMAIL_USER: production ? Joi.string().required().email() : Joi.string().allow('').optional(),
+    EMAIL_PASSWORD: production ? Joi.string().required() : Joi.string().allow('').optional(),
     /**
      * Jwt Token
      */
@@ -53,7 +39,7 @@ export const envValidationSchema = Joi.object({
     /**
      * Captcha Configs
      */
-    RE_CAPTCHA_STATUS: Joi.string().required().equal('ENABLED', 'DISABLED'),
+    RE_CAPTCHA_STATUS: production ? Joi.string().required().equal('ENABLED') : Joi.string().required().equal('ENABLED', 'DISABLED'),
     RE_CAPTCHA_SECRET: Joi.string().required().min(10),
     /**
      * App secrets
@@ -64,13 +50,13 @@ export const envValidationSchema = Joi.object({
     /**
      * Logger
      */
-    NO_APP_LOG_T_FILE: Joi.string().optional(),
-    APP_LOG_ZIPPED_ARCHIVE: Joi.boolean().optional(),
+    NO_APP_LOG_T_FILE: Joi.string().allow('').optional(),
+    APP_LOG_ZIPPED_ARCHIVE: Joi.boolean().allow('').optional(),
     APP_LOG_DATE_PATTERN: Joi.string().required(),
     APP_LOG_MAX_SIZE: Joi.string().required(),
     APP_LOG_MAX_FILES: Joi.string().required(),
     /**
      * Blockchain
      */
-    BLOCKCHAIN: Joi.string().required().equal('ENABLED', 'DISABLED')
+    BLOCKCHAIN: production ? Joi.string().required().equal('ENABLED') : Joi.string().required().equal('ENABLED', 'DISABLED')
 });
