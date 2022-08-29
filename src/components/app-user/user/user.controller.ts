@@ -300,8 +300,8 @@ export class UserController {
         description: 'the token we need for auth.'
     })
     @ApiOkResponse({})
-    async verifyUserByAdmin(@Body() verifyEmailDto: VerifyEmailDto): Promise<FLOResponse> {
-        await this.userService.verifyEmailByAdmin(verifyEmailDto);
+    async verifyUserByAdmin(@Body() verifyEmailDto: VerifyEmailDto, @Req() req: Request): Promise<FLOResponse> {
+        await this.userService.verifyEmailByAdmin(verifyEmailDto, req);
         return new FLOResponse(true, [USER_CONSTANT.USER_VERIFIED]).setStatus(HttpStatus.OK);
     }
 

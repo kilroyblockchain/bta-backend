@@ -123,7 +123,7 @@ export const btaFeatures = [
     /* 3 */
     {
         _id: new Types.ObjectId('602102d7dfbf432c8c4f3002'),
-        accessType: [ACCESS_TYPE.READ, ACCESS_TYPE.WRITE],
+        accessType: [ACCESS_TYPE.READ, ACCESS_TYPE.WRITE, ACCESS_TYPE.UPDATE],
         subscriptionId: [new Types.ObjectId(SubscriptionTypeID.STAFF)],
         featureIdentifier: FEATURE_IDENTIFIER.MODEL_VERSION,
         feature: 'Model Version'

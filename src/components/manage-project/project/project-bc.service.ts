@@ -20,8 +20,7 @@ export class ProjectBcService {
         const logger = new Logger(ProjectBcService.name + '-createBcProject');
 
         try {
-            const userId = req['user']._id;
-            const entryUser = await this.userService.getUserEmail(userId);
+            const entryUser = await this.userService.getUserEmail(project.createdBy);
             const projectMembers = await this.userService.getUserEmail(project.members);
 
             const query = { isCompanyChannel: true, isDefault: false };

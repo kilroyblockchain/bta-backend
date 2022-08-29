@@ -365,7 +365,7 @@ export class UserService {
         }
     }
 
-    async verifyEmailByAdmin(verifyEmailDto: VerifyEmailDto): Promise<void> {
+    async verifyEmailByAdmin(verifyEmailDto: VerifyEmailDto, req: Request): Promise<void> {
         const logger = new Logger(UserService.name + '-verifyEmailByAdmin');
         try {
             if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
@@ -402,7 +402,8 @@ export class UserService {
                     bucketUrl: verifyEmailDto.bucketUrl,
                     organizationName: verifyEmailDto.organizationName,
                     staffingType: verifyEmailDto.subscriptionType,
-                    userId: verifyEmailDto.userId
+                    userId: verifyEmailDto.userId,
+                    req
                 });
 
                 registrationResponse = await this.userBcService.registerSuperAdminToMultiOrg(new RegisterBcUserDto(verifyEmailDto.userId, user.email));

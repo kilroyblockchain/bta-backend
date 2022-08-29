@@ -1,3 +1,5 @@
+import { Request } from 'express';
+
 export interface ICompanyAdminOrganizationPayload {
     companyId: string;
     bcNodeInfo: string;
@@ -6,4 +8,5 @@ export interface ICompanyAdminOrganizationPayload {
     organizationName: string;
     staffingType: string;
     userId: string;
+    req: Request;
 }

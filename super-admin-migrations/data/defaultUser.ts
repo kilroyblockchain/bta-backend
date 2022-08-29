@@ -10,14 +10,14 @@ export const admin =
         autoPassword: false,
         firstName: 'Suyog',
         lastName: 'Khanal',
-        email: 'suyog@kilroyblockchain.com',
+        email: process.env.SUPER_ADMIN_EMAIL,
         phone: '+1 (488) 431-4341',
         country: new Types.ObjectId('60e6fe33d27e2133c4855221'),
         state: new Types.ObjectId('60e6fe3dd27e2133c4856174'),
         address: 'Quibusdam dolorem do',
         zipCode: '40465',
         jobTitle: 'Voluptatem atque vol',
-        password: 'Kbc@2020',
+        password: process.env.SUPER_ADMIN_PWD,
         company: [
             {
                 staffingId: [STAFFING_UNIT_ID],

@@ -15,7 +15,7 @@ export class OrganizationEvent {
     }
 
     @OnEvent(COMPANY_ADMIN_ORGANIZATION_CREATED, { async: true })
-    handleCreateCompanyAdminOrganization(payload: ICompanyAdminOrganizationPayload, req: Request): void {
-        this.organizationEventService.createCompanyAdminOrganization(payload, req);
+    handleCreateCompanyAdminOrganization(payload: ICompanyAdminOrganizationPayload): void {
+        this.organizationEventService.createCompanyAdminOrganization(payload);
     }
 }
