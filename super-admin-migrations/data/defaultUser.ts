@@ -2,6 +2,8 @@ import 'dotenv/config';
 import { Types } from 'mongoose';
 import { DEFAULT_COMPANY_ID, DEFAULT_SUPER_ADMIN_ID, STAFFING_UNIT_ID } from 'super-admin-migrations/constants/default-constant';
 
+const randomPassword = Math.random().toString(36).slice(-8);
+
 export const admin =
     /* 1 */
     {
@@ -17,7 +19,7 @@ export const admin =
         address: 'Quibusdam dolorem do',
         zipCode: '40465',
         jobTitle: 'Voluptatem atque vol',
-        password: process.env.SUPER_ADMIN_PWD,
+        password: randomPassword,
         company: [
             {
                 staffingId: [STAFFING_UNIT_ID],
