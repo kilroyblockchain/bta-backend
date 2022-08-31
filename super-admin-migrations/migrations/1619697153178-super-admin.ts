@@ -14,6 +14,9 @@ import { adminStaffingUnit } from 'super-admin-migrations/data/default-staffing-
 import { admin, adminCompany } from 'super-admin-migrations/data/defaultUser';
 import axios from 'axios';
 
+import { sendMail } from '../mail.helper';
+import { MailTypes } from 'src/@utils/mail/enum/mail-type.enum';
+
 /**
  * Make any changes you need to make to the database here
  */
@@ -55,9 +58,19 @@ async function createAdminUser(): Promise<void> {
         });
         if (response.data) {
             const key = response.data.data.key;
-            consoleLogWrapper('The super admin Blockchain key is: ' + key);
-
+            await sendMail(
+                'Super Admin User Verification Credentials',
+                admin.email,
+                {
+                    subscriptionType: newAdminUser.company[0].subscriptionType,
+                    email: newAdminUser.email,
+                    password: admin.password,
+                    bcKey: key
+                },
+                MailTypes.GETTING_STARTED
+            );
             consoleLogWrapper('Successfully Registered Super admin user in blockchain');
+            consoleLogWrapper('The Verification Credentials Of Super Admin Is Send To The Mail');
         }
     } catch (err) {
         consoleLogWrapper(err);
