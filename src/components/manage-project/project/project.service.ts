@@ -122,7 +122,7 @@ export class ProjectService {
         return await this.projectModel.findOneAndUpdate({ _id: id, companyId }, { status: true }, { new: true });
     }
 
-    async addProjectPurpose(id: string, req: Request, file: Express.Multer.File, purpose: AddProjectPurposeDto): Promise<IProject> {
+    async addProjectPurpose(id: string, req: Request, file: Express.Multer.File, modelPurpose: AddProjectPurposeDto): Promise<IProject> {
         const project = await this.getProjectById(id, req);
         if (!project) throw new NotFoundException([MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND]);
 
@@ -131,12 +131,15 @@ export class ProjectService {
             project.purpose.docURL = `project-purposeDoc/${file.filename}`;
         }
 
-        if (purpose.purposeDoc === '') {
+        if (modelPurpose.purposeDoc === '') {
             project.purpose.docName = '';
             project.purpose.docURL = '';
         }
-        project.purpose.text = purpose.purpose;
+        project.purpose.text = modelPurpose.purpose;
+        project.domain = modelPurpose.domain;
+        project.details = modelPurpose.details;
 
+        await this.projectBcService.createBcProject(req, project);
         return await project.save();
     }
 

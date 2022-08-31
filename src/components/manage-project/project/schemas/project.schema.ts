@@ -14,8 +14,7 @@ export const ProjectSchema = new mongoose.Schema(
         details: {
             type: String,
             minlength: 2,
-            maxlength: 255,
-            required: true
+            maxlength: 255
         },
         members: [
             {
@@ -26,8 +25,7 @@ export const ProjectSchema = new mongoose.Schema(
         domain: {
             type: String,
             minlength: 2,
-            maxlength: 40,
-            required: true
+            maxlength: 40
         },
         purpose: {
             text: { type: String },

@@ -20,8 +20,11 @@ export class ProjectBcService {
         const logger = new Logger(ProjectBcService.name + '-createBcProject');
 
         try {
-            const entryUser = await this.userService.getUserEmail(project.createdBy);
+            const userId = req['user']._id;
+
+            const createdBy = await this.userService.getUserEmail(project.createdBy);
             const projectMembers = await this.userService.getUserEmail(project.members);
+            const entryUser = await this.userService.getUserEmail(userId);
 
             const query = { isCompanyChannel: true, isDefault: false };
             const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
@@ -36,7 +39,13 @@ export class ProjectBcService {
                 domain: project.domain,
                 status: project.status,
                 modelVersions: modelVersion,
-                entryUser: entryUser['email']
+                entryUser: entryUser['email'],
+                createdBy: createdBy['email'],
+                purposeDetail: {
+                    purpose: project.purpose.text,
+                    docName: project.purpose.docName,
+                    docUrl: project.purpose.docURL
+                }
             };
             return await this.bcConnectionService.invoke(projectDto, blockChainAuthDto);
         } catch (err) {
