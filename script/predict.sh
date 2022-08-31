@@ -3,10 +3,10 @@
 printHelp() {
     echo 'HELP:'
     echo 'Please follow the syntx below:'
-    echo './pretict.sh -imagePath PATH_TO_IMAGE'
+    echo './predict.sh -imagePath PATH_TO_IMAGE'
     echo 'Exmaple:'
-    echo './pretict.sh -imagePath ../stop.png'
-    echo 'Above code snippet has /preict rest api which takes traffic sign image file and returns the traffic sign class name and accuracy probability'
+    echo './predict.sh -imagePath ../stop.png'
+    echo 'Above code snippet has /predict rest api which takes traffic sign image file and returns the traffic sign class name and accuracy probability'
 }
 
 if [[ $# -lt 1 ]] ; then
