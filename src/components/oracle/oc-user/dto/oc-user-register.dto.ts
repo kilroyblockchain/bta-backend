@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class OCUserRegisterDto {
     @ApiProperty({
@@ -23,4 +23,13 @@ export class OCUserRegisterDto {
     @IsEmail()
     email: string;
     password: string;
+
+    @ApiProperty({
+        example: 'ai-engineer-1',
+        description: 'This is group name which should created on oracle group',
+        format: 'string'
+    })
+    @IsOptional()
+    @IsString()
+    oracleGroupName: string;
 }

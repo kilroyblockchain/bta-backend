@@ -166,6 +166,7 @@ export class UserService {
             const userDto = {} as RegisterUserDto;
             userDto.staffingId = newUserDto.staffingId;
             userDto.subscriptionType = subscription && subscription !== 'undefined' ? subscription : defaultCompany.subscriptionType;
+
             let randomPassword = null;
             try {
                 randomPassword = Math.random().toString(36).slice(-8);
@@ -173,18 +174,10 @@ export class UserService {
             } catch (err) {
                 throw new Error(USER_CONSTANT.FAILED_TO_GENERATE_RANDOM_PASSWORD_PLEASE_TRY_AGAIN);
             }
+
             const isEmailUnique = await this.isEmailUnique(newUser.email);
             if (!isEmailUnique) throw new BadRequestException([USER_CONSTANT.USER_EMAIL_HAS_ALREADY_BEEN_REGISTERED, newUser.email]);
             newUser.company = [this.initUserCompany(organizationData, userDto, false, true)];
-            const user = await newUser.save();
-            const userDetail = await this.uModel
-                .findById(user._id)
-                .populate({
-                    path: 'company.companyId company.staffingId country state',
-                    select: '-countryCode -idNumber -phoneCode -states -countryId -countryObjectId -__v',
-                    populate: { path: 'featureAndAccess.featureId organizationUnitId channels' }
-                })
-                .select('-password');
             const subscriptionTypeFull = await this.subsTypeService.getFullSubscription(userDto.subscriptionType);
             const staffing = await this.staffingService.getStaffingById(userDto.staffingId[0]);
 
@@ -195,18 +188,29 @@ export class UserService {
             // Get bc node info from User staffing
             const bcNodeInfoId = staffing.bcNodeInfo.toString();
 
-            const registerUserResponse = await this.userBcService.registerUser(new RegisterBcUserDto(user._id, user.email), new BcTransactionInfoDto(key, parentUser.bcSalt, channelName), bcNodeInfoId);
-            user.bcSalt = registerUserResponse.salt;
+            const registerUserResponse = await this.userBcService.registerUser(new RegisterBcUserDto(newUser._id, newUser.email), new BcTransactionInfoDto(key, parentUser.bcSalt, channelName), bcNodeInfoId);
+            newUser.bcSalt = registerUserResponse.salt;
 
             const ocUserRegisterDto = {
-                firstName: user.firstName,
-                lastName: user.lastName,
-                email: user.email,
-                password: 'Test@1234'
+                firstName: newUser.firstName,
+                lastName: newUser.lastName,
+                email: newUser.email,
+                password: 'Test@1234',
+                oracleGroupName: staffing.oracleGroupName
             };
 
             await this.ocUserService.registerUser(ocUserRegisterDto);
-            await user.save();
+
+            const user = await newUser.save();
+            const userDetail = await this.uModel
+                .findById(user._id)
+                .populate({
+                    path: 'company.companyId company.staffingId country state',
+                    select: '-countryCode -idNumber -phoneCode -states -countryId -countryObjectId -__v',
+                    populate: { path: 'featureAndAccess.featureId organizationUnitId channels' }
+                })
+                .select('-password');
+
             this.eventEmitter.emit(
                 USER_REGISTERED,
                 new GettingStartedEmailDto({
@@ -399,7 +403,6 @@ export class UserService {
                     companyId: verifyEmailDto.companyId,
                     bcNodeInfo: verifyEmailDto.bcNodeInfo,
                     channels: verifyEmailDto.channels,
-                    bucketUrl: verifyEmailDto.bucketUrl,
                     organizationName: verifyEmailDto.organizationName,
                     staffingType: verifyEmailDto.subscriptionType,
                     userId: verifyEmailDto.userId,
@@ -408,15 +411,6 @@ export class UserService {
 
                 registrationResponse = await this.userBcService.registerSuperAdminToMultiOrg(new RegisterBcUserDto(verifyEmailDto.userId, user.email));
                 user.bcSalt = registrationResponse.salt;
-
-                const ocUserRegisterDto = {
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    email: user.email,
-                    password: 'Test@1234'
-                };
-
-                await this.ocUserService.registerUser(ocUserRegisterDto);
 
                 await user.save();
             } catch (error) {

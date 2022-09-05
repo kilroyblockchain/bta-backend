@@ -3,5 +3,6 @@ export const OC_CONSTANT = {
     USER_ADDED_TO_GROUP: 'USER_ADDED_TO_GROUP',
     USER_REGISTERED_SUCCESSFULLY: 'USER_REGISTERED_SUCCESSFULLY',
     UNABLE_TO_REGISTER_USER_IN_OC: 'Unable to register user in oracle bucket cloud',
-    USER_ALREADY_REGISTERED_WITH_THIS_EMAIL: 'User with the same email already exists'
+    USER_ALREADY_REGISTERED_WITH_THIS_EMAIL: 'User with the same email already exists',
+    ORACLE_GROUP_DOES_NOT_EXITS: "Oracle Group Doesn't Exits"
 };
