@@ -1,8 +1,9 @@
-import { BadRequestException, ConflictException, forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, forwardRef, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { OC_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { OC_CONNECTION_API } from 'src/@core/constants/bc-constants/oc-connection.api.constant';
 import { UserService } from 'src/components/app-user/user/user.service';
 import { OCConnectorService } from '../oc-connector/oc-connector.service';
+import { OCGroupDto } from '../oc-group/dto/oc-group.dto';
 import { OCGroupService } from '../oc-group/oc-group.service';
 import { OCUserRegisterDto } from './dto/oc-user-register.dto';
 
@@ -14,16 +15,16 @@ export class OCUserService {
         try {
             ocUserRegisterDto.password = 'Test@1234';
             const userRegister = await this.ocConnectorService.post(ocUserRegisterDto, OC_CONNECTION_API.REGISTER_USER);
+
             if (!userRegister) {
                 throw new BadRequestException([OC_CONSTANT.UNABLE_TO_REGISTER_USER_IN_OC]);
             }
-            const userOracleGroupName = await this.userService.getUserOracleGroupName(ocUserRegisterDto.email);
 
-            const allOracleGroup = await this.ocGroupService.getAllGroupList();
-            const group = allOracleGroup.find((f) => f.displayName === userOracleGroupName.company[0].staffingId[0]['oracleGroupName']);
+            const oracleGroup = await this.isOracleGroupExits(ocUserRegisterDto.oracleGroupName);
+            if (!oracleGroup) throw new NotFoundException([OC_CONSTANT.ORACLE_GROUP_DOES_NOT_EXITS]);
 
             const oracleGroupDto = {
-                groupId: group.id,
+                groupId: oracleGroup.id,
                 email: ocUserRegisterDto.email
             };
 
@@ -32,6 +33,14 @@ export class OCUserService {
             if (err.status == HttpStatus.CONFLICT) {
                 throw new ConflictException([OC_CONSTANT.USER_ALREADY_REGISTERED_WITH_THIS_EMAIL]);
             }
+            throw err;
         }
+    }
+
+    async isOracleGroupExits(oracleGroupName: string): Promise<OCGroupDto> {
+        const allOracleGroup = await this.ocGroupService.getAllGroupList();
+        const group = allOracleGroup.find((f) => f.displayName === oracleGroupName);
+
+        return group;
     }
 }

@@ -200,7 +200,7 @@ export class OrganizationEventService {
             const organizationUnit = await this.organizationService.createNewOrganizationUnit(organizationUnitDto);
 
             const COMPANY_ADMIN_STAFFING_UNIT = {
-                staffingName: payload.organizationName + ' - ' + 'Admin',
+                staffingName: payload.organizationName + '-' + 'Admin',
                 featureAndAccess: [
                     {
                         accessType: ['R', 'W', 'U', 'D'],
@@ -268,8 +268,8 @@ export class OrganizationEventService {
                 status: true,
                 bcNodeInfo: payload.bcNodeInfo,
                 channels: payload.channels,
-                bucketUrl: payload.bucketUrl,
-                oracleGroupName: payload.organizationName + ' - ' + 'Admin'.toLowerCase().replace(' ', '-')
+                bucketUrl: null,
+                oracleGroupName: (payload.organizationName + '-' + 'Admin').split(' ').join('-').toLowerCase()
             };
 
             const staffingUnitDto = new CreateStaffingDto(COMPANY_ADMIN_STAFFING_UNIT);

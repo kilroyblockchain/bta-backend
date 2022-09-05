@@ -50,5 +50,5 @@ export const adminStaffingUnit = {
     bcNodeInfo: DEFAULT_BC_NODE_INFO_ID,
     channels: [GLOBAL_CHANNEL_ID],
     bucketUrl: null,
-    oracleGroupName: 'Super Admin Staffing'.toLowerCase().replace(' ', '-')
+    oracleGroupName: 'Super Admin Staffing'.split(' ').join('-').toLowerCase()
 };
