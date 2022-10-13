@@ -53,7 +53,7 @@ export class ChannelDetailController {
         description: 'Unauthorized.'
     })
     @Permission(ACCESS_TYPE.WRITE)
-    @Roles(ROLE.SUPER_ADMIN)
+    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF)
     async updateChannelDetails(@Param('channelDetailId') channelDetailId: string, @Body() channelDetailDto: ChannelDetailDto): Promise<Response> {
         return new Response(true, [CHANNEL_DETAIL.SUCCESSFULLY_UPDATED_CHANNEL_DETAIL]).setSuccessData(await this.channelDetailService.updateChannelDetail(channelDetailId, channelDetailDto)).setStatus(HttpStatus.OK);
     }
