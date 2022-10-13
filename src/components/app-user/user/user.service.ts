@@ -28,12 +28,10 @@ import { VerificationService } from '../verification/verification.service';
 import { OrganizationStaffingService } from '../user-roles/organization-staffing/organization-staffing.service';
 import { ICompany, IUser, ILoginCount, IUserResponse, IUserWithBlockchain, ICompanyAdmin, IJWTUserData, IUserData } from './interfaces/user.interface';
 import { ICompanyDto, IOrganization } from '../organization/interfaces/organization.interface';
-import { BC_STATUS } from 'src/@core/constants/bc-status.enum';
 import { getArraysComplement, getClientTimezoneId, getHourMinuteDiff } from 'src/@core/utils/common.utils';
 import { fullSubscriptionType } from '../subscription-type/subscription-type.constant';
 import { getSearchFilterWithRegexAll } from 'src/@core/utils/query-filter.utils';
 import { buildPaginateResult, getFinalPaginationResult, getPaginateDocumentStage, populateField, sortDocumentsBy } from 'src/@core/utils/aggregate-paginate.utils';
-import { CHANNEL_DETAIL } from 'src/@core/constants/bc-constants/channel-detail.constant';
 import { RejectUserDto } from './dto/reject-user.dto';
 import { UserRejectInfoService } from '../user-reject-info/user-reject-info.service';
 import { CAPTCHA_STATUS } from 'src/@core/constants/captcha-status.enum';
@@ -372,12 +370,6 @@ export class UserService {
     async verifyEmailByAdmin(verifyEmailDto: VerifyEmailDto, req: Request): Promise<void> {
         const logger = new Logger(UserService.name + '-verifyEmailByAdmin');
         try {
-            if (process.env.BLOCKCHAIN === BC_STATUS.ENABLED) {
-                if (!verifyEmailDto.channelId) {
-                    logger.error(CHANNEL_DETAIL.CHANNEL_ID_NOT_FOUND);
-                    throw new NotFoundException(CHANNEL_DETAIL.CHANNEL_ID_NOT_FOUND);
-                }
-            }
             const user = await this.UserModel.findById(verifyEmailDto.userId).exec();
             const alreadyHaveVerifiedSubscription = user.company.find((element) => element.verified);
             let randomPassword = Math.random().toString(36).slice(-8);
