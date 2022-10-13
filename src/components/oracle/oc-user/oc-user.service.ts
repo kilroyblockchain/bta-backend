@@ -13,15 +13,15 @@ export class OCUserService {
 
     async registerUser(ocUserRegisterDto: OCUserRegisterDto): Promise<void> {
         try {
+            const oracleGroup = await this.isOracleGroupExits(ocUserRegisterDto.oracleGroupName);
+            if (!oracleGroup) throw new NotFoundException([OC_CONSTANT.ORACLE_GROUP_DOES_NOT_EXITS]);
+
             ocUserRegisterDto.password = 'Test@1234';
             const userRegister = await this.ocConnectorService.post(ocUserRegisterDto, OC_CONNECTION_API.REGISTER_USER);
 
             if (!userRegister) {
                 throw new BadRequestException([OC_CONSTANT.UNABLE_TO_REGISTER_USER_IN_OC]);
             }
-
-            const oracleGroup = await this.isOracleGroupExits(ocUserRegisterDto.oracleGroupName);
-            if (!oracleGroup) throw new NotFoundException([OC_CONSTANT.ORACLE_GROUP_DOES_NOT_EXITS]);
 
             const oracleGroupDto = {
                 groupId: oracleGroup.id,
