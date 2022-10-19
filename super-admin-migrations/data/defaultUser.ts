@@ -9,7 +9,7 @@ export const admin =
     {
         _id: DEFAULT_SUPER_ADMIN_ID,
         loginAttempts: 0,
-        autoPassword: false,
+        autoPassword: true,
         firstName: 'Suyog',
         lastName: 'Khanal',
         email: process.env.SUPER_ADMIN_EMAIL,
