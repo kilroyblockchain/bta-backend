@@ -64,17 +64,22 @@ export class ProjectVersionService {
         return await this.versionModel.findOne({ _id: id });
     }
 
-    async updateVersion(id: string, updateVersion: AddVersionDto, req: Request): Promise<IProjectVersion> {
+    async updateVersion(id: string, updateVersionDto: AddVersionDto, req: Request): Promise<IProjectVersion> {
         const version = await this.getVersionById(id);
         if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
 
-        const isVersionUnique = await this.isVersionUnique(updateVersion.versionName, version.project);
-        if (!isVersionUnique && version.versionName !== updateVersion.versionName) {
+        const isVersionUnique = await this.isVersionUnique(updateVersionDto.versionName, version.project);
+        if (!isVersionUnique && version.versionName !== updateVersionDto.versionName) {
             throw new ConflictException(MANAGE_PROJECT_CONSTANT.PROJECT_VERSION_CONFLICT);
         }
 
-        const updatedVersion = await this.versionModel.findOneAndUpdate({ _id: version._id }, updateVersion, { new: true });
-        await this.aiModelService.getAllOracleDataBcHash(req, updatedVersion._id, VERSION_GET_BC_HASH_ACTIONS.UPDATE);
+        const updatedVersion = await this.versionModel.findOneAndUpdate({ _id: version._id }, updateVersionDto, { new: true });
+
+        if (updatedVersion.versionName !== updateVersionDto.versionName) {
+            await this.aiModelService.getAllOracleDataBcHash(req, updatedVersion._id, VERSION_GET_BC_HASH_ACTIONS.UPDATE);
+        } else {
+            await this.versionBcService.createBcProjectVersion(req, updatedVersion);
+        }
 
         return updatedVersion;
     }
