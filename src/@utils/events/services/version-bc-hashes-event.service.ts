@@ -15,6 +15,7 @@ import { IAiArtifactsModel } from 'src/components/manage-project/ai-model/interf
 import { AIModelBcService } from 'src/components/manage-project/ai-model/ai-model-bc.service';
 import * as stream from 'node:stream';
 import * as util from 'node:util';
+import { VERSION_GET_BC_HASH_ACTIONS } from 'src/@core/constants';
 
 const pathName = process.cwd() + `/uploads/oracle-ai-model-data`;
 const pipeline = util.promisify(stream.pipeline);
@@ -29,7 +30,23 @@ export class VersionBcHashesEventService {
         private readonly aiModelBcService: AIModelBcService
     ) {}
 
-    async versionAllBcHashesEvent(version: IProjectVersion, req: Request): Promise<void> {
+    async versionAllBcHashesEvent(version: IProjectVersion, req: Request, getBcHashActionType: string): Promise<void> {
+        if (getBcHashActionType === VERSION_GET_BC_HASH_ACTIONS.UPDATE) {
+            version.logFileStatus.code = OracleBucketDataStatus.FETCHING;
+            version.testDatasetStatus.code = OracleBucketDataStatus.FETCHING;
+            version.trainDatasetStatus.code = OracleBucketDataStatus.FETCHING;
+            version.aiModelStatus.code = OracleBucketDataStatus.FETCHING;
+            await version.save();
+
+            await this.aiArtifactsModel.deleteMany({ version: version._id });
+            await this.aiModel.deleteMany({ version: version._id });
+
+            await this.getLogFileBcHash(version, req);
+            await this.getTestDataSetsBCHash(version);
+            await this.getTrainDataSetsBcHash(version);
+            await this.getAiModelBcHash(version, req);
+        }
+
         await this.getLogFileBcHash(version, req);
         await this.getTestDataSetsBCHash(version);
         await this.getTrainDataSetsBcHash(version);
@@ -68,8 +85,8 @@ export class VersionBcHashesEventService {
                 await this.aiModelBcService.createBcExperiment(req, experiment);
             }
         } catch (err) {
-            const errorStatus = err.response.data.code;
-            const errorMessage = err.response.data.message;
+            const errorStatus = err.response?.data?.code;
+            const errorMessage = err.response?.data?.message;
             if (logFileBCHash.length) {
                 version.logFileBCHash = await sha256Hash(JSON.stringify(logFileBCHash));
                 version.logFileStatus.code = OracleBucketDataStatus.FETCHED;
@@ -168,17 +185,17 @@ export class VersionBcHashesEventService {
         } catch (err) {
             let streamString = '';
 
-            const errorConcatation = new stream.Transform({
+            const errorConcatenation = new stream.Transform({
                 transform(chunk, encoding, callback): void {
                     streamString += chunk;
                     callback(null, chunk);
                 }
             });
 
-            await pipeline(err.response.data, errorConcatation);
+            await pipeline(err.response.data, errorConcatenation);
 
-            version.testDatasetStatus.code = OracleBucketDataStatus.ERROR;
-            version.testDatasetStatus.message = JSON.parse(streamString).message;
+            version.trainDatasetStatus.code = OracleBucketDataStatus.ERROR;
+            version.trainDatasetStatus.message = JSON.parse(streamString).message;
 
             await version.save();
         }
@@ -229,14 +246,14 @@ export class VersionBcHashesEventService {
             } catch (err) {
                 if (!counter) {
                     let streamString = '';
-                    const errorConcatation = new stream.Transform({
+                    const errorConcatenation = new stream.Transform({
                         transform(chunk, encoding, callback): void {
                             streamString += chunk;
                             callback(null, chunk);
                         }
                     });
 
-                    await pipeline(err.response.data, errorConcatation);
+                    await pipeline(err.response.data, errorConcatenation);
 
                     version.aiModelStatus.code = OracleBucketDataStatus.ERROR;
                     version.aiModelStatus.message = JSON.parse(streamString).message;
