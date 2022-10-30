@@ -45,6 +45,8 @@ export class VersionBcHashesEventService {
             await this.getTestDataSetsBCHash(version);
             await this.getTrainDataSetsBcHash(version);
             await this.getAiModelBcHash(version, req);
+
+            this.versionBcService.createBcProjectVersion(req, version);
         }
 
         await this.getLogFileBcHash(version, req);
