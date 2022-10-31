@@ -57,7 +57,7 @@ export class ProjectVersionService {
 
         if (version) {
             const versionInProject = await this.projectService.checkVersionInProject(projectId, version._id);
-            if (version && versionInProject) {
+            if (versionInProject) {
                 return false;
             }
         }
