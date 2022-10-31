@@ -10,8 +10,8 @@ export class VersionBcHashesEvent {
     constructor(private readonly versionBcHashesEventService: VersionBcHashesEventService) {}
 
     @OnEvent(VERSION_ALL_ORACLE_BC_HASHES, { async: true })
-    handleVersionAllBcHashes(payload: { version: IProjectVersion; req: Request }): void {
-        this.versionBcHashesEventService.versionAllBcHashesEvent(payload.version, payload.req);
+    handleVersionAllBcHashes(payload: { version: IProjectVersion; req: Request; getBcHashActionType: string }): void {
+        this.versionBcHashesEventService.versionAllBcHashesEvent(payload.version, payload.req, payload.getBcHashActionType);
     }
 
     @OnEvent(REVIEW_MODEL_ALL_ORACLE_BC_HASHES, { async: true })

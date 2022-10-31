@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
+import { MANAGE_PROJECT_CONSTANT, VERSION_GET_BC_HASH_ACTIONS } from 'src/@core/constants';
 import { IProjectVersion } from './interfaces/project-version.interface';
 import { AddReviewModelDto, AddVersionDto } from './dto';
 import { Request } from 'express';
@@ -48,7 +48,7 @@ export class ProjectVersionService {
 
         await project.save();
         const newVersion = await version.save();
-        await this.aiModelService.getAllOracleDataBcHash(req, newVersion._id);
+        await this.aiModelService.getAllOracleDataBcHash(req, newVersion._id, VERSION_GET_BC_HASH_ACTIONS.CREATE);
         return newVersion;
     }
 
@@ -64,17 +64,22 @@ export class ProjectVersionService {
         return await this.versionModel.findOne({ _id: id });
     }
 
-    async updateVersion(id: string, updateVersion: AddVersionDto, req: Request): Promise<IProjectVersion> {
+    async updateVersion(id: string, updateVersionDto: AddVersionDto, req: Request): Promise<IProjectVersion> {
         const version = await this.getVersionById(id);
         if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
 
-        const isVersionUnique = await this.isVersionUnique(updateVersion.versionName, version.project);
-        if (!isVersionUnique && version.versionName !== updateVersion.versionName) {
+        const isVersionUnique = await this.isVersionUnique(updateVersionDto.versionName, version.project);
+        if (!isVersionUnique && version.versionName !== updateVersionDto.versionName) {
             throw new ConflictException(MANAGE_PROJECT_CONSTANT.PROJECT_VERSION_CONFLICT);
         }
 
-        const updatedVersion = await this.versionModel.findOneAndUpdate({ _id: version._id }, updateVersion, { new: true });
-        await this.versionBcService.createBcProjectVersion(req, updatedVersion);
+        const updatedVersion = await this.versionModel.findOneAndUpdate({ _id: version._id }, updateVersionDto, { new: true });
+
+        if (version.versionName !== updateVersionDto.versionName) {
+            await this.aiModelService.getAllOracleDataBcHash(req, updatedVersion._id, VERSION_GET_BC_HASH_ACTIONS.UPDATE);
+        } else {
+            await this.versionBcService.createBcProjectVersion(req, updatedVersion);
+        }
 
         return updatedVersion;
     }

@@ -98,13 +98,14 @@ export class AiModelService {
         }
     }
 
-    async getAllOracleDataBcHash(req: Request, versionId: string): Promise<void> {
+    async getAllOracleDataBcHash(req: Request, versionId: string, getBcHashActionType: string): Promise<void> {
         const version = await this.versionService.getVersionInfo(versionId);
         if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
 
         this.eventEmitter.emit(VERSION_ALL_ORACLE_BC_HASHES, {
             version,
-            req
+            req,
+            getBcHashActionType
         });
     }
 
