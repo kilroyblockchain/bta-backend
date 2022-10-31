@@ -156,4 +156,12 @@ export class ProjectService {
         if (isAIEngineer && isMLOpsEngineer && isStakeholder) return true;
         return false;
     }
+
+    async checkVersionInProject(projectId: string, versionId: string): Promise<boolean> {
+        const versionInProject = await this.projectModel.findOne({ _id: projectId, projectVersions: versionId });
+        if (versionInProject) {
+            return true;
+        }
+        return false;
+    }
 }

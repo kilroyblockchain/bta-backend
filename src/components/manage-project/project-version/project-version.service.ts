@@ -53,10 +53,15 @@ export class ProjectVersionService {
     }
 
     async isVersionUnique(name: string, projectId: string): Promise<boolean> {
-        const version = await this.versionModel.findOne({ versionName: { $regex: name, $options: 'i' }, project: projectId });
+        const version = await this.versionModel.findOne({ versionName: name.toLowerCase() });
+
         if (version) {
-            return false;
+            const versionInProject = await this.projectService.checkVersionInProject(projectId, version._id);
+            if (versionInProject) {
+                return false;
+            }
         }
+
         return true;
     }
 
