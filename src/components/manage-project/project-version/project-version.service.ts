@@ -75,7 +75,7 @@ export class ProjectVersionService {
 
         const updatedVersion = await this.versionModel.findOneAndUpdate({ _id: version._id }, updateVersionDto, { new: true });
 
-        if (updatedVersion.versionName !== updateVersionDto.versionName) {
+        if (version.versionName !== updateVersionDto.versionName) {
             await this.aiModelService.getAllOracleDataBcHash(req, updatedVersion._id, VERSION_GET_BC_HASH_ACTIONS.UPDATE);
         } else {
             await this.versionBcService.createBcProjectVersion(req, updatedVersion);
