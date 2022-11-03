@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { MANAGE_PROJECT_CONSTANT, VERSION_GET_BC_HASH_ACTIONS } from 'src/@core/constants';
@@ -31,176 +31,241 @@ export class ProjectVersionService {
     ) {}
 
     async addNewVersion(req: Request, projectId: string, newVersionDto: AddVersionDto): Promise<IProjectVersion> {
-        const user = req['user']._id;
+        const logger = new Logger(ProjectVersionService.name + '-createBcExperiment');
+        try {
+            const user = req['user']._id;
 
-        const project = await this.projectService.getProjectById(projectId, req);
-        if (!project) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
+            const project = await this.projectService.getProjectById(projectId, req);
+            if (!project) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
 
-        const isVersionUnique = await this.isVersionUnique(newVersionDto.versionName, project._id);
-        if (!isVersionUnique) throw new ConflictException(MANAGE_PROJECT_CONSTANT.PROJECT_VERSION_CONFLICT);
+            const isVersionUnique = await this.isVersionUnique(newVersionDto.versionName, project._id);
+            if (!isVersionUnique) throw new ConflictException(MANAGE_PROJECT_CONSTANT.PROJECT_VERSION_CONFLICT);
 
-        const version = new this.versionModel(newVersionDto);
+            const version = new this.versionModel(newVersionDto);
 
-        version.createdBy = user;
-        version.project = project._id;
+            version.createdBy = user;
+            version.project = project._id;
 
-        project.projectVersions.push(version._id);
+            project.projectVersions.push(version._id);
 
-        await project.save();
-        const newVersion = await version.save();
-        await this.aiModelService.getAllOracleDataBcHash(req, newVersion._id, VERSION_GET_BC_HASH_ACTIONS.CREATE);
-        return newVersion;
+            await project.save();
+            const newVersion = await version.save();
+            await this.aiModelService.getAllOracleDataBcHash(req, newVersion._id, VERSION_GET_BC_HASH_ACTIONS.CREATE);
+            return newVersion;
+        } catch (err) {
+            logger.error(err);
+            throw err;
+        }
     }
 
     async isVersionUnique(name: string, projectId: string): Promise<boolean> {
-        const version = await this.versionModel.findOne({ versionName: name.toLowerCase() });
-
-        if (version) {
-            const versionInProject = await this.projectService.checkVersionInProject(projectId, version._id);
-            if (versionInProject) {
-                return false;
+        const logger = new Logger(ProjectVersionService.name + '-isVersionUnique');
+        try {
+            const version = await this.versionModel.findOne({ versionName: name.toLowerCase() });
+            if (version) {
+                const versionInProject = await this.projectService.checkVersionInProject(projectId, version._id);
+                if (versionInProject) {
+                    return false;
+                }
             }
-        }
 
-        return true;
+            return true;
+        } catch (err) {
+            logger.error(err);
+            throw err;
+        }
     }
 
     async getVersionById(id: string): Promise<IProjectVersion> {
-        return await this.versionModel.findOne({ _id: id });
+        const logger = new Logger(ProjectVersionService.name + '-getVersionById');
+        try {
+            return await this.versionModel.findOne({ _id: id });
+        } catch (err) {
+            logger.error(err);
+            throw err;
+        }
     }
 
     async updateVersion(id: string, updateVersionDto: AddVersionDto, req: Request): Promise<IProjectVersion> {
-        const version = await this.getVersionById(id);
-        if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+        const logger = new Logger(ProjectVersionService.name + '-updateVersion');
+        try {
+            const version = await this.getVersionById(id);
+            if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
 
-        const isVersionUnique = await this.isVersionUnique(updateVersionDto.versionName, version.project);
-        if (!isVersionUnique && version.versionName !== updateVersionDto.versionName) {
-            throw new ConflictException(MANAGE_PROJECT_CONSTANT.PROJECT_VERSION_CONFLICT);
+            const isVersionUnique = await this.isVersionUnique(updateVersionDto.versionName, version.project);
+            if (!isVersionUnique && version.versionName !== updateVersionDto.versionName) {
+                throw new ConflictException(MANAGE_PROJECT_CONSTANT.PROJECT_VERSION_CONFLICT);
+            }
+
+            const updatedVersion = await this.versionModel.findOneAndUpdate({ _id: version._id }, updateVersionDto, { new: true });
+
+            if (version.versionName !== updateVersionDto.versionName) {
+                await this.aiModelService.getAllOracleDataBcHash(req, updatedVersion._id, VERSION_GET_BC_HASH_ACTIONS.UPDATE);
+            } else {
+                await this.versionBcService.createBcProjectVersion(req, updatedVersion);
+            }
+
+            return updatedVersion;
+        } catch (err) {
+            logger.error(err);
+            throw err;
         }
-
-        const updatedVersion = await this.versionModel.findOneAndUpdate({ _id: version._id }, updateVersionDto, { new: true });
-
-        if (version.versionName !== updateVersionDto.versionName) {
-            await this.aiModelService.getAllOracleDataBcHash(req, updatedVersion._id, VERSION_GET_BC_HASH_ACTIONS.UPDATE);
-        } else {
-            await this.versionBcService.createBcProjectVersion(req, updatedVersion);
-        }
-
-        return updatedVersion;
     }
 
     async getVersionInfo(id: string): Promise<IProjectVersion> {
-        const version = await this.getVersionById(id);
-        if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+        const logger = new Logger(ProjectVersionService.name + '-getVersionInfo');
+        try {
+            const version = await this.getVersionById(id);
+            if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
 
-        const versionInfo = await version.populate([
-            { path: 'project', select: 'name domain details _id' },
-            { path: 'createdBy', select: 'firstName lastName email _id' }
-        ]);
+            const versionInfo = await version.populate([
+                { path: 'project', select: 'name domain details _id' },
+                { path: 'createdBy', select: 'firstName lastName email _id' }
+            ]);
 
-        return versionInfo;
+            return versionInfo;
+        } catch (err) {
+            logger.error(err);
+            throw err;
+        }
     }
 
     async deleteVersion(id: string): Promise<IProjectVersion> {
-        const version = await this.versionModel.findOneAndUpdate({ _id: id }, { status: false }, { new: true });
-        if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+        const logger = new Logger(ProjectVersionService.name + '-deleteVersion');
+        try {
+            const version = await this.versionModel.findOneAndUpdate({ _id: id }, { status: false }, { new: true });
+            if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
 
-        return version;
+            return version;
+        } catch (err) {
+            logger.error(err);
+            throw err;
+        }
     }
 
     async enableVersion(id: string): Promise<IProjectVersion> {
-        const version = await this.versionModel.findOneAndUpdate({ _id: id }, { status: true }, { new: true });
-        if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+        const logger = new Logger(ProjectVersionService.name + '-enableVersion');
+        try {
+            const version = await this.versionModel.findOneAndUpdate({ _id: id }, { status: true }, { new: true });
+            if (!version) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
 
-        return version;
+            return version;
+        } catch (err) {
+            logger.error(err);
+            throw err;
+        }
     }
 
     async addReviewModel(req: Request, projectId: string, newVersion: AddReviewModelDto): Promise<IProjectVersion> {
-        const user = req['user']._id;
+        const logger = new Logger(ProjectVersionService.name + '-enableVersion');
+        try {
+            const user = req['user']._id;
 
-        const project = await this.projectService.getProjectById(projectId, req);
-        if (!project) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
+            const project = await this.projectService.getProjectById(projectId, req);
+            if (!project) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
 
-        const version = new this.versionModel(newVersion);
-        version.createdBy = user;
-        version.project = project._id;
-        version.versionStatus = VersionStatus.MLOPS_REVIEW;
-        const reviewModel = await version.save();
+            const version = new this.versionModel(newVersion);
+            version.createdBy = user;
+            version.project = project._id;
+            version.versionStatus = VersionStatus.MLOPS_REVIEW;
+            const reviewModel = await version.save();
 
-        this.eventEmitter.emit(REVIEW_MODEL_ALL_ORACLE_BC_HASHES, {
-            reviewModel,
-            req
-        });
+            this.eventEmitter.emit(REVIEW_MODEL_ALL_ORACLE_BC_HASHES, {
+                reviewModel,
+                req
+            });
 
-        return reviewModel;
+            return reviewModel;
+        } catch (err) {
+            logger.error(err);
+            throw err;
+        }
     }
 
     async submitModelVersion(req: Request, versionId: string): Promise<IProjectVersion> {
-        const version = await this.getVersionById(versionId);
-        const userId = req['user']._id;
+        const logger = new Logger(ProjectVersionService.name + '-submitModelVersion');
+        try {
+            const version = await this.getVersionById(versionId);
+            const userId = req['user']._id;
 
-        if (!version) {
-            throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+            if (!version) {
+                throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+            }
+            if (version.createdBy.toString() !== userId.toString()) {
+                throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_SUBMIT_MODEL_VERSION);
+            }
+
+            version.versionStatus = VersionStatus.PENDING;
+            version.submittedDate = new Date();
+            const versionBcDetails = await this.versionBcService.getProjectVersionDetails(version._id, req);
+
+            const project = await this.projectService.getProjectById(version.project, req);
+            if (!project) {
+                throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
+            }
+
+            await this.versionBcService.channelTransferModelVersion(versionBcDetails.data, req);
+
+            const allExperimentIds = await this.aiModelService.getAllExperimentIds(versionBcDetails.data.id);
+            for (const experimentId of allExperimentIds) {
+                const experimentBcDetails = await this.aiModelBcService.getExperimentBcDetails(experimentId._id, req);
+
+                await this.aiModelBcService.channelTransferExperiment(experimentBcDetails.data.data, req);
+            }
+
+            const allArtifactModelIds = await this.aiModelService.getAllArtifactModelIds(versionBcDetails.data.id);
+            for (const artifactModelId of allArtifactModelIds) {
+                const artifactModelBcDetails = await this.aiModelBcService.getArtifactModelBcDetails(artifactModelId._id, req);
+                await this.aiModelBcService.channelTransferArtifactModel(artifactModelBcDetails.data.data, req);
+            }
+
+            const updatedVersion = await version.save();
+            await this.modelReviewBcService.createBcPendingVersion(req, updatedVersion);
+            await this.projectBcService.createBcProject(req, project);
+
+            return updatedVersion;
+        } catch (err) {
+            logger.error(err);
+            throw err;
         }
-        if (version.createdBy.toString() !== userId.toString()) {
-            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_SUBMIT_MODEL_VERSION);
-        }
-
-        version.versionStatus = VersionStatus.PENDING;
-        version.submittedDate = new Date();
-        const versionBcDetails = await this.versionBcService.getProjectVersionDetails(version._id, req);
-
-        const project = await this.projectService.getProjectById(version.project, req);
-        if (!project) {
-            throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND);
-        }
-
-        await this.versionBcService.channelTransferModelVersion(versionBcDetails.data, req);
-
-        const allExperimentIds = await this.aiModelService.getAllExperimentIds(versionBcDetails.data.id);
-        for (const experimentId of allExperimentIds) {
-            const experimentBcDetails = await this.aiModelBcService.getExperimentBcDetails(experimentId._id, req);
-
-            await this.aiModelBcService.channelTransferExperiment(experimentBcDetails.data.data, req);
-        }
-
-        const allArtifactModelIds = await this.aiModelService.getAllArtifactModelIds(versionBcDetails.data.id);
-        for (const artifactModelId of allArtifactModelIds) {
-            const artifactModelBcDetails = await this.aiModelBcService.getArtifactModelBcDetails(artifactModelId._id, req);
-            await this.aiModelBcService.channelTransferArtifactModel(artifactModelBcDetails.data.data, req);
-        }
-
-        const updatedVersion = await version.save();
-        await this.modelReviewBcService.createBcPendingVersion(req, updatedVersion);
-        await this.projectBcService.createBcProject(req, project);
-
-        return updatedVersion;
     }
 
     async getVersionData(versionIds: string[]): Promise<{ id: string; versionName: string }[]> {
-        const versionData: { id: string; versionName: string }[] = [];
-        for (const id of versionIds) {
-            const version = await this.versionModel.findOne({ _id: id, versionStatus: { $ne: VersionStatus.DRAFT } }).select('_id versionName');
-            if (version) {
-                const versionInfo = {
-                    id: version._id,
-                    versionName: version.versionName
-                };
-                versionData.push(versionInfo);
+        const logger = new Logger(ProjectVersionService.name + '-getVersionData');
+        try {
+            const versionData: { id: string; versionName: string }[] = [];
+            for (const id of versionIds) {
+                const version = await this.versionModel.findOne({ _id: id, versionStatus: { $ne: VersionStatus.DRAFT } }).select('_id versionName');
+                if (version) {
+                    const versionInfo = {
+                        id: version._id,
+                        versionName: version.versionName
+                    };
+                    versionData.push(versionInfo);
+                }
             }
+            return versionData;
+        } catch (err) {
+            logger.error(err);
+            throw err;
         }
-        return versionData;
     }
 
     async getDefaultBucketUrl(req: Request, projectId: string): Promise<string> {
-        const project = await this.projectService.getProjectById(projectId, req);
+        const logger = new Logger(ProjectVersionService.name + '-getDefaultBucketUrl');
+        try {
+            const project = await this.projectService.getProjectById(projectId, req);
 
-        const query = { isCompanyChannel: false, isDefault: false };
-        const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
+            const query = { isCompanyChannel: false, isDefault: false };
+            const userData = await this.userService.getUserBcInfoAndChannelDetails(req, query);
 
-        const bucketUrl = userData.company[0].staffingId[0]['bucketUrl'];
-        const defaultBucketUrl = bucketUrl + `/${project.name}`;
+            const bucketUrl = userData.company[0].staffingId[0]['bucketUrl'];
+            const defaultBucketUrl = bucketUrl + `/${project.name}`;
 
-        return defaultBucketUrl;
+            return defaultBucketUrl;
+        } catch (err) {
+            logger.error(err);
+            throw err;
+        }
     }
 }
