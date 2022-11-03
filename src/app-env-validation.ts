@@ -5,7 +5,7 @@ const production = process.env.ENVIRONMENT === 'prod' || process.env.ENVIRONMENT
 const mailCatcher = process.env.EMAIL_HOST === 'mailcatcherBta';
 
 export const envValidationSchema = Joi.object({
-    ENVIRONMENT: Joi.string().required().equal('local', 'test', 'dev', 'demo', 'production'),
+    ENVIRONMENT: Joi.string().required().equal('local', 'test', 'dev', 'demo', 'prod'),
     APP_NAME: Joi.string().required(),
     CLIENT_APP_URL: Joi.string().required(),
     /**
