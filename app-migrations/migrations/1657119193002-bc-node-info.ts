@@ -3,13 +3,13 @@ import { IBcNodeInfo } from 'src/components/blockchain/bc-node-info/interfaces/b
 import { BcNodeInfoSchema } from 'src/components/blockchain/bc-node-info/schemas/bc-node-info.schema';
 import { bcNodeInfoData } from 'app-migrations/bc-node-info-migrate/data';
 import { consoleLogWrapper, dropCollectionIfExist } from 'app-migrations/helper-func';
-import { mongooseConnection } from 'app-migrations/migrate';
+import { db } from 'app-migrations/migrate';
 
 async function up(): Promise<void> {
     try {
         const BcNodeInfoModel = mongoose.model<IBcNodeInfo>('BcNodeInfo', BcNodeInfoSchema);
         const collectionName = 'bcnodeinfos';
-        await dropCollectionIfExist((await mongooseConnection).connection, collectionName);
+        await dropCollectionIfExist(db, collectionName);
         const bcNodeInfo = new BcNodeInfoModel(bcNodeInfoData);
         await bcNodeInfo.save();
 

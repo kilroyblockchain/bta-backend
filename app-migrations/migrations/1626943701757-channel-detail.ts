@@ -2,8 +2,7 @@ import * as mongoose from 'mongoose';
 import { IChannelDetail } from 'src/components/blockchain/channel-detail/interfaces/channel-detail.interface';
 import { ChannelDetailSchema } from 'src/components/blockchain/channel-detail/schema/channel-detail.schema';
 import { channelDetailData } from 'app-migrations/channel-detail-migrate/data';
-import { consoleLogWrapper, dropCollectionIfExist } from 'app-migrations/helper-func';
-import { mongooseConnection } from 'app-migrations/migrate';
+import { consoleLogWrapper } from 'app-migrations/helper-func';
 
 /**
  * Make any changes you need to make to the database here
@@ -11,8 +10,6 @@ import { mongooseConnection } from 'app-migrations/migrate';
 async function up(): Promise<void> {
     const ChannelDetailModel = mongoose.model<IChannelDetail>('ChannelDetail', ChannelDetailSchema);
     try {
-        const collectionName = 'channeldetails';
-        await dropCollectionIfExist((await mongooseConnection).connection, collectionName);
         const channelDetail = new ChannelDetailModel(channelDetailData);
         await channelDetail.save();
         consoleLogWrapper('Successfully created a default channel detail ' + channelDetail.channelName);

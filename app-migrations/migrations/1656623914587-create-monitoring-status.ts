@@ -2,13 +2,13 @@ import MonitoringStatusModel from 'app-migrations/monitoring-status-migrate/sche
 import { monitoringStatus } from 'app-migrations/monitoring-status-migrate/data';
 import { monitoringStatusProduction } from 'app-migrations/monitoring-status-migrate/data/index.prod';
 import { consoleLogWrapper, dropCollectionIfExist } from 'app-migrations/helper-func';
-import { mongooseConnection } from 'app-migrations/migrate';
+import { db } from 'app-migrations/migrate';
 
 async function up(): Promise<void> {
     try {
         const statuses = process.env.ENVIRONMENT === 'prod' ? monitoringStatusProduction : monitoringStatus;
         const collectionName = 'monitoring-statuses';
-        await dropCollectionIfExist((await mongooseConnection).connection, collectionName);
+        await dropCollectionIfExist(db, collectionName);
         for (const status of statuses) {
             const newStatus = new MonitoringStatusModel(status);
             await newStatus.save();

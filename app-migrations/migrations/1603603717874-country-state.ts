@@ -5,7 +5,7 @@ import { IStateJSON } from '../country-migrate/interfaces/state-json.interface';
 import { ICountry } from '../country-migrate/interfaces/country.interface';
 import { IState } from '../country-migrate/interfaces/state.interface';
 import { consoleLogWrapper, dropCollectionIfExist } from 'app-migrations/helper-func';
-import { mongooseConnection } from 'app-migrations/migrate';
+import { db } from 'app-migrations/migrate';
 
 const { countries } = countryJSON;
 const { states } = statesJSON;
@@ -14,8 +14,8 @@ async function up(): Promise<void> {
     try {
         const countryCollection = 'countries';
         const stateCollection = 'states';
-        await dropCollectionIfExist((await mongooseConnection).connection, countryCollection);
-        await dropCollectionIfExist((await mongooseConnection).connection, stateCollection);
+        await dropCollectionIfExist(db, countryCollection);
+        await dropCollectionIfExist(db, stateCollection);
 
         for (const country of countries) {
             let countryState: IStateJSON[] = [];
