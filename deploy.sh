@@ -1,4 +1,5 @@
 #!/bin/sh
+
 . ./.env
 if [ -d "$DATABASE_VOLUME_MOUNT" ]; then
     echo "Directory already exists"
