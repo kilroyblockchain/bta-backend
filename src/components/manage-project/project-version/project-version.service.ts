@@ -31,7 +31,7 @@ export class ProjectVersionService {
     ) {}
 
     async addNewVersion(req: Request, projectId: string, newVersionDto: AddVersionDto): Promise<IProjectVersion> {
-        const logger = new Logger(ProjectVersionService.name + '-createBcExperiment');
+        const logger = new Logger(ProjectVersionService.name + '-addNewVersion');
         try {
             const user = req['user']._id;
 
