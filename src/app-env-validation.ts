@@ -1,16 +1,17 @@
 import * as Joi from 'joi';
 import 'dotenv/config';
 
-const production = process.env.ENVIRONMENT === 'production' || process.env.ENVIRONMENT === 'beta';
+const production = process.env.ENVIRONMENT === 'prod' || process.env.ENVIRONMENT === 'demo' || process.env.ENVIRONMENT === 'dev';
+const mailCatcher = process.env.EMAIL_HOST === 'mailcatcherBta';
 
 export const envValidationSchema = Joi.object({
-    ENVIRONMENT: Joi.string().required().equal('local', 'test', 'dev', 'beta', 'production'),
+    ENVIRONMENT: Joi.string().required().equal('local', 'test', 'dev', 'demo', 'prod'),
     APP_NAME: Joi.string().required(),
     CLIENT_APP_URL: Joi.string().required(),
     /**
      * Database
      */
-    APP_DEBUG_PORT: Joi.number().required(),
+    APP_DEBUG_PORT: production ? Joi.string().allow('').optional() : Joi.number().required(),
     MONGO_URI: Joi.string().required(),
     MONGO_HOST: Joi.string().required(),
     MONGO_USERNAME: production ? Joi.string().required() : Joi.string().allow('').optional(),
@@ -22,8 +23,8 @@ export const envValidationSchema = Joi.object({
      */
     EMAIL_HOST: Joi.string().required(),
     EMAIL_PORT: Joi.number().required(),
-    EMAIL_USER: production ? Joi.string().required().email() : Joi.string().allow('').optional(),
-    EMAIL_PASSWORD: production ? Joi.string().required() : Joi.string().allow('').optional(),
+    EMAIL_USER: mailCatcher ? Joi.string().allow('').optional() : Joi.string().required().email(),
+    EMAIL_PASSWORD: mailCatcher ? Joi.string().allow('').optional() : Joi.string().required(),
     /**
      * Jwt Token
      */

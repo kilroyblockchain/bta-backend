@@ -1,0 +1,10 @@
+.dockerignore
+.gitignore
+Dockerfile
+docker-compose*.yml
+./env-samples
+./psvolumes
+deploy.sh
+.vscode
+.husky
+./node_modules

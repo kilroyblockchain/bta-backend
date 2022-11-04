@@ -1,0 +1,47 @@
+version: '3.8'
+services:
+    app:
+        image: bta-api-local:1.0.0
+        build:
+            target: development
+        command: npm run start:debug
+        ports:
+            - ${APP_PORT}:3000
+            - ${APP_DEBUG_PORT}:9229
+        volumes:
+            - .:/usr/app
+            - ${LOCAL_NODE_MODULES_VOLUME_MOUNT}:/usr/app/node_modules
+            - ./dist:/usr/app/dist
+        restart: unless-stopped
+        links:
+            - mongo
+            - mongoExpress
+            - mailcatcher
+        depends_on:
+            - mongo
+            - mongoExpress
+            - mailcatcher
+
+    mongo:
+        ports:
+            - ${DB_PORT}:27017
+
+    mongoExpress:
+        image: mongo-express
+        container_name: ${MONGO_EXPRESS_UI_CONTAINER_NAME}
+        ports:
+            - ${MONGO_EXPRESS_UI_PORT}:8081
+        environment:
+            ME_CONFIG_OPTIONS_EDITORTHEME: 'ambiance'
+            ME_CONFIG_MONGODB_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGODB_CONTAINER_NAME}:27017/
+        links:
+            - mongo
+        restart: always
+        depends_on:
+            - mongo
+
+    mailcatcher:
+        image: sj26/mailcatcher
+        container_name: ${MAILCATCHER_CONTAINER_NAME}
+        ports:
+            - ${MAILCATCHER_PORT}:1080
