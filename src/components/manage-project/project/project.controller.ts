@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Patch, Post, Put, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiConsumes, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProjectService } from './project.service';
-import { Response as FLOResponse } from 'src/@core/response';
+import { Response as BTAResponse } from 'src/@core/response';
 import { AddProjectPurposeDto, AllProjectResponseDto, CreateProjectDto, ProjectPurposeResponseDto, ProjectResponseDto, BCProjectResponseDto } from './dto';
 import { PermissionGuard, RolesGuard } from 'src/components/auth/guards';
 import { Feature, Permission, Roles } from 'src/components/auth/decorators';
@@ -37,9 +37,9 @@ export class ProjectController {
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_CREATE_PROJECT })
     @ApiResponse({ status: HttpStatus.CONFLICT, description: MANAGE_PROJECT_CONSTANT.PROJECT_NAME_CONFLICT })
     @ApiResponse({ status: HttpStatus.CREATED, type: ProjectResponseDto, description: MANAGE_PROJECT_CONSTANT.NEW_PROJECT_CREATED })
-    async createProject(@Body() newProject: CreateProjectDto, @Req() req: Request): Promise<FLOResponse> {
+    async createProject(@Body() newProject: CreateProjectDto, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.NEW_PROJECT_CREATED]).setSuccessData(await this.projectService.createNewProject(newProject, req)).setStatus(HttpStatus.CREATED);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.NEW_PROJECT_CREATED]).setSuccessData(await this.projectService.createNewProject(newProject, req)).setStatus(HttpStatus.CREATED);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_CREATE_PROJECT, err);
         }
@@ -61,9 +61,9 @@ export class ProjectController {
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.OK, type: AllProjectResponseDto, description: MANAGE_PROJECT_CONSTANT.ALL_PROJECT_RETRIEVED })
-    async getAllProjects(@Req() req: Request): Promise<FLOResponse> {
+    async getAllProjects(@Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.ALL_PROJECT_RETRIEVED]).setSuccessData(await this.projectService.getAllProject(req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.ALL_PROJECT_RETRIEVED]).setSuccessData(await this.projectService.getAllProject(req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new NotFoundException(MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND, err);
         }
@@ -86,9 +86,9 @@ export class ProjectController {
     @ApiResponse({ status: HttpStatus.CONFLICT, description: MANAGE_PROJECT_CONSTANT.PROJECT_NAME_CONFLICT })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.OK, type: ProjectResponseDto, description: MANAGE_PROJECT_CONSTANT.PROJECT_RECORD_UPDATED })
-    async updateProject(@Param('id') id: string, @Body() updateProject: CreateProjectDto, @Req() req: Request): Promise<FLOResponse> {
+    async updateProject(@Param('id') id: string, @Body() updateProject: CreateProjectDto, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.PROJECT_RECORD_UPDATED]).setSuccessData(await this.projectService.updateProject(id, updateProject, req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.PROJECT_RECORD_UPDATED]).setSuccessData(await this.projectService.updateProject(id, updateProject, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_UPDATE_PROJECT, err);
         }
@@ -111,9 +111,9 @@ export class ProjectController {
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_DELETE_PROJECT })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.OK, type: ProjectResponseDto, description: MANAGE_PROJECT_CONSTANT.PROJECT_DELETE_SUCCESS })
-    async deleteProject(@Param('id') id: string, @Req() req: Request): Promise<FLOResponse> {
+    async deleteProject(@Param('id') id: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.PROJECT_DELETE_SUCCESS]).setSuccessData(await this.projectService.deleteProject(id, req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.PROJECT_DELETE_SUCCESS]).setSuccessData(await this.projectService.deleteProject(id, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_DELETE_PROJECT, err);
         }
@@ -136,9 +136,9 @@ export class ProjectController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_ENABLE_PROJECT })
     @ApiResponse({ status: HttpStatus.OK, type: ProjectResponseDto, description: MANAGE_PROJECT_CONSTANT.PROJECT_ENABLED_SUCCESS })
-    async enableProject(@Param('id') id: string, @Req() req: Request): Promise<FLOResponse> {
+    async enableProject(@Param('id') id: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.PROJECT_ENABLED_SUCCESS]).setSuccessData(await this.projectService.enableProject(id, req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.PROJECT_ENABLED_SUCCESS]).setSuccessData(await this.projectService.enableProject(id, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_ENABLE_PROJECT, err);
         }
@@ -163,9 +163,9 @@ export class ProjectController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_ADD_PROJECT_PROJECT })
     @ApiResponse({ status: HttpStatus.OK, type: ProjectPurposeResponseDto, description: MANAGE_PROJECT_CONSTANT.PROJECT_PROJECT_ADDED_SUCCESS })
-    async addPurpose(@UploadedFile() file: Express.Multer.File, @Req() req: Request, @Param('id') id: string, @Body() purpose: AddProjectPurposeDto): Promise<FLOResponse> {
+    async addPurpose(@UploadedFile() file: Express.Multer.File, @Req() req: Request, @Param('id') id: string, @Body() purpose: AddProjectPurposeDto): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.PROJECT_PROJECT_ADDED_SUCCESS]).setSuccessData(await this.projectService.addProjectPurpose(id, req, file, purpose)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.PROJECT_PROJECT_ADDED_SUCCESS]).setSuccessData(await this.projectService.addProjectPurpose(id, req, file, purpose)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_ADD_PROJECT_PROJECT, err);
         }
@@ -187,9 +187,9 @@ export class ProjectController {
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_CAN_ADD_PROJECT_AND_VERSION })
     @ApiResponse({ status: HttpStatus.OK, type: Boolean, description: MANAGE_PROJECT_CONSTANT.GOT_CAN_ADD_PROJECT_AND_VERSION_SUCCESS })
-    async canAddProject(@Req() req: Request): Promise<FLOResponse> {
+    async canAddProject(@Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_CAN_ADD_PROJECT_AND_VERSION_SUCCESS]).setSuccessData(await this.projectService.canAddProject(req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_CAN_ADD_PROJECT_AND_VERSION_SUCCESS]).setSuccessData(await this.projectService.canAddProject(req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_CAN_ADD_PROJECT_AND_VERSION, err);
         }
@@ -212,9 +212,9 @@ export class ProjectController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_GET_PROJECT_BC_DETAILS })
     @ApiResponse({ status: HttpStatus.OK, type: BCProjectResponseDto, description: MANAGE_PROJECT_BC_CONSTANT.PROJECT_BC_DETAILS_RETRIEVED_SUCCESS })
-    async getBcProjectDetails(@Param('id') projectId: string, @Req() req: Request): Promise<FLOResponse> {
+    async getBcProjectDetails(@Param('id') projectId: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.PROJECT_BC_DETAILS_RETRIEVED_SUCCESS]).setSuccessData(await this.projectBcService.getProjectBcDetails(projectId, req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_BC_CONSTANT.PROJECT_BC_DETAILS_RETRIEVED_SUCCESS]).setSuccessData(await this.projectBcService.getProjectBcDetails(projectId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new NotFoundException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_GET_PROJECT_BC_DETAILS, err);
         }
@@ -237,9 +237,9 @@ export class ProjectController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_PROJECT_BC_HISTORY })
     @ApiResponse({ status: HttpStatus.OK, type: BCProjectResponseDto, isArray: true, description: MANAGE_PROJECT_BC_CONSTANT.PROJECT_BC_HISTORY_FETCHED_SUCCESS })
-    async getProjectBcHistory(@Param('id') projectId: string, @Req() req: Request): Promise<FLOResponse> {
+    async getProjectBcHistory(@Param('id') projectId: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.PROJECT_BC_HISTORY_FETCHED_SUCCESS]).setSuccessData(await this.projectBcService.getProjectBcHistory(projectId, req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_BC_CONSTANT.PROJECT_BC_HISTORY_FETCHED_SUCCESS]).setSuccessData(await this.projectBcService.getProjectBcHistory(projectId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new NotFoundException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_PROJECT_BC_HISTORY, err);
         }
