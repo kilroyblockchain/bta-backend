@@ -246,4 +246,23 @@ export class ProjectVersionController {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_FETCH_DEFAULT_ORACLE_BUCKET_URL, err);
         }
     }
+
+    @Patch('update-mlops-reviewed-version/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Feature(FEATURE_IDENTIFIER.MODEL_REVIEWS)
+    @Permission(ACCESS_TYPE.WRITE)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    async updateMlopsReviewedVersion(@Param('id') versionId: string, @Req() req: Request, @Body() updateVersionDto: any): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, ['Successfully Updated model version']).setSuccessData(await this.versionService.updateMlopsReviewedVersion(updateVersionDto, versionId, req)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException('Unable to update model version', err);
+        }
+    }
 }

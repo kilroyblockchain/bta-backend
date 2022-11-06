@@ -69,4 +69,22 @@ export class ModelReviewService {
         };
         return await this.reviewModel.paginate({ version: versionId }, options);
     }
+
+    async canMlopsEditReviewedVersion(versionId: string, req: Request): Promise<boolean> {
+        try {
+            const userId = req['user']._id;
+
+            const reviewedVersion = await this.versionService.getVersionById(versionId);
+            if (!reviewedVersion) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+
+            const reviewModel = await this.reviewModel.findOne({ reviewModel: reviewedVersion._id, createdBy: userId }).populate('version', 'versionStatus');
+
+            if (reviewModel && reviewModel.version['versionStatus'] === VersionStatus.REVIEW_PASSED) {
+                return true;
+            }
+            return false;
+        } catch (err) {
+            throw err;
+        }
+    }
 }

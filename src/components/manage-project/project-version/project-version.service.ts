@@ -129,7 +129,8 @@ export class ProjectVersionService {
 
         this.eventEmitter.emit(REVIEW_MODEL_ALL_ORACLE_BC_HASHES, {
             reviewModel,
-            req
+            req,
+            getBcHashActionType: VERSION_GET_BC_HASH_ACTIONS.CREATE
         });
 
         return reviewModel;
@@ -202,5 +203,28 @@ export class ProjectVersionService {
         const defaultBucketUrl = bucketUrl + `/${project.name}`;
 
         return defaultBucketUrl;
+    }
+
+    async updateMlopsReviewedVersion(updateReviewedData: AddReviewModelDto, versionId: string, req: Request): Promise<IProjectVersion> {
+        try {
+            const version = await this.getVersionById(versionId);
+            const userId = req['user']._id;
+
+            const updatedReviewedVersion = await this.versionModel.findOneAndUpdate({ _id: version._id, createdBy: userId }, updateReviewedData, { new: true });
+
+            if (version.versionName !== updateReviewedData.versionName) {
+                this.eventEmitter.emit(REVIEW_MODEL_ALL_ORACLE_BC_HASHES, {
+                    reviewModel: updatedReviewedVersion,
+                    req,
+                    getBcHashActionType: VERSION_GET_BC_HASH_ACTIONS.UPDATE
+                });
+            } else {
+                await this.versionBcService.createBcProjectVersion(req, updatedReviewedVersion);
+            }
+
+            return updatedReviewedVersion;
+        } catch (err) {
+            throw err;
+        }
     }
 }

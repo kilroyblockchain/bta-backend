@@ -559,13 +559,13 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
     @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_ARTIFICT_MODEL })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_ARTIFACT_MODEL })
     @ApiResponse({ status: HttpStatus.OK, type: ArtifactModelResponseDto, isArray: true, description: MANAGE_PROJECT_CONSTANT.ALL_ARTIFACT_MODEL_RETRIEVED })
     async getAllArtifactModel(@Param('id') versionId: string, @Req() req: Request): Promise<FLOResponse> {
         try {
             return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.ALL_ARTIFACT_MODEL_RETRIEVED]).setSuccessData(await this.aiModelService.getAllArtifactModel(versionId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
-            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_ARTIFICT_MODEL, err);
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_ARTIFACT_MODEL, err);
         }
     }
 

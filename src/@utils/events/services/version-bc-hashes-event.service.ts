@@ -47,21 +47,34 @@ export class VersionBcHashesEventService {
             await this.getAiModelBcHash(version, req);
 
             this.versionBcService.createBcProjectVersion(req, version);
+        } else {
+            await this.getLogFileBcHash(version, req);
+            await this.getTestDataSetsBCHash(version);
+            await this.getTrainDataSetsBcHash(version);
+            await this.getAiModelBcHash(version, req);
+
+            this.versionBcService.createBcProjectVersion(req, version);
         }
-
-        await this.getLogFileBcHash(version, req);
-        await this.getTestDataSetsBCHash(version);
-        await this.getTrainDataSetsBcHash(version);
-        await this.getAiModelBcHash(version, req);
-
-        this.versionBcService.createBcProjectVersion(req, version);
     }
 
-    async modelReviewedBcHashesEvent(version: IProjectVersion, req: Request): Promise<void> {
-        await this.getLogFileBcHash(version, req);
-        await this.getTestDataSetsBCHash(version);
+    async modelReviewedBcHashesEvent(version: IProjectVersion, req: Request, getBcHashActionType: string): Promise<void> {
+        if (getBcHashActionType === VERSION_GET_BC_HASH_ACTIONS.UPDATE) {
+            version.logFileStatus.code = OracleBucketDataStatus.FETCHING;
+            version.testDatasetStatus.code = OracleBucketDataStatus.FETCHING;
+            await version.save();
 
-        this.versionBcService.createBcProjectVersion(req, version);
+            await this.aiModel.deleteMany({ version: version._id });
+
+            await this.getLogFileBcHash(version, req);
+            await this.getTestDataSetsBCHash(version);
+
+            this.versionBcService.createBcProjectVersion(req, version);
+        } else {
+            await this.getLogFileBcHash(version, req);
+            await this.getTestDataSetsBCHash(version);
+
+            this.versionBcService.createBcProjectVersion(req, version);
+        }
     }
 
     async getLogFileBcHash(version: IProjectVersion, req: Request): Promise<void> {
