@@ -36,7 +36,7 @@ services:
             ME_CONFIG_MONGODB_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGODB_CONTAINER_NAME}:27017/
         links:
             - mongo
-        restart: always
+        restart: unless-stopped
         depends_on:
             - mongo
 
