@@ -1,5 +1,6 @@
 import { forwardRef, Global, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { OrganizationStaffingModule } from 'src/components/app-user/user-roles/organization-staffing/organization-staffing.module';
 import { UserSchema } from 'src/components/app-user/user/schemas/user.schema';
 import { UserModule } from 'src/components/app-user/user/user.module';
 import { BcConnectionModule } from '../bc-connection/bc-connection.module';
@@ -15,7 +16,8 @@ import { BcNodeInfoSchema } from './schemas/bc-node-info.schema';
             { name: 'User', schema: UserSchema }
         ]),
         BcConnectionModule,
-        forwardRef(() => UserModule)
+        forwardRef(() => UserModule),
+        OrganizationStaffingModule
     ],
     controllers: [BcNodeInfoController],
     providers: [BcNodeInfoService],

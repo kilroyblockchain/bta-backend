@@ -203,4 +203,12 @@ export class OrganizationStaffingService {
             throw new BadRequestException('Organization staff document is undefined / null');
         }
     }
+
+    async checkBcNodeUsedInStaffing(bcNodeId: string): Promise<boolean> {
+        const staffing = await this.StaffModel.findOne({ bcNodeInfo: bcNodeId });
+        if (!staffing) {
+            return false;
+        }
+        return true;
+    }
 }

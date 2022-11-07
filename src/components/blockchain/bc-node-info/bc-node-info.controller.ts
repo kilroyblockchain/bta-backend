@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
@@ -85,7 +85,7 @@ export class BcNodeInfoController {
     @UseGuards(AuthGuard('jwt'), PermissionGuard)
     @Permission(ACCESS_TYPE.DELETE)
     @Feature(FEATURE_IDENTIFIER.BC_NODE_INFO)
-    @Roles(ROLE.SUPER_ADMIN)
+    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF)
     @ApiBearerAuth()
     @ApiHeader({
         name: 'Bearer',
@@ -99,5 +99,30 @@ export class BcNodeInfoController {
     @ApiResponse({ status: HttpStatus.OK, type: BcNodeInfoResponseDto, description: BC_NODE_INFO_CONSTANT.BC_NODE_INFO_DELETED })
     async deleteBcNodeInfo(@Param('id') id: string): Promise<FLOResponse> {
         return new FLOResponse(true, [BC_NODE_INFO_CONSTANT.BC_NODE_INFO_DELETED]).setSuccessData(await this.bcNodeInfoService.deleteBcNodeInfo(id)).setStatus(HttpStatus.OK);
+    }
+
+    @Patch('enable/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(AuthGuard('jwt'), PermissionGuard)
+    @Permission(ACCESS_TYPE.DELETE)
+    @Feature(FEATURE_IDENTIFIER.BC_NODE_INFO)
+    @Roles(ROLE.SUPER_ADMIN, ROLE.STAFF)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Enable Bc Node Info' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden.' })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: BC_NODE_INFO_CONSTANT.BC_NODE_INFO_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: BC_NODE_INFO_CONSTANT.UNABLE_TO_ENABLE_BC_NODE_INFO })
+    @ApiResponse({ status: HttpStatus.OK, type: BcNodeInfoResponseDto, description: BC_NODE_INFO_CONSTANT.BC_NODE_INFO_ENABLED_SUCCESS })
+    async enableBcNodeInfo(@Param('id') id: string): Promise<FLOResponse> {
+        try {
+            return new FLOResponse(true, [BC_NODE_INFO_CONSTANT.BC_NODE_INFO_ENABLED_SUCCESS]).setSuccessData(await this.bcNodeInfoService.enableBcNodeInfo(id)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(BC_NODE_INFO_CONSTANT.UNABLE_TO_ENABLE_BC_NODE_INFO, err);
+        }
     }
 }
