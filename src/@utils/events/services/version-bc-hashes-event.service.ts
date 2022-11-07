@@ -38,21 +38,12 @@ export class VersionBcHashesEventService {
             version.aiModelStatus.code = OracleBucketDataStatus.FETCHING;
             await version.save();
 
-            await this.aiArtifactsModel.deleteMany({ version: version._id });
-            await this.aiModel.deleteMany({ version: version._id });
-
-            await this.getLogFileBcHash(version, req);
-            await this.getTestDataSetsBCHash(version);
-            await this.getTrainDataSetsBcHash(version);
-            await this.getAiModelBcHash(version, req);
+            await Promise.all([this.aiArtifactsModel.deleteMany({ version: version._id }), this.aiModel.deleteMany({ version: version._id })]);
+            await Promise.all([this.getLogFileBcHash(version, req), this.getTestDataSetsBCHash(version), this.getTrainDataSetsBcHash(version), this.getAiModelBcHash(version, req)]);
 
             this.versionBcService.createBcProjectVersion(req, version);
         } else {
-            await this.getLogFileBcHash(version, req);
-            await this.getTestDataSetsBCHash(version);
-            await this.getTrainDataSetsBcHash(version);
-            await this.getAiModelBcHash(version, req);
-
+            await Promise.all([this.getLogFileBcHash(version, req), this.getTestDataSetsBCHash(version), this.getTrainDataSetsBcHash(version), this.getAiModelBcHash(version, req)]);
             this.versionBcService.createBcProjectVersion(req, version);
         }
     }
@@ -65,14 +56,11 @@ export class VersionBcHashesEventService {
 
             await this.aiModel.deleteMany({ version: version._id });
 
-            await this.getLogFileBcHash(version, req);
-            await this.getTestDataSetsBCHash(version);
+            await Promise.all([this.getLogFileBcHash(version, req), this.getTestDataSetsBCHash(version)]);
 
             this.versionBcService.createBcProjectVersion(req, version);
         } else {
-            await this.getLogFileBcHash(version, req);
-            await this.getTestDataSetsBCHash(version);
-
+            await Promise.all([this.getLogFileBcHash(version, req), this.getTestDataSetsBCHash(version)]);
             this.versionBcService.createBcProjectVersion(req, version);
         }
     }
