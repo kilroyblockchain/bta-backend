@@ -151,7 +151,8 @@ export class BcConnectionService {
         try {
             const response = await axios.get(bcNodeInfo.nodeUrl + BC_CONNECTION_API.CHECK_BC_NODE_CONNECTION, {
                 headers: {
-                    authorization: 'Basic ' + bcNodeInfo.authorizationToken
+                    authorization: 'Basic ' + bcNodeInfo.authorizationToken,
+                    org_name: bcNodeInfo.orgName
                 },
                 timeout: 2000
             });
