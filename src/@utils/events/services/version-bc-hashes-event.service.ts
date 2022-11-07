@@ -38,12 +38,12 @@ export class VersionBcHashesEventService {
             version.aiModelStatus.code = OracleBucketDataStatus.FETCHING;
             await version.save();
 
-            await Promise.all([this.aiArtifactsModel.deleteMany({ version: version._id }), this.aiModel.deleteMany({ version: version._id })]);
-            await Promise.all([this.getLogFileBcHash(version, req), this.getTestDataSetsBCHash(version), this.getTrainDataSetsBcHash(version), this.getAiModelBcHash(version, req)]);
+            await Promise.allSettled([this.aiArtifactsModel.deleteMany({ version: version._id }), this.aiModel.deleteMany({ version: version._id })]);
+            await Promise.allSettled([this.getLogFileBcHash(version, req), this.getTestDataSetsBCHash(version), this.getTrainDataSetsBcHash(version), this.getAiModelBcHash(version, req)]);
 
             this.versionBcService.createBcProjectVersion(req, version);
         } else {
-            await Promise.all([this.getLogFileBcHash(version, req), this.getTestDataSetsBCHash(version), this.getTrainDataSetsBcHash(version), this.getAiModelBcHash(version, req)]);
+            await Promise.allSettled([this.getLogFileBcHash(version, req), this.getTestDataSetsBCHash(version), this.getTrainDataSetsBcHash(version), this.getAiModelBcHash(version, req)]);
             this.versionBcService.createBcProjectVersion(req, version);
         }
     }
@@ -56,11 +56,11 @@ export class VersionBcHashesEventService {
 
             await this.aiModel.deleteMany({ version: version._id });
 
-            await Promise.all([this.getLogFileBcHash(version, req), this.getTestDataSetsBCHash(version)]);
+            await Promise.allSettled([this.getLogFileBcHash(version, req), this.getTestDataSetsBCHash(version)]);
 
             this.versionBcService.createBcProjectVersion(req, version);
         } else {
-            await Promise.all([this.getLogFileBcHash(version, req), this.getTestDataSetsBCHash(version)]);
+            await Promise.allSettled([this.getLogFileBcHash(version, req), this.getTestDataSetsBCHash(version)]);
             this.versionBcService.createBcProjectVersion(req, version);
         }
     }
