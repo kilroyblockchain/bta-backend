@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { createModelReviewDocDestinationFolder, docsFileFilter, editFileName } from 'src/@core/utils/file-upload.utils';
@@ -159,6 +159,58 @@ export class ModelReviewController {
             return new BTAResponse(true, [MANAGE_PROJECT_BC_CONSTANT.MODEL_REVIEW_BC_HISTORY_FETCHED_SUCCESS]).setSuccessData(await this.modelReviewBcService.getModelReviewBcHistory(versionId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_REVIEW_BC_HISTORY, err);
+        }
+    }
+
+    @Put('update-mlops-reviewed-version/:id')
+    @HttpCode(HttpStatus.CREATED)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.WRITE)
+    @Feature(FEATURE_IDENTIFIER.MODEL_REVIEWS)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Update reviewed model version' })
+    @ApiParam({ name: 'id', required: true, description: 'Project Id' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_UPDATE_VERSION })
+    @ApiResponse({ status: HttpStatus.CREATED, type: ReviewModelResponseDto, description: MANAGE_PROJECT_CONSTANT.UPDATE_VERSION_SUCCESS })
+    async updateMlopsReviewedVersion(@Param('id') versionId: string, @Req() req: Request, @Body() updateVersionDto: AddReviewModelDto): Promise<BTAResponse> {
+        try {
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.UPDATE_VERSION_SUCCESS]).setSuccessData(await this.versionService.updateMlopsReviewedVersion(updateVersionDto, versionId, req)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_UPDATE_VERSION, err);
+        }
+    }
+
+    @Get('can-mlops-edit-version/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_REVIEWS)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Check if reviewed model is editable' })
+    @ApiParam({ name: 'id', required: true, description: 'Project Id' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.COULD_NOT_ABLE_TO_UPDATE_REVIEWED_VERSION })
+    @ApiResponse({ status: HttpStatus.OK, type: Boolean, description: MANAGE_PROJECT_CONSTANT.CAN_ABLE_TO_UPDATE_REVIEWED_VERSION })
+    async canMlopsEditReviewedVersion(@Param('id') versionId: string, @Req() req: Request): Promise<BTAResponse> {
+        try {
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.CAN_ABLE_TO_UPDATE_REVIEWED_VERSION]).setSuccessData(await this.modelReviewService.canMlopsEditReviewedVersion(versionId, req)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.COULD_NOT_ABLE_TO_UPDATE_REVIEWED_VERSION);
         }
     }
 }
