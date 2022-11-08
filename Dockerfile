@@ -14,18 +14,17 @@ EXPOSE $PORT 9229 9230
 RUN npm i npm@latest -g
 
 # install dependencies first, in a different location for easier app bind mounting for local development
-# due to default permissions we have to create the dir with root and change perms
-RUN mkdir /usr/app && chown node:node /usr/app
+RUN mkdir /usr/app
 
 WORKDIR /usr/app
 
-USER node
+RUN mkdir uploads
 
-COPY --chown=node:node package*.* ./
+COPY package*.* ./
 
 RUN npm install && npm cache clean --force
 
-COPY --chown=node:node . .
+COPY . .
 
 RUN npm run build
 
@@ -34,14 +33,23 @@ FROM node:16.13.0 as production
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
+ARG UID=1001
+ARG GID=1001
+
+RUN usermod -u $UID node && groupmod -g $GID node
 
 ARG PORT=3000
 ENV PORT $PORT
 EXPOSE $PORT
 
+# due to default permissions we have to create the dir with root and change perms
 RUN mkdir /usr/app && chown node:node /usr/app
 
 WORKDIR /usr/app
+
+USER node
+
+RUN mkdir uploads
 
 COPY --chown=node:node package*.* ./
 

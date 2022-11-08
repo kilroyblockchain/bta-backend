@@ -11,7 +11,7 @@ services:
         volumes:
             - .:/usr/app
             - ${LOCAL_NODE_MODULES_VOLUME_MOUNT}:/usr/app/node_modules
-            - ./dist:/usr/app/dist
+            - ./dist:/usr/app/dist:rw
         restart: unless-stopped
         links:
             - mongo

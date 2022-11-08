@@ -7,6 +7,8 @@ services:
         ports:
             - ${APP_PORT}:3000
         restart: unless-stopped
+        volumes:
+            - ./uploads:/usr/app/uploads:rw
         links:
             - mongo
         depends_on:
