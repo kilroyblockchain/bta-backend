@@ -5,7 +5,7 @@ import { MonitoringReportService } from './monitoring-report.service';
 import { diskStorage } from 'multer';
 import { createMonitoringDocDestinationFolder, docsFileFilter, editFileName } from 'src/@core/utils/file-upload.utils';
 import { AddReportDto, MonitoringReportResponseDto, MonitoringStatusResponseDto, VersionAllReportsDto } from './dto';
-import { Response as FLOResponse } from 'src/@core/response';
+import { Response as BTAResponse } from 'src/@core/response';
 import { Request } from 'express';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, MANAGE_PROJECT_CONSTANT, ROLE } from 'src/@core/constants';
 import { PermissionGuard, RolesGuard } from 'src/components/auth/guards';
@@ -46,9 +46,9 @@ export class MonitoringReportController {
             fileFilter: docsFileFilter
         })
     )
-    async addMonitoringReport(@Req() req: Request, @Body() newReport: AddReportDto, @UploadedFiles() files: Array<Express.Multer.File>, @Param('id') id: string): Promise<FLOResponse> {
+    async addMonitoringReport(@Req() req: Request, @Body() newReport: AddReportDto, @UploadedFiles() files: Array<Express.Multer.File>, @Param('id') id: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.MONITORING_REPORT_ADDED_SUCCESS]).setSuccessData(await this.monitoringService.addMonitoringReport(req, id, files, newReport)).setStatus(HttpStatus.CREATED);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.MONITORING_REPORT_ADDED_SUCCESS]).setSuccessData(await this.monitoringService.addMonitoringReport(req, id, files, newReport)).setStatus(HttpStatus.CREATED);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_ADD_MONITORING_REPORT, err);
         }
@@ -71,9 +71,9 @@ export class MonitoringReportController {
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized.' })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_VERSION_REPORTS })
     @ApiResponse({ status: HttpStatus.OK, type: VersionAllReportsDto, isArray: true, description: MANAGE_PROJECT_CONSTANT.ALL_VERSION_REPORTS_RETRIEVED })
-    async getVersionReports(@Param('id') id: string, @Req() req: Request): Promise<FLOResponse> {
+    async getVersionReports(@Param('id') id: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.ALL_VERSION_REPORTS_RETRIEVED]).setSuccessData(await this.monitoringService.getVersionReports(req, id)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.ALL_VERSION_REPORTS_RETRIEVED]).setSuccessData(await this.monitoringService.getVersionReports(req, id)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_VERSION_REPORTS, err);
         }
@@ -95,9 +95,9 @@ export class MonitoringReportController {
     @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_MONITORING_STATUES })
     @ApiResponse({ status: HttpStatus.OK, type: MonitoringStatusResponseDto, isArray: true, description: MANAGE_PROJECT_CONSTANT.ALL_MONITORING_STATUS_RETRIEVED })
-    async getMonitoringStatus(): Promise<FLOResponse> {
+    async getMonitoringStatus(): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.ALL_MONITORING_STATUS_RETRIEVED]).setSuccessData(await this.monitoringService.getMonitoringStatus()).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.ALL_MONITORING_STATUS_RETRIEVED]).setSuccessData(await this.monitoringService.getMonitoringStatus()).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_MONITORING_STATUES, err);
         }
