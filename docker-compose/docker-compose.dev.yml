@@ -4,6 +4,9 @@ services:
         image: bta-api-dev:1.0.0
         build:
             target: production
+            args:
+                UID: ${USER_ID}
+                GID: ${GROUP_ID}
         command: npm run start:prod
         volumes:
             - bta_nodemodules:/usr/app/node_modules

@@ -15,6 +15,17 @@ else
     mkdir -p $DATABASE_VOLUME_MOUNT && chown -R $USER:$USER $DATABASE_VOLUME_MOUNT
 fi
 
+LOGS_DIR=./logs
+
+if [ -d "$LOGS_DIR" ]; then
+    echo "Logs Directory already exists"
+    echo "Changing ownership to current user"
+    sudo chown -R $USER:$USER $LOGS_DIR
+else
+    echo "Creating Logs Directory and Changing ownership to current user"
+    mkdir -p $LOGS_DIR && chown -R $USER:$USER $LOGS_DIR
+fi
+
 UPLOADS_DIR=./uploads
 
 if [ -d $UPLOADS_DIR ]; then

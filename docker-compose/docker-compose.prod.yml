@@ -10,7 +10,6 @@ services:
         command: npm run start:prod
         volumes:
             - bta_nodemodules:/usr/app/node_modules
-            - .env:/usr/app/.env
 
 volumes:
     bta_nodemodules:
