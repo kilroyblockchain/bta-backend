@@ -33,10 +33,6 @@ FROM node:16.13.0 as production
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
-ARG UID=1001
-ARG GID=1001
-
-RUN usermod -u $UID node && groupmod -g $GID node
 
 ARG PORT=3000
 ENV PORT $PORT
@@ -50,6 +46,8 @@ WORKDIR /usr/app
 USER node
 
 RUN mkdir uploads
+
+RUN touch .env
 
 COPY --chown=node:node package*.* ./
 
