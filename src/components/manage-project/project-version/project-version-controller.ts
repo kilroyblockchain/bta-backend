@@ -5,7 +5,7 @@ import { PermissionGuard, RolesGuard } from 'src/components/auth/guards';
 import { Feature, Permission, Roles } from 'src/components/auth/decorators';
 import { AddVersionDto, BCVersionDataResponseDto, BCVersionHistoryResponseDto, VersionInfoResponseDto, VersionResponseDto } from './dto';
 import { ProjectVersionService } from './project-version.service';
-import { Response as FLOResponse } from 'src/@core/response';
+import { Response as BTAResponse } from 'src/@core/response';
 import { Request } from 'express';
 import { VersionBcService } from './project-version-bc.service';
 import { COMMON_ERROR } from 'src/@core/constants/api-error-constants';
@@ -35,9 +35,9 @@ export class ProjectVersionController {
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_ADD_VERSION })
     @ApiResponse({ status: HttpStatus.CONFLICT, description: MANAGE_PROJECT_CONSTANT.PROJECT_VERSION_CONFLICT })
     @ApiResponse({ status: HttpStatus.CREATED, type: VersionResponseDto, description: MANAGE_PROJECT_CONSTANT.NEW_VERSION_ADDED_SUCCESS })
-    async addVersion(@Body() newVersion: AddVersionDto, @Req() req: Request, @Param('id') projectId: string): Promise<FLOResponse> {
+    async addVersion(@Body() newVersion: AddVersionDto, @Req() req: Request, @Param('id') projectId: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.NEW_VERSION_ADDED_SUCCESS]).setSuccessData(await this.versionService.addNewVersion(req, projectId, newVersion)).setStatus(HttpStatus.CREATED);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.NEW_VERSION_ADDED_SUCCESS]).setSuccessData(await this.versionService.addNewVersion(req, projectId, newVersion)).setStatus(HttpStatus.CREATED);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_ADD_VERSION, err);
         }
@@ -62,9 +62,9 @@ export class ProjectVersionController {
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_UPDATE_VERSION })
     @ApiResponse({ status: HttpStatus.OK, type: VersionResponseDto, description: MANAGE_PROJECT_CONSTANT.UPDATE_VERSION_SUCCESS })
     @ApiResponse({ status: HttpStatus.CONFLICT, description: MANAGE_PROJECT_CONSTANT.PROJECT_VERSION_CONFLICT })
-    async updateVersion(@Param('id') id: string, @Req() req: Request, @Body() updateVersion: AddVersionDto): Promise<FLOResponse> {
+    async updateVersion(@Param('id') id: string, @Req() req: Request, @Body() updateVersion: AddVersionDto): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.UPDATE_VERSION_SUCCESS]).setSuccessData(await this.versionService.updateVersion(id, updateVersion, req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.UPDATE_VERSION_SUCCESS]).setSuccessData(await this.versionService.updateVersion(id, updateVersion, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_UPDATE_VERSION, err);
         }
@@ -88,9 +88,9 @@ export class ProjectVersionController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_VERSION_INFO })
     @ApiResponse({ status: HttpStatus.OK, type: VersionInfoResponseDto, description: MANAGE_PROJECT_CONSTANT.GET_VERSION_INFO_SUCCESS })
-    async getVersionDetails(@Param('id') id: string): Promise<FLOResponse> {
+    async getVersionDetails(@Param('id') id: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GET_VERSION_INFO_SUCCESS]).setSuccessData(await this.versionService.getVersionInfo(id)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.GET_VERSION_INFO_SUCCESS]).setSuccessData(await this.versionService.getVersionInfo(id)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND, err);
         }
@@ -113,9 +113,9 @@ export class ProjectVersionController {
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_DELETE_VERSION })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.OK, type: VersionResponseDto, description: MANAGE_PROJECT_CONSTANT.VERSION_DELETE_SUCCESS })
-    async deleteProject(@Param('id') id: string): Promise<FLOResponse> {
+    async deleteProject(@Param('id') id: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.VERSION_DELETE_SUCCESS]).setSuccessData(await this.versionService.deleteVersion(id)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.VERSION_DELETE_SUCCESS]).setSuccessData(await this.versionService.deleteVersion(id)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_DELETE_VERSION, err);
         }
@@ -138,9 +138,9 @@ export class ProjectVersionController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_ENABLE_VERSION })
     @ApiResponse({ status: HttpStatus.OK, type: VersionResponseDto, description: MANAGE_PROJECT_CONSTANT.VERSION_ENABLED_SUCCESS })
-    async enableProject(@Param('id') id: string): Promise<FLOResponse> {
+    async enableProject(@Param('id') id: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.VERSION_ENABLED_SUCCESS]).setSuccessData(await this.versionService.enableVersion(id)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.VERSION_ENABLED_SUCCESS]).setSuccessData(await this.versionService.enableVersion(id)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_ENABLE_VERSION, err);
         }
@@ -163,9 +163,9 @@ export class ProjectVersionController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_GET_PROJECT_VERSION_BC_DETAILS })
     @ApiResponse({ status: HttpStatus.OK, type: BCVersionDataResponseDto, description: MANAGE_PROJECT_BC_CONSTANT.PROJECT_VERSION_BC_DETAILS_RETRIEVED_SUCCESS })
-    async getBcProjectDetails(@Param('id') versionId: string, @Req() req: Request): Promise<FLOResponse> {
+    async getBcProjectDetails(@Param('id') versionId: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.PROJECT_VERSION_BC_DETAILS_RETRIEVED_SUCCESS]).setSuccessData(await this.versionBcService.getProjectVersionDetails(versionId, req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_BC_CONSTANT.PROJECT_VERSION_BC_DETAILS_RETRIEVED_SUCCESS]).setSuccessData(await this.versionBcService.getProjectVersionDetails(versionId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_GET_PROJECT_VERSION_BC_DETAILS, err);
         }
@@ -188,9 +188,9 @@ export class ProjectVersionController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_PROJECT_VERSION_BC_HISTORY })
     @ApiResponse({ status: HttpStatus.OK, type: BCVersionHistoryResponseDto, isArray: true, description: MANAGE_PROJECT_BC_CONSTANT.PROJECT_VERSION_BC_HISTORY_FETCHED_SUCCESS })
-    async getProjectBcHistory(@Param('id') versionId: string, @Req() req: Request): Promise<FLOResponse> {
+    async getProjectBcHistory(@Param('id') versionId: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.PROJECT_VERSION_BC_HISTORY_FETCHED_SUCCESS]).setSuccessData(await this.versionBcService.getProjectVersionBcHistory(versionId, req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_BC_CONSTANT.PROJECT_VERSION_BC_HISTORY_FETCHED_SUCCESS]).setSuccessData(await this.versionBcService.getProjectVersionBcHistory(versionId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_PROJECT_VERSION_BC_HISTORY, err);
         }
@@ -213,9 +213,9 @@ export class ProjectVersionController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_SUBMIT_MODEL_VERSION })
     @ApiResponse({ status: HttpStatus.OK, type: VersionResponseDto, isArray: true, description: MANAGE_PROJECT_CONSTANT.MODEL_VERSION_SUBMITTED_SUCCESS })
-    async submitModelVersion(@Param('id') versionId: string, @Req() req: Request): Promise<FLOResponse> {
+    async submitModelVersion(@Param('id') versionId: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.MODEL_VERSION_SUBMITTED_SUCCESS]).setSuccessData(await this.versionService.submitModelVersion(req, versionId)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.MODEL_VERSION_SUBMITTED_SUCCESS]).setSuccessData(await this.versionService.submitModelVersion(req, versionId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_SUBMIT_MODEL_VERSION, err);
         }
@@ -239,9 +239,9 @@ export class ProjectVersionController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.PROJECT_RECORDS_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_FETCH_DEFAULT_ORACLE_BUCKET_URL })
     @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: 'http://oraclebucketurl.com/' } }, description: MANAGE_PROJECT_CONSTANT.DEFAULT_ORACLE_BUCKET_URL_FETCHED_SUCCESS })
-    async getDefaultBucketUrl(@Param('id') projectId: string, @Req() req: Request): Promise<FLOResponse> {
+    async getDefaultBucketUrl(@Param('id') projectId: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.DEFAULT_ORACLE_BUCKET_URL_FETCHED_SUCCESS]).setSuccessData(await this.versionService.getDefaultBucketUrl(req, projectId)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.DEFAULT_ORACLE_BUCKET_URL_FETCHED_SUCCESS]).setSuccessData(await this.versionService.getDefaultBucketUrl(req, projectId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_FETCH_DEFAULT_ORACLE_BUCKET_URL, err);
         }

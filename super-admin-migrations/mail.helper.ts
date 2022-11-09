@@ -13,13 +13,13 @@ interface IMailContent {
 }
 
 export const sendMail = async (subject: string, receiverEmail: string, mailContext: IMailContent, mailType: string): Promise<void> => {
-    const emailTemplateSource = fs.readFileSync(path.join(process.cwd(), '/src/@utils/mail/templates/rootmail.hbs'), 'utf8');
+    const emailTemplateSource = fs.readFileSync(path.join(process.cwd(), '/dist/src/@utils/mail/templates/rootmail.hbs'), 'utf8');
 
     handlebars.registerHelper('whichMail', function () {
         return mailType;
     });
 
-    handlebars.registerPartial(mailType, fs.readFileSync(path.join(process.cwd(), `/src/@utils/mail/templates/partials/${mailType}.hbs`), 'utf-8'));
+    handlebars.registerPartial(mailType, fs.readFileSync(path.join(process.cwd(), `/dist/src/@utils/mail/templates/partials/${mailType}.hbs`), 'utf-8'));
 
     const template = handlebars.compile(emailTemplateSource);
     const htmlToSend = template({ title: 'BTA', partialContext: mailContext ? { ...mailContext, appName: 'BTA' } : undefined, clientAppURL: process.env.CLIENT_APP_URL });

@@ -4,7 +4,7 @@ import { ApiBearerAuth, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags 
 import { PermissionGuard, RolesGuard } from 'src/components/auth/guards';
 import { Feature, Permission, Roles } from 'src/components/auth/decorators';
 import { ACCESS_TYPE, FEATURE_IDENTIFIER, ROLE } from 'src/@core/constants';
-import { Response as FLOResponse } from 'src/@core/response';
+import { Response as BTAResponse } from 'src/@core/response';
 import { Request } from 'express';
 import { COMMON_ERROR, MANAGE_PROJECT_CONSTANT } from 'src/@core/constants/api-error-constants';
 import { VersionLogAllExpResponseDto, LogExperimentDetailsResponseDto, LogExperimentInfoResponseDto, DeleteTempOracleDataHashDto, BcModelExperimentDetailsDto, BcModelExperimentHistoryDto, BcArtifactModelDetailsDto, BcArtifactModelHistoryDto, ArtifactModelResponseDto } from './dto';
@@ -36,9 +36,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_VERSION_EXPERIMENTS })
     @ApiResponse({ status: HttpStatus.OK, type: VersionLogAllExpResponseDto, isArray: true, description: MANAGE_PROJECT_CONSTANT.ALL_VERSION_EXPERIMENTS_RETRIEVED })
-    async getAllVersionExp(@Req() req: Request, @Param('id') versionId: string): Promise<FLOResponse> {
+    async getAllVersionExp(@Req() req: Request, @Param('id') versionId: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.ALL_VERSION_EXPERIMENTS_RETRIEVED]).setSuccessData(await this.aiModelService.getAllExperiment(req, versionId)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.ALL_VERSION_EXPERIMENTS_RETRIEVED]).setSuccessData(await this.aiModelService.getAllExperiment(req, versionId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_VERSION_EXPERIMENTS, err);
         }
@@ -62,9 +62,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_LOG_EXPERIMENT_DETAILS })
     @ApiResponse({ status: HttpStatus.OK, type: LogExperimentDetailsResponseDto, isArray: true, description: MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_DETAILS_RETRIEVED })
-    async fetchExperimentDetails(@Param('id') id: string): Promise<FLOResponse> {
+    async fetchExperimentDetails(@Param('id') id: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_DETAILS_RETRIEVED]).setSuccessData(await this.aiModelService.getExperimentDetails(id)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_DETAILS_RETRIEVED]).setSuccessData(await this.aiModelService.getExperimentDetails(id)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_LOG_EXPERIMENT_DETAILS, err);
         }
@@ -88,9 +88,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_LOG_EXPERIMENT_INFO })
     @ApiResponse({ status: HttpStatus.OK, type: LogExperimentInfoResponseDto, description: MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_INFO_RETRIEVED })
-    async getExperimentInfo(@Param('id') id: string): Promise<FLOResponse> {
+    async getExperimentInfo(@Param('id') id: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_INFO_RETRIEVED]).setSuccessData(await this.aiModelService.getExperimentInfo(id)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_INFO_RETRIEVED]).setSuccessData(await this.aiModelService.getExperimentInfo(id)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_LOG_EXPERIMENT_INFO, err);
         }
@@ -114,9 +114,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_LOG_FILE_ORACLE_BC_HASH })
     @ApiResponse({ status: HttpStatus.OK, type: VersionResponseDto, description: MANAGE_PROJECT_CONSTANT.GOT_LOG_FILE_ORACLE_BC_HASH_SUCCESS })
-    async getLogFileBcHash(@Param('id') versionId: string, @Req() req: Request): Promise<FLOResponse> {
+    async getLogFileBcHash(@Param('id') versionId: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_LOG_FILE_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getLogFileHash(versionId, req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_LOG_FILE_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getLogFileHash(versionId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_LOG_FILE_ORACLE_BC_HASH, err);
         }
@@ -140,9 +140,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_TEST_DATA_SET_ORACLE_BC_HASH })
     @ApiResponse({ status: HttpStatus.OK, type: VersionResponseDto, description: MANAGE_PROJECT_CONSTANT.GOT_TEST_DATA_SET_ORACLE_BC_HASH_SUCCESS })
-    async getTestDataBcHash(@Param('id') versionId: string, @Req() req: Request): Promise<FLOResponse> {
+    async getTestDataBcHash(@Param('id') versionId: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_TEST_DATA_SET_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getTestDataBcHash(versionId, req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_TEST_DATA_SET_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getTestDataBcHash(versionId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_TEST_DATA_SET_ORACLE_BC_HASH, err);
         }
@@ -166,9 +166,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_AI_MODEL_ORACLE_BC_HASH })
     @ApiResponse({ status: HttpStatus.OK, type: VersionResponseDto, description: MANAGE_PROJECT_CONSTANT.GOT_TRAIN_DATA_SET_ORACLE_BC_HASH_SUCCESS })
-    async getTrainDataSetsBcHash(@Param('id') versionId: string, @Req() req: Request): Promise<FLOResponse> {
+    async getTrainDataSetsBcHash(@Param('id') versionId: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_TRAIN_DATA_SET_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getTrainDataSetsBcHash(versionId, req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_TRAIN_DATA_SET_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getTrainDataSetsBcHash(versionId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_TRAIN_DATA_SET_ORACLE_BC_HASH, err);
         }
@@ -192,9 +192,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_AI_MODEL_ORACLE_BC_HASH })
     @ApiResponse({ status: HttpStatus.OK, type: VersionResponseDto, description: MANAGE_PROJECT_CONSTANT.GOT_AI_MODEL_ORACLE_BC_HASH_SUCCESS })
-    async getAiModelBcHash(@Param('id') versionId: string, @Req() req: Request): Promise<FLOResponse> {
+    async getAiModelBcHash(@Param('id') versionId: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_AI_MODEL_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getAiModelBcHash(versionId, req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_AI_MODEL_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getAiModelBcHash(versionId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_AI_MODEL_ORACLE_BC_HASH, err);
         }
@@ -219,9 +219,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ALL_EXPERIMENT_DETAILS })
     @ApiResponse({ status: HttpStatus.OK, type: LogExperimentDetailsResponseDto, isArray: true, description: MANAGE_PROJECT_CONSTANT.GOT_ALL_EXPERIMENT_DETAILS_SUCCESS })
-    async getAllExperiments(@Param('id') versionId: string): Promise<FLOResponse> {
+    async getAllExperiments(@Param('id') versionId: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ALL_EXPERIMENT_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.getAllExperimentDetails(versionId)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ALL_EXPERIMENT_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.getAllExperimentDetails(versionId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ALL_EXPERIMENT_DETAILS, err);
         }
@@ -245,9 +245,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_LOG_FILE_ORACLE_BC_HASH })
     @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: 'c0cff8630bc46102a242bba2d31db07ac17af28142a7cb608610badf8ec5cd07' } }, description: MANAGE_PROJECT_CONSTANT.GOT_LOG_FILE_ORACLE_BC_HASH_SUCCESS })
-    async getLogFileOracleBcHash(@Param('id') versionId: string): Promise<FLOResponse> {
+    async getLogFileOracleBcHash(@Param('id') versionId: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_LOG_FILE_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getLogFileOracleBcHash(versionId)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_LOG_FILE_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getLogFileOracleBcHash(versionId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_LOG_FILE_ORACLE_BC_HASH, err);
         }
@@ -271,9 +271,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_TEST_DATA_SET_ORACLE_BC_HASH })
     @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: '62efd37ef24e4b26ff79c760' } }, description: MANAGE_PROJECT_CONSTANT.GOT_TEST_DATA_SET_ORACLE_BC_HASH_SUCCESS })
-    async getTestDataOracleBcHash(@Param('id') versionId: string): Promise<FLOResponse> {
+    async getTestDataOracleBcHash(@Param('id') versionId: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ALL_EXPERIMENT_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.getTestDataOracleBcHash(versionId)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ALL_EXPERIMENT_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.getTestDataOracleBcHash(versionId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_TEST_DATA_SET_ORACLE_BC_HASH, err);
         }
@@ -297,9 +297,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_TRAIN_DATA_SET_ORACLE_BC_HASH })
     @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: '62efd1a9f24e4b26ff79c566' } }, description: MANAGE_PROJECT_CONSTANT.GOT_TRAIN_DATA_SET_ORACLE_BC_HASH_SUCCESS })
-    async getTrainDataOracleBcHash(@Param('id') versionId: string): Promise<FLOResponse> {
+    async getTrainDataOracleBcHash(@Param('id') versionId: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_TRAIN_DATA_SET_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getTrainDataOracleBcHash(versionId)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_TRAIN_DATA_SET_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getTrainDataOracleBcHash(versionId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_TRAIN_DATA_SET_ORACLE_BC_HASH, err);
         }
@@ -323,9 +323,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_AI_MODEL_ORACLE_BC_HASH })
     @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: '62efd37ef24e4b26ff79c760' } }, description: MANAGE_PROJECT_CONSTANT.GOT_AI_MODEL_ORACLE_BC_HASH_SUCCESS })
-    async getAIModelOracleBcHash(@Param('id') versionId: string): Promise<FLOResponse> {
+    async getAIModelOracleBcHash(@Param('id') versionId: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_AI_MODEL_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getAIModelOracleBcHash(versionId)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_AI_MODEL_ORACLE_BC_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getAIModelOracleBcHash(versionId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_AI_MODEL_ORACLE_BC_HASH, err);
         }
@@ -349,9 +349,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_SINGLE_EXPERIMENT_ORACLE_BC_HASH })
     @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: '1905182e52b6b2da25cbeef11cd38e75349aa072bc2a2ddb934e0eca50d61acb' } }, description: MANAGE_PROJECT_CONSTANT.GOT_SINGLE_EXPERIMENT_ORACLE_BC_HASH_SUCCESS })
-    async getExperimentOracleBcHash(@Param('id') experimentId: string): Promise<FLOResponse> {
+    async getExperimentOracleBcHash(@Param('id') experimentId: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ALL_EXPERIMENT_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.getExperimentOracleBcHash(experimentId)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ALL_EXPERIMENT_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.getExperimentOracleBcHash(experimentId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.GOT_SINGLE_EXPERIMENT_ORACLE_BC_HASH_SUCCESS, err);
         }
@@ -379,9 +379,9 @@ export class AiModelController {
         schema: { example: { data: 'https://objectstorage.us-phoenix-1.oraclecloud.com' } },
         description: MANAGE_PROJECT_CONSTANT.LOG_FILE_DOWNLOAD_SUCCESS
     })
-    async downloadExperimentLogFile(@Param('id') experimentId: string): Promise<FLOResponse> {
+    async downloadExperimentLogFile(@Param('id') experimentId: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.LOG_FILE_DOWNLOAD_SUCCESS]).setSuccessData(await this.aiModelService.downloadExperimentLogFile(experimentId)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.LOG_FILE_DOWNLOAD_SUCCESS]).setSuccessData(await this.aiModelService.downloadExperimentLogFile(experimentId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_DOWNLOAD_LOG_FILE, err);
         }
@@ -405,9 +405,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.ORACLE_HASH_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ORACLE_HASH })
     @ApiResponse({ status: HttpStatus.OK, type: DeleteTempOracleDataHashDto, description: MANAGE_PROJECT_CONSTANT.GOT_ORACLE_HASH_SUCCESS })
-    async getOracleDataHash(@Param('id') hashId: string): Promise<FLOResponse> {
+    async getOracleDataHash(@Param('id') hashId: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ORACLE_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getOracleDataHash(hashId)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ORACLE_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getOracleDataHash(hashId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ORACLE_HASH, err);
         }
@@ -431,9 +431,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.ORACLE_HASH_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_DELETE_ORACLE_HASH })
     @ApiResponse({ status: HttpStatus.OK, type: DeleteTempOracleDataHashDto, description: MANAGE_PROJECT_CONSTANT.DELETED_ORACLE_HASH_SUCCESS })
-    async deleteTempOracleDataHash(@Param('id') hashId: string): Promise<FLOResponse> {
+    async deleteTempOracleDataHash(@Param('id') hashId: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.DELETED_ORACLE_HASH_SUCCESS]).setSuccessData(await this.aiModelService.deleteTempOracleDataHash(hashId)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.DELETED_ORACLE_HASH_SUCCESS]).setSuccessData(await this.aiModelService.deleteTempOracleDataHash(hashId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_DELETE_ORACLE_HASH, err);
         }
@@ -457,9 +457,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_EXPERIMENT_BC_DETAILS })
     @ApiResponse({ status: HttpStatus.OK, type: BcModelExperimentDetailsDto, description: MANAGE_PROJECT_BC_CONSTANT.MODEL_EXPERIMENT_BC_DETAILS_RETRIEVED_SUCCESS })
-    async getExperimentBcDetails(@Param('id') experimentId: string, @Req() req: Request): Promise<FLOResponse> {
+    async getExperimentBcDetails(@Param('id') experimentId: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.MODEL_EXPERIMENT_BC_DETAILS_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelBcService.getExperimentBcDetails(experimentId, req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_BC_CONSTANT.MODEL_EXPERIMENT_BC_DETAILS_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelBcService.getExperimentBcDetails(experimentId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new NotFoundException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_EXPERIMENT_BC_DETAILS, err);
         }
@@ -483,9 +483,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_LOG_EXPERIMENT_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_EXPERIMENT_BC_HISTORY })
     @ApiResponse({ status: HttpStatus.OK, type: BcModelExperimentHistoryDto, isArray: true, description: MANAGE_PROJECT_BC_CONSTANT.MODEL_EXPERIMENT_BC_HISTORY_RETRIEVED_SUCCESS })
-    async getExperimentBcHistory(@Param('id') experimentId: string, @Req() req: Request): Promise<FLOResponse> {
+    async getExperimentBcHistory(@Param('id') experimentId: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.MODEL_EXPERIMENT_BC_HISTORY_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelBcService.getExperimentBcHistory(experimentId, req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_BC_CONSTANT.MODEL_EXPERIMENT_BC_HISTORY_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelBcService.getExperimentBcHistory(experimentId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new NotFoundException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_MODEL_EXPERIMENT_BC_HISTORY, err);
         }
@@ -509,9 +509,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_ARTIFACT_MODEL_BC_DETAILS })
     @ApiResponse({ status: HttpStatus.OK, type: BcArtifactModelDetailsDto, description: MANAGE_PROJECT_BC_CONSTANT.ARTIFACT_MODEL_BC_DETAILS_RETRIEVED_SUCCESS })
-    async getArtifactModelBcDetails(@Param('id') modelId: string, @Req() req: Request): Promise<FLOResponse> {
+    async getArtifactModelBcDetails(@Param('id') modelId: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.ARTIFACT_MODEL_BC_DETAILS_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelBcService.getArtifactModelBcDetails(modelId, req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_BC_CONSTANT.ARTIFACT_MODEL_BC_DETAILS_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelBcService.getArtifactModelBcDetails(modelId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new NotFoundException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_ARTIFACT_MODEL_BC_DETAILS, err);
         }
@@ -535,9 +535,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_ARTIFACT_MODEL_BC_HISTORY })
     @ApiResponse({ status: HttpStatus.OK, type: BcArtifactModelHistoryDto, isArray: true, description: MANAGE_PROJECT_BC_CONSTANT.ARTIFACT_MODEL_BC_HISTORY_RETRIEVED_SUCCESS })
-    async getArtifactModelBcHistory(@Param('id') modelId: string, @Req() req: Request): Promise<FLOResponse> {
+    async getArtifactModelBcHistory(@Param('id') modelId: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_BC_CONSTANT.ARTIFACT_MODEL_BC_HISTORY_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelBcService.getArtifactModelBcHistory(modelId, req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_BC_CONSTANT.ARTIFACT_MODEL_BC_HISTORY_RETRIEVED_SUCCESS]).setSuccessData(await this.aiModelBcService.getArtifactModelBcHistory(modelId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_BC_CONSTANT.UNABLE_TO_FETCH_ARTIFACT_MODEL_BC_HISTORY, err);
         }
@@ -559,13 +559,13 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
     @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_ARTIFICT_MODEL })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_ARTIFACT_MODEL })
     @ApiResponse({ status: HttpStatus.OK, type: ArtifactModelResponseDto, isArray: true, description: MANAGE_PROJECT_CONSTANT.ALL_ARTIFACT_MODEL_RETRIEVED })
-    async getAllArtifactModel(@Param('id') versionId: string, @Req() req: Request): Promise<FLOResponse> {
+    async getAllArtifactModel(@Param('id') versionId: string, @Req() req: Request): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.ALL_ARTIFACT_MODEL_RETRIEVED]).setSuccessData(await this.aiModelService.getAllArtifactModel(versionId, req)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.ALL_ARTIFACT_MODEL_RETRIEVED]).setSuccessData(await this.aiModelService.getAllArtifactModel(versionId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
-            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_ARTIFICT_MODEL, err);
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_RETRIEVE_ARTIFACT_MODEL, err);
         }
     }
 
@@ -587,9 +587,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.ARTIFACT_MODEL_RECORD_NOT_FOUND })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_AI_MODEL_ORACLE_BC_HASH })
     @ApiResponse({ status: HttpStatus.OK, schema: { example: { data: '62efd37ef24e4b26ff79c760' } }, description: MANAGE_PROJECT_CONSTANT.GOT_ARTIFACT_MODEL_ORACLE_HASH_SUCCESS })
-    async getArtifactModelOracleBcHash(@Param('id') modelId: string): Promise<FLOResponse> {
+    async getArtifactModelOracleBcHash(@Param('id') modelId: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ARTIFACT_MODEL_ORACLE_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getArtifactModelOracleBcHash(modelId)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ARTIFACT_MODEL_ORACLE_HASH_SUCCESS]).setSuccessData(await this.aiModelService.getArtifactModelOracleBcHash(modelId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ARTIFACT_MODEL_ORACLE_HASH, err);
         }
@@ -613,9 +613,9 @@ export class AiModelController {
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_AI_MODEL_ORACLE_BC_HASH })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ARTIFACT_MODEL_DETAILS })
     @ApiResponse({ status: HttpStatus.OK, type: ArtifactModelResponseDto, description: MANAGE_PROJECT_CONSTANT.ALL_ARTIFACT_MODEL_RETRIEVED })
-    async getArtifactModelDetails(@Param('id') expId: string): Promise<FLOResponse> {
+    async getArtifactModelDetails(@Param('id') expId: string): Promise<BTAResponse> {
         try {
-            return new FLOResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ARTIFACT_MODEL_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.getArtifactModelDetails(expId)).setStatus(HttpStatus.OK);
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ARTIFACT_MODEL_DETAILS_SUCCESS]).setSuccessData(await this.aiModelService.getArtifactModelDetails(expId)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ARTIFACT_MODEL_DETAILS, err);
         }

@@ -15,7 +15,7 @@ export class VersionBcHashesEvent {
     }
 
     @OnEvent(REVIEW_MODEL_ALL_ORACLE_BC_HASHES, { async: true })
-    handelModelReviewAllBcHashes(payload: { reviewModel: IProjectVersion; req: Request }): void {
-        this.versionBcHashesEventService.modelReviewedBcHashesEvent(payload.reviewModel, payload.req);
+    handelModelReviewAllBcHashes(payload: { reviewModel: IProjectVersion; req: Request; getBcHashActionType: string }): void {
+        this.versionBcHashesEventService.modelReviewedBcHashesEvent(payload.reviewModel, payload.req, payload.getBcHashActionType);
     }
 }
