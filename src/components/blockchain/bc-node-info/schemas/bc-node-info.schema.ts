@@ -36,6 +36,10 @@ export const BcNodeInfoSchema = new mongoose.Schema(
         addedBy: {
             type: mongoose.Types.ObjectId,
             ref: 'User'
+        },
+        isMigrated: {
+            type: Boolean,
+            default: false
         }
     },
     {

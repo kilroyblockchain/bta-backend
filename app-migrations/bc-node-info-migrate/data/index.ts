@@ -8,5 +8,6 @@ export const bcNodeInfoData = {
     label: process.env.BC_NODE_LABEL,
     nodeUrl: process.env.BC_NODE_URL,
     authorizationToken: process.env.BC_NODE_AUTHORIZATION,
-    addedBy: DEFAULT_SUPER_ADMIN_ID
+    addedBy: DEFAULT_SUPER_ADMIN_ID,
+    isMigrated: true
 };

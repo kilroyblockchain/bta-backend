@@ -7,4 +7,5 @@ export interface IBcNodeInfo extends Document {
     status: boolean;
     authorizationToken: string;
     addedBy: string;
+    isMigrated: boolean;
 }
