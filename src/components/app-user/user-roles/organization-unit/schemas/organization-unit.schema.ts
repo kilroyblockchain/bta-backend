@@ -30,6 +30,10 @@ export const OrganizationUnitSchema = new Schema(
         status: {
             type: Boolean,
             default: true
+        },
+        isMigrated: {
+            type: Boolean,
+            default: false
         }
     },
     {

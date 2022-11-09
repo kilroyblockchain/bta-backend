@@ -46,6 +46,12 @@ export class OrganizationUnitResponse extends TimestampDto {
     status: boolean;
 
     @ApiProperty({
+        example: true,
+        description: 'Document Migration Status'
+    })
+    isMigrated: boolean;
+
+    @ApiProperty({
         example: [
             {
                 _id: 'Id',
