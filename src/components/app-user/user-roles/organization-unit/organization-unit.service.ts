@@ -70,6 +70,7 @@ export class OrganizationUnitService {
                         companyID: { $first: '$companyID' },
                         unitName: { $first: '$unitName' },
                         createdAt: { $first: '$createdAt' },
+                        isMigrated: { $first: '$isMigrated' },
                         updatedAt: { $first: '$updatedAt' },
                         unitDescription: { $first: '$unitDescription' },
                         staffing_records: { $push: '$staffing_records' }
@@ -201,6 +202,7 @@ export class OrganizationUnitService {
             orgUnitResponse.subscriptionType = orgUnitDocument.subscriptionType;
             orgUnitResponse.featureListId = orgUnitDocument.featureListId;
             orgUnitResponse.status = orgUnitDocument.status;
+            orgUnitResponse.isMigrated = orgUnitDocument.isMigrated;
             orgUnitResponse.createdAt = new Date(orgUnitDocument.createdAt?.toString());
             orgUnitResponse.updatedAt = new Date(orgUnitDocument.updatedAt?.toString());
             orgUnitResponse.staffing_records = staffingList?.map((staff) => this.staffingService.buildStaffingResponse(staff)) ?? [];
