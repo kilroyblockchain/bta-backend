@@ -25,7 +25,7 @@ async function up(): Promise<void> {
         }
 
         const updateOrganizationUnit = await OrganizationUnitModel.updateMany({ _id: { $in: organizationUnitIds } }, { $set: { isMigrated: true } });
-        if (updateOrganizationUnit) {
+        if (updateOrganizationUnit.modifiedCount) {
             consoleLogWrapper('New filed isMigrated added in all organization units successfully');
         } else {
             consoleLogWrapper('Unable to Add New Field isMigrated ');
