@@ -8,7 +8,7 @@ const mongoURI = buildMongoURI(process.env.MONGO_URI, process.env.DATABASE_NAME,
 mongoose.connect(mongoURI);
 const migrationsDir = join(__dirname, 'migrations'),
     dbUrl = mongoURI,
-    collectionName = 'dataFixMigrations',
+    collectionName = 'data-fix-migrations',
     autosync = true;
 
 const migrator = new migrateMongoose({

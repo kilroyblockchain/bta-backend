@@ -18,8 +18,8 @@ async function up(): Promise<void> {
         if (!migratedOrganizationIds.length) {
             consoleLogWrapper('No Organization units are migrated');
         }
-        const organizationUnitIds = [];
 
+        const organizationUnitIds = [];
         for (const organizationUnitId of migratedOrganizationIds) {
             organizationUnitIds.push(organizationUnitId.organizationUnitId);
         }
