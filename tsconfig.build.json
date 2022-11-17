@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.json",
   "exclude": ["node_modules", "test", "dist", "**/*spec.ts", "uploads"],
-  "include": ["src", "app-migrations", "super-admin-migrations"]
+  "include": ["src", "app-migrations", "super-admin-migrations","data-fix"]
 }
