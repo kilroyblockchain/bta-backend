@@ -45,7 +45,8 @@ export class OrganizationEventService {
             unitDescription: UNIT_DESCRIPTION,
             subscriptionType: ROLE.STAFF,
             companyID: payload.companyId,
-            status: true
+            status: true,
+            isMigrated: true
         };
 
         const organizationUnitDto = new CreateOrganizationUnitDto(DEFAULT_ORGANIZATION_UNIT);
@@ -192,7 +193,8 @@ export class OrganizationEventService {
             unitDescription: payload.organizationName + ' ' + 'Organization',
             subscriptionType: payload.staffingType,
             companyID: payload.companyId,
-            status: true
+            status: true,
+            isMigrated: true
         };
         const organizationUnitDto = new CreateOrganizationUnitDto(DEFAULT_ORGANIZATION_UNIT);
 

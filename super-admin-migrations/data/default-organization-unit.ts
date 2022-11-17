@@ -6,6 +6,7 @@ export const adminOrganizationUnit = {
     unitName: 'Super Admin Organization',
     unitDescription: 'This is default super admin organization',
     subscriptionType: 'super-admin',
+    isMigrated: true,
     featureListId: [
         superAdminFeaturesIds.MANAGE_ALL_USER,
         superAdminFeaturesIds.APPLICATION_LOGS,

@@ -7,4 +7,5 @@ export interface IOrganizationUnitInterface extends Document, IDocumentTimestamp
     subscriptionType: string;
     featureListId?: string[];
     status: boolean;
+    isMigrated: boolean;
 }
