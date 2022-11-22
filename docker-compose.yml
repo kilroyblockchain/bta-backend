@@ -9,6 +9,7 @@ services:
         restart: unless-stopped
         volumes:
             - .env:/usr/app/.env:r
+            - bta_nodemodules:/usr/app/node_modules
             - ./uploads:/usr/app/uploads:rw
         links:
             - mongo
@@ -25,3 +26,5 @@ services:
             - ${DATABASE_VOLUME_MOUNT}:/data/db
         restart: unless-stopped
         command: [ --auth ]
+volumes:
+    bta_nodemodules:
