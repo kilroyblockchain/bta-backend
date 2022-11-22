@@ -55,9 +55,5 @@ export const envValidationSchema = Joi.object({
     APP_LOG_ZIPPED_ARCHIVE: Joi.boolean().allow('').optional(),
     APP_LOG_DATE_PATTERN: Joi.string().required(),
     APP_LOG_MAX_SIZE: Joi.string().required(),
-    APP_LOG_MAX_FILES: Joi.string().required(),
-    /**
-     * Blockchain
-     */
-    BLOCKCHAIN: production ? Joi.string().required().equal('ENABLED') : Joi.string().required().equal('ENABLED', 'DISABLED')
+    APP_LOG_MAX_FILES: Joi.string().required()
 });
