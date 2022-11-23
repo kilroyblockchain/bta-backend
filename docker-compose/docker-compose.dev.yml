@@ -8,8 +8,6 @@ services:
                 UID: ${USER_ID}
                 GID: ${GROUP_ID}
         command: npm run start:prod
-        volumes:
-            - bta_nodemodules:/usr/app/node_modules
         links:
             - mailcatcher
         depends_on:
@@ -20,5 +18,3 @@ services:
         container_name: ${MAILCATCHER_CONTAINER_NAME}
         ports:
             - ${MAILCATCHER_PORT}:1080
-volumes:
-    bta_nodemodules:
