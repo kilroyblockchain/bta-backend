@@ -112,13 +112,7 @@ export class ModelReviewService {
             const reviewedVersion = await this.versionService.getVersionById(reviewedVersionId.reviewModel);
             if (!reviewedVersion) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
 
-            if (
-                reviewedVersion &&
-                (reviewedVersion.logFileStatus.code === OracleBucketDataStatus.ERROR ||
-                    reviewedVersion.testDatasetStatus.code === OracleBucketDataStatus.ERROR ||
-                    reviewedVersion.logFileStatus.code !== OracleBucketDataStatus.FETCHED ||
-                    reviewedVersion.testDatasetStatus.code !== OracleBucketDataStatus.FETCHED)
-            ) {
+            if (reviewedVersion && (reviewedVersion.logFileStatus.code !== OracleBucketDataStatus.FETCHED || reviewedVersion.testDatasetStatus.code !== OracleBucketDataStatus.FETCHED)) {
                 return true;
             }
 
