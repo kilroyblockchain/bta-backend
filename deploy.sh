@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Copy the env sample and create new .env file and paste all the contents there.
+cp -r env-samples/.env.local.sample .env
+
 . ./.env
 
 echo "Pulling latest code"
