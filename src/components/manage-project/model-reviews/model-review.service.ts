@@ -114,11 +114,10 @@ export class ModelReviewService {
 
             if (
                 reviewedVersion &&
-                (reviewedVersion.logFileStatus.code === OracleBucketDataStatus.ERROR || reviewedVersion.testDatasetStatus.code === OracleBucketDataStatus.ERROR) &&
-                reviewedVersion.logFileStatus.code !== OracleBucketDataStatus.FETCHING &&
-                reviewedVersion.logFileStatus.code !== OracleBucketDataStatus.FETCHED &&
-                reviewedVersion.testDatasetStatus.code !== OracleBucketDataStatus.FETCHING &&
-                reviewedVersion.testDatasetStatus.code !== OracleBucketDataStatus.FETCHED
+                (reviewedVersion.logFileStatus.code === OracleBucketDataStatus.ERROR ||
+                    reviewedVersion.testDatasetStatus.code === OracleBucketDataStatus.ERROR ||
+                    reviewedVersion.logFileStatus.code !== OracleBucketDataStatus.FETCHED ||
+                    reviewedVersion.testDatasetStatus.code !== OracleBucketDataStatus.FETCHED)
             ) {
                 return true;
             }
