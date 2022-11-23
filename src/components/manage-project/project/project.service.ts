@@ -210,5 +210,19 @@ export class ProjectService {
             throw err;
         }
     }
+
+    async checkVersionInProject(projectId: string, versionId: string): Promise<boolean> {
+        const logger = new Logger(ProjectService.name + '-checkVersionInProject');
+        try {
+            const versionInProject = await this.projectModel.findOne({ _id: projectId, projectVersions: versionId });
+            if (versionInProject) {
+                return true;
+            }
+            return false;
+        } catch (err) {
+            logger.error(err);
+            throw err;
+        }
+    }
 }
 
