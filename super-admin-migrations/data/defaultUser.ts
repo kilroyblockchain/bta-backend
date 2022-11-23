@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { Types } from 'mongoose';
 import { DEFAULT_COMPANY_ID, DEFAULT_SUPER_ADMIN_ID, STAFFING_UNIT_ID } from 'super-admin-migrations/constants/default-constant';
+import { getRandomEmail } from 'super-admin-migrations/generate-email-id.helper';
 
 const randomPassword = Math.random().toString(36).slice(-8);
 
@@ -12,7 +13,7 @@ export const admin =
         autoPassword: true,
         firstName: 'Suyog',
         lastName: 'Khanal',
-        email: process.env.SUPER_ADMIN_EMAIL,
+        email: getRandomEmail("@mailinator.com",8),
         phone: '+1 (488) 431-4341',
         country: new Types.ObjectId('60e6fe33d27e2133c4855221'),
         state: new Types.ObjectId('60e6fe3dd27e2133c4856174'),
