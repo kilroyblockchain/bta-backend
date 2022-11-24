@@ -6,7 +6,7 @@ COLOR_OFF='\033[0m'
 . ./.env
 
 # Funtion for Remov BTA app
-revomeBTAApp () {
+removeBTAApp () {
 echo "${GREEN}"
 echo "----------------------------------------------------------"
 echo "Deleting previous docker container, volumes and images"
@@ -43,7 +43,7 @@ echo "${COLOR_OFF}"
 
 
 # Removing BTA App
-revomeBTAApp
+removeBTAApp
 }
 
 invalidResponse () {
@@ -63,7 +63,7 @@ read -p "Do you also want to remove all the BTA backend data from the database? 
 case $yn in
 	[yY] ) removeDBDataAndBTAApp;
 		break;;
-	[nN] ) revomeBTAApp;
+	[nN] ) removeBTAApp;
 		break;;
 	* ) invalidResponse;
 esac
