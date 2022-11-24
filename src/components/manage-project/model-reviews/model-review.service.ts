@@ -8,7 +8,7 @@ import { ProjectVersionService } from '../project-version/project-version.servic
 import { MANAGE_PROJECT_CONSTANT } from 'src/@core/constants';
 import { UserService } from 'src/components/app-user/user/user.service';
 import { ModelReviewBcService } from './bc-model-review.service';
-import { VersionStatus } from '../project-version/enum/version-status.enum';
+import { OracleBucketDataStatus, VersionStatus } from '../project-version/enum/version-status.enum';
 
 @Injectable()
 export class ModelReviewService {
@@ -95,6 +95,27 @@ export class ModelReviewService {
             if (reviewModel && reviewModel.version['versionStatus'] === VersionStatus.REVIEW_PASSED) {
                 return true;
             }
+            return false;
+        } catch (err) {
+            logger.error(err);
+            throw err;
+        }
+    }
+
+    async isErrorInReviewedVersion(versionId: string): Promise<boolean> {
+        const logger = new Logger(ModelReviewService.name + '-isErrorInReviewedVersion');
+        try {
+            const reviewedVersionId = await this.reviewModel.findOne({ version: versionId, reviewModel: { $exists: true } }).select('reviewModel -_id');
+
+            if (!reviewedVersionId) return false;
+
+            const reviewedVersion = await this.versionService.getVersionById(reviewedVersionId.reviewModel);
+            if (!reviewedVersion) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
+
+            if (reviewedVersion && (reviewedVersion.logFileStatus.code !== OracleBucketDataStatus.FETCHED || reviewedVersion.testDatasetStatus.code !== OracleBucketDataStatus.FETCHED)) {
+                return true;
+            }
+
             return false;
         } catch (err) {
             logger.error(err);

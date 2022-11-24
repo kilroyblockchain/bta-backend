@@ -200,7 +200,7 @@ export class ModelReviewController {
         description: 'The token we need for auth'
     })
     @ApiOperation({ summary: 'Check if reviewed model is editable' })
-    @ApiParam({ name: 'id', required: true, description: 'Project Id' })
+    @ApiParam({ name: 'id', required: true, description: 'Version Id' })
     @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
     @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
@@ -211,6 +211,32 @@ export class ModelReviewController {
             return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.CAN_ABLE_TO_UPDATE_REVIEWED_VERSION]).setSuccessData(await this.modelReviewService.canMlopsEditReviewedVersion(versionId, req)).setStatus(HttpStatus.OK);
         } catch (err) {
             throw new BadRequestException(MANAGE_PROJECT_CONSTANT.COULD_NOT_ABLE_TO_UPDATE_REVIEWED_VERSION);
+        }
+    }
+
+    @Get('is-error-in-reviewed-model/:id')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(PermissionGuard)
+    @Permission(ACCESS_TYPE.READ)
+    @Feature(FEATURE_IDENTIFIER.MODEL_REVIEWS)
+    @Roles(ROLE.STAFF, ROLE.OTHER)
+    @ApiBearerAuth()
+    @ApiHeader({
+        name: 'Bearer',
+        description: 'The token we need for auth'
+    })
+    @ApiOperation({ summary: 'Check if there is error in reviewed model version' })
+    @ApiParam({ name: 'id', required: true, description: 'Version Id' })
+    @ApiResponse({ status: HttpStatus.FORBIDDEN, description: COMMON_ERROR.FORBIDDEN })
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: COMMON_ERROR.UNAUTHORIZED })
+    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ERROR_STATUS_OF_REVIEWED_MODEL_VERSION })
+    @ApiResponse({ status: HttpStatus.OK, type: Boolean, description: MANAGE_PROJECT_CONSTANT.GOT_ERROR_STATUS_OF_REVIEWED_MODEL_VERSION_SUCCESS })
+    async isErrorInReviewedVersion(@Param('id') versionId: string): Promise<BTAResponse> {
+        try {
+            return new BTAResponse(true, [MANAGE_PROJECT_CONSTANT.GOT_ERROR_STATUS_OF_REVIEWED_MODEL_VERSION_SUCCESS]).setSuccessData(await this.modelReviewService.isErrorInReviewedVersion(versionId)).setStatus(HttpStatus.OK);
+        } catch (err) {
+            throw new BadRequestException(MANAGE_PROJECT_CONSTANT.UNABLE_TO_GET_ERROR_STATUS_OF_REVIEWED_MODEL_VERSION);
         }
     }
 }
