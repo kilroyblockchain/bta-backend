@@ -40,7 +40,7 @@ else
     mkdir -p $UPLOADS_DIR && chown -R $USER:$USER $UPLOADS_DIR
 fi
 
-. ./scripts/docker-down.sh
+. ./removeAndStopBTABackend.sh
 
 . ./scripts/docker-up.sh
 
