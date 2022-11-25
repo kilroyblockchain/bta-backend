@@ -1,4 +1,7 @@
 #!/bin/sh
+GREEN='\033[0;32m'
+COLOR_OFF='\033[0m'
+
 
 # Copy the env sample and create new .env file and paste all the contents there.
 cp -r env-samples/.env.local.sample .env
@@ -40,7 +43,7 @@ else
     mkdir -p $UPLOADS_DIR && chown -R $USER:$USER $UPLOADS_DIR
 fi
 
-. ./removeAndStopBTABackend.sh
+. ./scripts/docker-down.sh
 
 . ./scripts/docker-up.sh
 
@@ -48,5 +51,40 @@ fi
 REMOVE_DANGLING_IMAGES="docker rmi $(docker images -q -f dangling=true)"
 eval $REMOVE_DANGLING_IMAGES
 
-echo "Application Log Started:"
-docker compose logs -f app
+echo -e "${GREEN}"
+echo "----------------------------------------------------------"
+echo "Starting Migrating App Migration"
+echo "----------------------------------------------------------"
+echo -e "${COLOR_OFF}"
+
+# Run App Migrations
+. ./scripts/app-migration.sh
+
+echo -e "${GREEN}"
+echo "----------------------------------------------------------"
+echo "Successfully Migrated App Migration"
+echo "----------------------------------------------------------"
+echo -e "${COLOR_OFF}"
+
+echo -e "${GREEN}"
+echo "----------------------------------------------------------"
+echo "Starting Migrating Super Admin Migration"
+echo "----------------------------------------------------------"
+echo -e "${COLOR_OFF}"
+
+echo -e "${GREEN}"
+echo "----------------------------------------------------------"
+# Run Super Admin Migrations
+. ./scripts/super-admin-migration.sh
+
+echo "Successfully Migrated Super Admin Migration"
+echo "----------------------------------------------------------"
+echo -e "${COLOR_OFF}"
+
+echo -e "${GREEN}"
+echo "----------------------------------------------------------"
+echo "----------------------------------------------------------"
+echo "Successfully created and run BTA backend application"
+echo "----------------------------------------------------------"
+echo "----------------------------------------------------------"
+echo -e "${COLOR_OFF}"
