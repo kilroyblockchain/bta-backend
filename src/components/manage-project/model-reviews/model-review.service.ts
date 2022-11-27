@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaginateModel, PaginateResult } from 'mongoose';
-import { IModelReview } from './interfaces/model-review.interface';
+import { IModelReview, IReviewedVersionError } from './interfaces/model-review.interface';
 import { Request } from 'express';
 import { AddModelReviewDto } from './dto';
 import { ProjectVersionService } from '../project-version/project-version.service';
@@ -102,21 +102,28 @@ export class ModelReviewService {
         }
     }
 
-    async isErrorInReviewedVersion(versionId: string): Promise<boolean> {
+    async isErrorInReviewedVersion(versionId: string): Promise<IReviewedVersionError> {
         const logger = new Logger(ModelReviewService.name + '-isErrorInReviewedVersion');
         try {
             const reviewedVersionId = await this.reviewModel.findOne({ version: versionId, reviewModel: { $exists: true } }).select('reviewModel -_id');
-
-            if (!reviewedVersionId) return false;
+            if (!reviewedVersionId) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.NO_REVIEWED_MODEL_ADDED_YET);
 
             const reviewedVersion = await this.versionService.getVersionById(reviewedVersionId.reviewModel);
             if (!reviewedVersion) throw new NotFoundException(MANAGE_PROJECT_CONSTANT.VERSION_RECORD_NOT_FOUND);
 
             if (reviewedVersion && (reviewedVersion.logFileStatus.code !== OracleBucketDataStatus.FETCHED || reviewedVersion.testDatasetStatus.code !== OracleBucketDataStatus.FETCHED)) {
-                return true;
+                return {
+                    errorStatus: true,
+                    logFileDataHashStatus: reviewedVersion.logFileStatus.code,
+                    testDataSetHashStatus: reviewedVersion.testDatasetStatus.code
+                };
             }
 
-            return false;
+            return {
+                errorStatus: false,
+                logFileDataHashStatus: reviewedVersion.logFileStatus.code,
+                testDataSetHashStatus: reviewedVersion.testDatasetStatus.code
+            };
         } catch (err) {
             logger.error(err);
             throw err;
