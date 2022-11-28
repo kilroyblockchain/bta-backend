@@ -61,11 +61,12 @@ COUNTER=0
 
 while [ "$GET_APP_RUNNING_STATUS" != "$APP_RUNNED_SUCCESS_RESPONSE" ];
 do
-if [ $COUNTER  -eq 12 ]
+if [ $COUNTER -eq 12 ]
     then
     echo -e "${RED}"
     echo "--------------------------------------------------------------------"
-    echo "Error starting bta-backend application. Please check your configuration and try again."
+    echo "Failed to run bta-backend application."
+    echo "Please check your configuration and try removing the backend with script ./stopAndRemoveBTABackend.sh and re-run the script again ./setupAndRunBTABackend.sh"
     echo "--------------------------------------------------------------------"
     echo -e "${COLOR_OFF}"
 
@@ -74,7 +75,7 @@ fi
 
 echo -e "${GREEN}"
 echo "--------------------------------------------------------------------"
-echo "Please wait while bta-backend application is running completely."
+echo "Please wait while bta-backend application is completely started..."
 echo "--------------------------------------------------------------------"
 echo -e "${COLOR_OFF}"
 
