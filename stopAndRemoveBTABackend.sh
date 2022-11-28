@@ -27,12 +27,6 @@ echo -e "${COLOR_OFF}"
 
 removeDBDataAndBTAApp () {
 
-echo -e "${GREEN}"
-echo "----------------------------------------------------------"
-echo "Successfully deleted database of BTA app"
-echo "----------------------------------------------------------"
-echo -e "${COLOR_OFF}"
-
 # Removing BTA App
 removeBTAApp
 
@@ -44,6 +38,12 @@ echo -e "${COLOR_OFF}"
 
 # Removing the database of bta app
 sudo rm -r psvolumes
+
+echo -e "${GREEN}"
+echo "----------------------------------------------------------"
+echo "Successfully deleted database of BTA app"
+echo "----------------------------------------------------------"
+echo -e "${COLOR_OFF}"
 }
 
 invalidResponse () {
