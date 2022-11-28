@@ -8,6 +8,8 @@ cp -r env-samples/.env.local.sample .env
 
 . ./.env
 
+export APP_RUNNED_SUCCESS_RESPONSE="APP IS LISTENING TO PORT ${PORT}"
+
 echo "Pulling latest code"
 
 git pull
@@ -50,6 +52,17 @@ fi
 # Remove development stage image or unused image
 REMOVE_DANGLING_IMAGES="docker rmi $(docker images -q -f dangling=true)"
 eval $REMOVE_DANGLING_IMAGES
+
+sleep 5
+
+# CHECK IF THE APPLICATION RUNNING STATUS
+GET_APP_RUNNING_STATUS=$(docker logs bta_api_local 2>&1 | grep "$APP_RUNNED_SUCCESS_RESPONSE")
+
+while [ "$GET_APP_RUNNING_STATUS" != "$APP_RUNNED_SUCCESS_RESPONSE" ];
+do
+sleep 5
+GET_APP_RUNNING_STATUS=$(docker logs bta_api_local 2>&1 | grep "$APP_RUNNED_SUCCESS_RESPONSE")
+done
 
 echo -e "${GREEN}"
 echo "----------------------------------------------------------"
