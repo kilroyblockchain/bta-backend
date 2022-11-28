@@ -1,7 +1,7 @@
 #!/bin/sh
 GREEN='\033[0;32m'
 COLOR_OFF='\033[0m'
-
+RED='\033[0;31m'
 
 # Copy the env sample and create new .env file and paste all the contents there.
 cp -r env-samples/.env.local.sample .env
@@ -57,11 +57,32 @@ sleep 5
 
 # CHECK IF THE APPLICATION RUNNING STATUS
 GET_APP_RUNNING_STATUS=$(docker logs bta_api_local 2>&1 | grep "$APP_RUNNED_SUCCESS_RESPONSE")
+COUNTER=0
 
 while [ "$GET_APP_RUNNING_STATUS" != "$APP_RUNNED_SUCCESS_RESPONSE" ];
 do
+if [ $COUNTER  -eq 12 ]
+    then
+    echo -e "${RED}"
+    echo "--------------------------------------------------------------------"
+    echo "Error starting bta-backend application. Please check your configuration and try again."
+    echo "--------------------------------------------------------------------"
+    echo -e "${COLOR_OFF}"
+
+    exit 0;
+fi
+
+echo -e "${GREEN}"
+echo "--------------------------------------------------------------------"
+echo "Please wait while bta-backend application is running completely."
+echo "--------------------------------------------------------------------"
+echo -e "${COLOR_OFF}"
+
 sleep 5
+COUNTER=$[$COUNTER +1]
+
 GET_APP_RUNNING_STATUS=$(docker logs bta_api_local 2>&1 | grep "$APP_RUNNED_SUCCESS_RESPONSE")
+
 done
 
 echo -e "${GREEN}"
@@ -85,10 +106,11 @@ echo "Starting Migrating Super Admin Migration"
 echo "----------------------------------------------------------"
 echo -e "${COLOR_OFF}"
 
-echo -e "${GREEN}"
-echo "----------------------------------------------------------"
 # Run Super Admin Migrations
 . ./scripts/super-admin-migration.sh
+
+echo -e "${GREEN}"
+echo "----------------------------------------------------------"
 
 echo "Successfully Migrated Super Admin Migration"
 echo "----------------------------------------------------------"
