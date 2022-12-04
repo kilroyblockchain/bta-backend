@@ -7,5 +7,5 @@ export const BC_ERROR_RESPONSE = {
     BLOCKCHAIN_NOT_ENABLED: 'Blockchain not enabled',
     USER_REGISTRATION_FAILED: 'USER_REGISTRATION_FAILED',
     INVALID_BC_KEY: 'INVALID_BC_KEY',
-    BC_CONNECTION_REFUSED_TIMEOUT: 'Bc Connection Refused Timeout'
+    BC_CONNECTION_REFUSED_TIMEOUT: 'Unable to connect with BC Connector. Connection refused.'
 };
