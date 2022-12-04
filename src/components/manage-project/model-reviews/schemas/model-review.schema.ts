@@ -5,7 +5,6 @@ export const ModelReviewSchema = new mongoose.Schema(
     {
         comment: {
             type: String,
-            minlength: 2,
             required: true
         },
         status: {
