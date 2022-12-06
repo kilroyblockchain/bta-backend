@@ -7,6 +7,36 @@ MAC_OS="darwin-amd64"
 LINUX_OS="linux-amd64"
 ARCH=$(echo "$(uname -s|tr '[:upper:]' '[:lower:]'|sed 's/mingw64_nt.*/windows/')-$(uname -m |sed 's/x86_64/amd64/g')" |sed 's/darwin-arm64/darwin-amd64/g')
 
+which ifconfig
+if [ "$?" -ne 0 ]; then
+    if [ "$ARCH" = "$LINUX_OS" ]; then
+        sudo apt-get update && sudo apt-get install net-tools
+    else
+        echo
+        echo -e "${RED}"
+        echo "-----------------------------------------------------------------------------------------"
+        echo "-----------------------------------------------------------------------------------------"
+        echo "OS Not Found. Please install ifconfig manually on your device and re-run the script"
+        echo "-----------------------------------------------------------------------------------------"
+        echo "-----------------------------------------------------------------------------------------"
+        echo -e "${COLOR_OFF}"
+        exit 1
+    fi
+fi
+
+which ifconfig
+if [ "$?" -ne 0 ]; then
+    echo
+    echo -e "${RED}"
+    echo "-----------------------------------------------------------------------------------------"
+    echo "-----------------------------------------------------------------------------------------"
+    echo "Failed to install ifconfig. Please install ifconfig manually on your device and re-run the script"
+    echo "-----------------------------------------------------------------------------------------"
+    echo "-----------------------------------------------------------------------------------------"
+    echo -e "${COLOR_OFF}"
+    exit 1
+fi
+
 # Getting IP Address For Blockchain Network
 export PRIVATE_NETWORK_IP_ADDRESS=$(ifconfig | grep -E "([0-9]{1,3}\.){3}[0-9]{1,3}" | grep -v 127.0.0.1 | tail -1 | awk '{ print $2 }')
 
