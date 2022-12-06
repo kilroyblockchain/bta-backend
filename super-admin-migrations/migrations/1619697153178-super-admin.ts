@@ -62,7 +62,7 @@ async function createAdminUser(): Promise<void> {
 
         }
     } catch (err) {
-        consoleLogWrapper(err);
+        consoleLogWrapper(err.message);
         throw new Error('Failed to create an admin user, quitting...');
     }
 }
