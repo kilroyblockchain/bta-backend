@@ -1,14 +1,20 @@
 #!/bin/sh
 
 COLOR_OFF='\033[0m'
+GREEN='\033[0;32m'
 RED='\033[0;31m'
 
 export ERROR_MESSAGE='Request failed with status code'
 
 . ./.env
 
-MIGRATION_RESPONSE=$(docker exec -it ${APP_CONTAINER_NAME} /bin/bash -c "npm run start:migrate:prefill | grep '$ERROR_MESSAGE'")
+echo -e "${GREEN}"
+echo "----------------------------------------------------------"
+echo "Starting Migrating Super Admin Migration"
+echo "----------------------------------------------------------"
+echo -e "${COLOR_OFF}"
 
+MIGRATION_RESPONSE=$(docker exec -it ${APP_CONTAINER_NAME} /bin/bash -c "npm run start:migrate:prefill | grep '$ERROR_MESSAGE'")
 
 if [[ $MIGRATION_RESPONSE == *"$ERROR_MESSAGE"* ]]; then
     echo -e "${RED}"
@@ -20,3 +26,9 @@ if [[ $MIGRATION_RESPONSE == *"$ERROR_MESSAGE"* ]]; then
 
     exit 0;
 fi
+
+echo -e "${GREEN}"
+echo "----------------------------------------------------------"
+echo "Successfully Migrated Super Admin Migration"
+echo "----------------------------------------------------------"
+echo -e "${COLOR_OFF}"
