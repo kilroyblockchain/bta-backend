@@ -56,40 +56,11 @@ fi
 
 export APP_RUNNED_SUCCESS_RESPONSE="APP IS LISTENING TO PORT ${PORT}"
 
-echo "Pulling latest code"
+. ./scripts/create-default-directories.sh
 
+echo "Pulling latest code"
 git pull
 
-if [ -d "$DATABASE_VOLUME_MOUNT" ]; then
-    echo "Database Directory already exists"
-    echo "Changing ownership to current user"
-    sudo chown -R $USER:$USER $DATABASE_VOLUME_MOUNT
-else
-    echo "Creating Database Directory and Changing ownership to current user"
-    mkdir -p $DATABASE_VOLUME_MOUNT && chown -R $USER:$USER $DATABASE_VOLUME_MOUNT
-fi
-
-LOGS_DIR=./logs
-
-if [ -d "$LOGS_DIR" ]; then
-    echo "Logs Directory already exists"
-    echo "Changing ownership to current user"
-    sudo chown -R $USER:$USER $LOGS_DIR
-else
-    echo "Creating Logs Directory and Changing ownership to current user"
-    mkdir -p $LOGS_DIR && chown -R $USER:$USER $LOGS_DIR
-fi
-
-UPLOADS_DIR=./uploads
-
-if [ -d $UPLOADS_DIR ]; then
-    echo "Uploads Directory already exists"
-    echo "Changing ownership to current user"
-    sudo chown -R $USER:$USER $UPLOADS_DIR
-else
-    echo "Creating Uploads Directory and Changing ownership to current user"
-    mkdir -p $UPLOADS_DIR && chown -R $USER:$USER $UPLOADS_DIR
-fi
 
 . ./scripts/docker-down.sh
 
