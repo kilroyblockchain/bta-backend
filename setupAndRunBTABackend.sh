@@ -103,36 +103,11 @@ GET_APP_RUNNING_STATUS=$(docker logs bta_api_local 2>&1 | grep "$APP_RUNNED_SUCC
 
 done
 
-echo -e "${GREEN}"
-echo "----------------------------------------------------------"
-echo "Starting Migrating App Migration"
-echo "----------------------------------------------------------"
-echo -e "${COLOR_OFF}"
-
 # Run App Migrations
 . ./scripts/app-migration.sh
 
-echo -e "${GREEN}"
-echo "----------------------------------------------------------"
-echo "Successfully Migrated App Migration"
-echo "----------------------------------------------------------"
-echo -e "${COLOR_OFF}"
-
-echo -e "${GREEN}"
-echo "----------------------------------------------------------"
-echo "Starting Migrating Super Admin Migration"
-echo "----------------------------------------------------------"
-echo -e "${COLOR_OFF}"
-
 # Run Super Admin Migrations
 . ./scripts/super-admin-migration.sh
-
-echo -e "${GREEN}"
-echo "----------------------------------------------------------"
-
-echo "Successfully Migrated Super Admin Migration"
-echo "----------------------------------------------------------"
-echo -e "${COLOR_OFF}"
 
 echo -e "${GREEN}"
 echo "----------------------------------------------------------"
