@@ -40,8 +40,21 @@ fi
 # Getting IP Address For Blockchain Network
 export PRIVATE_NETWORK_IP_ADDRESS=$(ifconfig | grep -E "([0-9]{1,3}\.){3}[0-9]{1,3}" | grep -v 127.0.0.1 | tail -1 | awk '{ print $2 }')
 
+if [[ ! -f ".env" ||  ! -s ".env" ]];
+then
+echo -e "${GREEN}"
+echo -e "------------------------------------------------------------------------------------------------------"
+echo -e "Creating .env file"
+
 # Copy the env sample and create new .env file and paste all the contents there.
 cp -r env-samples/.env.local.sample .env
+
+echo -e ""
+echo -e "Successfully created .env file"
+echo "------------------------------------------------------------------------------------------------------"
+echo -e "${Color_Off}"
+fi
+
 
 if [ "$ARCH" = "$MAC_OS" ];
 then
@@ -92,7 +105,7 @@ fi
 
 echo -e "${GREEN}"
 echo "--------------------------------------------------------------------"
-echo "Please wait while bta-backend application is completely started..."
+echo "Please wait while bta-backend application is completely started retrying($[$COUNTER +1])..."
 echo "--------------------------------------------------------------------"
 echo -e "${COLOR_OFF}"
 
