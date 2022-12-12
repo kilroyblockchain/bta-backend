@@ -58,7 +58,7 @@ async function createAdminUser(): Promise<void> {
             consoleLogWrapper(err.message);
             const SuperAdminMigrationModel = mongoose.model<ISuperAdminMigration>('super-admin-migrations', SuperAdminMigrationSchema);
             await SuperAdminMigrationModel.deleteOne({ name: "super-admin" });
-            throw new Error('Failed to Failed to register super admin super in blockchain, quitting...');
+            throw new Error('Failed to register super admin super in blockchain, quitting...');
 
         }
     } catch (err) {

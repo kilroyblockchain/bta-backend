@@ -20,10 +20,14 @@ services:
             - mongo
             - mongoExpress
             - mailcatcher
+        networks:
+            - bta-network
 
     mongo:
         ports:
             - ${DB_PORT}:27017
+        networks:
+            - bta-network
 
     mongoExpress:
         image: mongo-express
@@ -36,6 +40,8 @@ services:
         links:
             - mongo
         restart: unless-stopped
+        networks:
+            - bta-network
         depends_on:
             - mongo
 
@@ -44,3 +50,7 @@ services:
         container_name: ${MAILCATCHER_CONTAINER_NAME}
         ports:
             - ${MAILCATCHER_PORT}:1080
+        networks:
+            - bta-network
+networks:
+    bta-network:
