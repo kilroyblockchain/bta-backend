@@ -2200,6 +2200,9 @@ export class UserService {
             const encryptedKey = await encryptKey(verifyBcKeyDto.bcKey);
             return new VerifyBcKeyDto(encryptedKey);
         } catch (err) {
+            if (err.code === 'ECONNABORTED') {
+                throw new BadRequestException(BC_ERROR_RESPONSE.BC_CONNECTION_REFUSED_TIMEOUT);
+            }
             throw new UnauthorizedException([BC_ERROR_RESPONSE.INVALID_BC_KEY]);
         }
     }
