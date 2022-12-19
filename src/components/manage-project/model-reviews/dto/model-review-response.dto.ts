@@ -280,3 +280,26 @@ export class ReviewModelResponseDto {
     })
     updatedAt: Date;
 }
+
+export class ReviewedVersionErrorResponseDto {
+    @ApiProperty({
+        example: true,
+        description: 'Status of error',
+        format: 'string'
+    })
+    errorStatus: boolean;
+
+    @ApiProperty({
+        example: 'fetching',
+        description: 'Status Log file data hash',
+        format: 'string'
+    })
+    logFileDataHashStatus: string;
+
+    @ApiProperty({
+        example: 'error',
+        description: 'Status Test dataset hash',
+        format: 'string'
+    })
+    testDataSetHashStatus: string;
+}

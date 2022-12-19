@@ -22,3 +22,9 @@ export interface IReviewDocs {
     docURL: string;
     docName: string;
 }
+
+export interface IReviewedVersionError {
+    errorStatus: boolean;
+    logFileDataHashStatus: string;
+    testDataSetHashStatus: string;
+}
